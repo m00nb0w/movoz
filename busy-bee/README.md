@@ -1,12 +1,12 @@
 <h1 align="center">
   <br>
-  <img src="../resources/logos/drunken-dolphin-logo-4k.png" alt="Markdownify" width="300"></a>
+  <img src="../resources/logos/busy-bee-logo-4k.png" alt="Markdownify" width="300"></a>
   <br>
-  Drunken Dolphin
+  Busy Bee
   <br>
 </h1>
 
-<h4 align="center">My personal CLI assistant, hopefully I can make it a voice assistant.</h4>
+<h4 align="center">TBA</h4>
 
 <p align="center">
   <a href="">
@@ -28,11 +28,13 @@
 
 * TODO
 
-## 🚀 You may also like...
+##
 
-## 🤝 Support
+## Support
 
-## 🌟 License
+## You may also like...
+
+## License
 
 MIT
 
