@@ -1,0 +1,31 @@
+{
+  "records": {
+    "2025-09-02": {
+      "pushups": {
+        "count": 15,
+        "timestamp": "2025-09-03 16:14:47"
+      },
+      "situps": {
+        "count": 35,
+        "timestamp": "2025-09-03 16:14:47"
+      }
+    },
+    "2025-09-03": {
+      "pushups": {
+        "count": 20,
+        "timestamp": "2025-09-03 16:14:38"
+      },
+      "situps": {
+        "count": 40,
+        "timestamp": "2025-09-03 16:14:38"
+      }
+    },
+    "2025-09-01": {
+      "pushups": {
+        "count": 10,
+        "timestamp": "2025-09-03 16:15:58"
+      },
+      "situps": null
+    }
+  }
+}
