@@ -2,6 +2,8 @@ package main
 
 import (
 	"database/sql"
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -13,7 +15,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func runMigrations() {
+func getMigrationInstance() (*migrate.Migrate, error) {
 	// Get database URL from environment variable
 	databaseURL := os.Getenv("DATABASE_URL")
 	if databaseURL == "" {
@@ -23,16 +25,14 @@ func runMigrations() {
 	// Open database connection
 	db, err := sql.Open("postgres", databaseURL)
 	if err != nil {
-		log.Printf("Could not connect to database: %v", err)
-		return
+		return nil, fmt.Errorf("could not connect to database: %v", err)
 	}
 	defer db.Close()
 
 	// Create migrate driver
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
-		log.Printf("Could not create migrate driver: %v", err)
-		return
+		return nil, fmt.Errorf("could not create migrate driver: %v", err)
 	}
 
 	// Create migrate instance
@@ -40,22 +40,79 @@ func runMigrations() {
 		"file://migrations",
 		"postgres", driver)
 	if err != nil {
-		log.Printf("Could not create migrate instance: %v", err)
-		return
+		return nil, fmt.Errorf("could not create migrate instance: %v", err)
 	}
 
-	// Run migrations
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Printf("Could not run migrations: %v", err)
-		return
+	return m, nil
+}
+
+func runMigrations(direction string) {
+	m, err := getMigrationInstance()
+	if err != nil {
+		log.Fatalf("Migration setup failed: %v", err)
+	}
+	defer m.Close()
+
+	switch direction {
+	case "up":
+		if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+			log.Fatalf("Could not run up migrations: %v", err)
+		}
+		log.Println("Up migrations completed successfully")
+	case "down":
+		if err := m.Down(); err != nil && err != migrate.ErrNoChange {
+			log.Fatalf("Could not run down migrations: %v", err)
+		}
+		log.Println("Down migrations completed successfully")
+	default:
+		log.Fatalf("Invalid migration direction: %s (use 'up' or 'down')", direction)
+	}
+}
+
+func getMigrationVersion() {
+	m, err := getMigrationInstance()
+	if err != nil {
+		log.Fatalf("Migration setup failed: %v", err)
+	}
+	defer m.Close()
+
+	version, dirty, err := m.Version()
+	if err != nil {
+		log.Fatalf("Could not get migration version: %v", err)
 	}
 
-	log.Println("Migrations completed successfully")
+	status := "clean"
+	if dirty {
+		status = "dirty"
+	}
+
+	fmt.Printf("Current migration version: %d (status: %s)\n", version, status)
 }
 
 func main() {
-	// Run database migrations
-	runMigrations()
+	// Define command line flags
+	var (
+		migrate    = flag.String("migrate", "", "Run database migrations: 'up', 'down'")
+		version    = flag.Bool("version", false, "Show current migration version")
+		autoMigrate = flag.Bool("auto-migrate", false, "Run up migrations on startup")
+	)
+	flag.Parse()
+
+	// Handle migration commands
+	if *version {
+		getMigrationVersion()
+		return
+	}
+
+	if *migrate != "" {
+		runMigrations(*migrate)
+		return
+	}
+
+	// Run auto migrations if flag is set
+	if *autoMigrate {
+		runMigrations("up")
+	}
 
 	// Create Gin router
 	r := gin.Default()
@@ -69,5 +126,6 @@ func main() {
 	})
 
 	// Start server on port 8080
+	log.Println("Starting server on :8080")
 	r.Run(":8080")
 }
