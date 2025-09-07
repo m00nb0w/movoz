@@ -1,5 +1,19 @@
 {
   "fitness": {
+    "2025-09-07": {
+      "pushups": {
+        "count": 25,
+        "timestamp": "2025-09-07 14:47:31"
+      },
+      "situps": {
+        "count": 50,
+        "timestamp": "2025-09-07 14:47:31"
+      },
+      "pullups": {
+        "count": 15,
+        "timestamp": "2025-09-07 14:47:31"
+      }
+    },
     "2025-09-04": {
       "pushups": {
         "count": 20,
@@ -8,7 +22,8 @@
       "situps": {
         "count": 40,
         "timestamp": "2025-09-04 21:34:29"
-      }
+      },
+      "pullups": null
     }
   }
 }

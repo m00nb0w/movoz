@@ -16,6 +16,7 @@ pub struct ExerciseRecord {
 pub struct DailyRecord {
     pub pushups: Option<ExerciseRecord>,
     pub situps: Option<ExerciseRecord>,
+    pub pullups: Option<ExerciseRecord>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -62,6 +63,7 @@ impl Tracker {
         let daily_record = self.data.fitness.entry(date_key.clone()).or_insert_with(|| DailyRecord {
             pushups: None,
             situps: None,
+            pullups: None,
         });
 
         daily_record.pushups = Some(record);
@@ -86,12 +88,38 @@ impl Tracker {
         let daily_record = self.data.fitness.entry(date_key.clone()).or_insert_with(|| DailyRecord {
             pushups: None,
             situps: None,
+            pullups: None,
         });
 
         daily_record.situps = Some(record);
         self.save()?;
 
         println!("{} {} sit-ups recorded for {}! 🏃", 
+            "✓".green().bold(), 
+            count.to_string().yellow().bold(), 
+            date_key.blue().bold()
+        );
+
+        Ok(())
+    }
+
+    pub fn record_pullups(&mut self, count: u32, date: &str) -> Result<(), AppError> {
+        let date_key = self.parse_date(date)?;
+        let record = ExerciseRecord {
+            count,
+            timestamp: Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+        };
+
+        let daily_record = self.data.fitness.entry(date_key.clone()).or_insert_with(|| DailyRecord {
+            pushups: None,
+            situps: None,
+            pullups: None,
+        });
+
+        daily_record.pullups = Some(record);
+        self.save()?;
+
+        println!("{} {} pull-ups recorded for {}! 🏋️", 
             "✓".green().bold(), 
             count.to_string().yellow().bold(), 
             date_key.blue().bold()

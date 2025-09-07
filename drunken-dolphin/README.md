@@ -26,10 +26,10 @@
 ## Features
 
 - **Fast & Lightweight**: Single binary with zero runtime dependencies
-- **Fitness Tracking**: Record push-ups and sit-ups with counts
+- **Fitness Tracking**: Record push-ups, sit-ups, and pull-ups with counts
 - **Chore Management**: Add and complete household tasks (coming soon)
 - **Flexible Dates**: Track activities for today, yesterday, or specific dates
-- **Quick Shortcuts**: Use `today` and `yesterday` commands for both exercises at once
+- **Quick Shortcuts**: Use `today` and `yesterday` commands for all exercises at once
 - **Beautiful Output**: Colored output with emojis for better UX
 - **Data Persistence**: Automatically saves to JSON file
 - **Extensible**: Easy to add new domains (chores, etc.)
@@ -106,7 +106,7 @@ After successful installation and PATH setup:
 drunken-dolphin --help
 
 # Record your first workout
-drunken-dolphin today 20 40
+drunken-dolphin today 20 40 10
 
 # Check your data file
 cat fitness_data.json
@@ -171,15 +171,24 @@ drunken-dolphin fitness situps 40 --date yesterday
 
 # Record sit-ups for a specific date
 drunken-dolphin fitness situps 55 --date 2024-01-15
+
+# Record pull-ups for today
+drunken-dolphin fitness pullups 15
+
+# Record pull-ups for yesterday
+drunken-dolphin fitness pullups 12 --date yesterday
+
+# Record pull-ups for a specific date
+drunken-dolphin fitness pullups 18 --date 2024-01-15
 ```
 
 #### Quick Shortcuts
 ```bash
-# Record both exercises for today
-drunken-dolphin fitness today 25 50
+# Record all exercises for today (pushups, situps, pullups)
+drunken-dolphin fitness today 25 50 15
 
-# Record both exercises for yesterday
-drunken-dolphin fitness yesterday 30 45
+# Record all exercises for yesterday (pushups, situps, pullups)
+drunken-dolphin fitness yesterday 30 45 12
 ```
 
 #### Chore Commands (Coming Soon)
@@ -203,14 +212,16 @@ drunken-dolphin chore complete "Clean the garage"
 # Set up your daily routine
 drunken-dolphin fitness pushups 25
 drunken-dolphin fitness situps 50
+drunken-dolphin fitness pullups 15
 
 # Record yesterday's workout
 drunken-dolphin fitness pushups 30 --date yesterday
 drunken-dolphin fitness situps 45 --date yesterday
+drunken-dolphin fitness pullups 12 --date yesterday
 
-# Quick shortcuts for both exercises
-drunken-dolphin fitness today 25 50
-drunken-dolphin fitness yesterday 30 45
+# Quick shortcuts for all exercises
+drunken-dolphin fitness today 25 50 15
+drunken-dolphin fitness yesterday 30 45 12
 
 # Chore management (coming soon)
 drunken-dolphin chore add "Take out trash" --priority medium
@@ -232,7 +243,8 @@ src/
 └── commands/        # Individual command implementations
     ├── mod.rs
     ├── pushups.rs
-    └── situps.rs
+    ├── situps.rs
+    └── pullups.rs
 ```
 
 ### Running Tests
@@ -244,8 +256,9 @@ cargo test
 ```bash
 cargo run -- fitness pushups 25
 cargo run -- fitness situps 50
-cargo run -- fitness today 25 50
-cargo run -- fitness yesterday 30 45
+cargo run -- fitness pullups 15
+cargo run -- fitness today 25 50 15
+cargo run -- fitness yesterday 30 45 12
 cargo run -- chore add "Clean garage" --priority high
 ```
 

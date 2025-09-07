@@ -7,7 +7,7 @@ mod config;
 mod error;
 mod personal;
 
-use commands::{pushups_execute, situps_execute};
+use commands::{pushups_execute, situps_execute, pullups_execute};
 use config::AppConfig;
 use error::AppError;
 
@@ -61,22 +61,38 @@ enum FitnessCommands {
         date: String,
     },
     
-    /// Quick shortcut: Record both exercises for today
+    /// Record pull-up count
+    Pullups {
+        /// Number of pull-ups completed
+        count: u32,
+        
+        /// Date to record for: today, yesterday, or specific date (YYYY-MM-DD)
+        #[clap(short, long, default_value = "today")]
+        date: String,
+    },
+    
+    /// Quick shortcut: Record all exercises for today
     Today {
         /// Number of push-ups completed
         pushups: u32,
         
         /// Number of sit-ups completed
         situps: u32,
+        
+        /// Number of pull-ups completed
+        pullups: u32,
     },
     
-    /// Quick shortcut: Record both exercises for yesterday
+    /// Quick shortcut: Record all exercises for yesterday
     Yesterday {
         /// Number of push-ups completed
         pushups: u32,
         
         /// Number of sit-ups completed
         situps: u32,
+        
+        /// Number of pull-ups completed
+        pullups: u32,
     },
 }
 
@@ -128,13 +144,18 @@ fn run() -> Result<(), AppError> {
                 FitnessCommands::Situps { count, date } => {
                     situps_execute(&mut tracker, count, &date)?;
                 }
-                FitnessCommands::Today { pushups, situps } => {
+                FitnessCommands::Pullups { count, date } => {
+                    pullups_execute(&mut tracker, count, &date)?;
+                }
+                FitnessCommands::Today { pushups, situps, pullups } => {
                     pushups_execute(&mut tracker, pushups, "today")?;
                     situps_execute(&mut tracker, situps, "today")?;
+                    pullups_execute(&mut tracker, pullups, "today")?;
                 }
-                FitnessCommands::Yesterday { pushups, situps } => {
+                FitnessCommands::Yesterday { pushups, situps, pullups } => {
                     pushups_execute(&mut tracker, pushups, "yesterday")?;
                     situps_execute(&mut tracker, situps, "yesterday")?;
+                    pullups_execute(&mut tracker, pullups, "yesterday")?;
                 }
             }
         }
