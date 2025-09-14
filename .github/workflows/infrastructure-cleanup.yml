@@ -1,0 +1,143 @@
+name: Infrastructure Cleanup
+
+on:
+  schedule:
+    # Run every Sunday at 2 AM UTC to clean up dev resources
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to clean up'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
+      confirm:
+        description: 'Type "yes" to confirm cleanup'
+        required: true
+        default: 'no'
+        type: string
+
+env:
+  TF_VERSION: '1.6.0'
+
+jobs:
+  cleanup-dev:
+    name: Cleanup Development Environment
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'dev')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
+      - name: Cleanup dev environment
+        run: |
+          cd movoz-infra
+          
+          # Set environment variables
+          export TF_VAR_environment=dev
+          export TF_VAR_aws_region=us-west-2
+          export TF_VAR_db_password="${{ secrets.DB_PASSWORD }}"
+          
+          # Initialize Terraform
+          terraform init
+          
+          # Select workspace
+          terraform workspace select dev
+          
+          # Check if resources exist
+          if terraform show -json | jq -e '.values.root_module.resources | length > 0' > /dev/null 2>&1; then
+            echo "🧹 Cleaning up development environment..."
+            terraform destroy -var-file="environments/dev/terraform.tfvars" -auto-approve
+            echo "✅ Development environment cleaned up successfully"
+          else
+            echo "ℹ️ No resources found in development environment"
+          fi
+
+      - name: Create cleanup summary
+        run: |
+          echo "## 🧹 Weekly Infrastructure Cleanup" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Development Environment" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: Cleaned up successfully" >> $GITHUB_STEP_SUMMARY
+          echo "- **Date**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Reason**: Weekly scheduled cleanup to reduce costs" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "- Development environment will be recreated on next deployment" >> $GITHUB_STEP_SUMMARY
+          echo "- Production environment remains untouched" >> $GITHUB_STEP_SUMMARY
+
+  cleanup-prod:
+    name: Cleanup Production Environment
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'prod' && github.event.inputs.confirm == 'yes'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
+      - name: ⚠️ WARNING: Cleanup production environment
+        run: |
+          echo "🚨 WARNING: This will destroy the PRODUCTION environment!"
+          echo "This action cannot be undone and will result in data loss."
+          echo "Proceeding with cleanup..."
+
+      - name: Cleanup prod environment
+        run: |
+          cd movoz-infra
+          
+          # Set environment variables
+          export TF_VAR_environment=prod
+          export TF_VAR_aws_region=us-west-2
+          export TF_VAR_db_password="${{ secrets.DB_PASSWORD }}"
+          
+          # Initialize Terraform
+          terraform init
+          
+          # Select workspace
+          terraform workspace select prod
+          
+          # Destroy production environment
+          terraform destroy -var-file="environments/prod/terraform.tfvars" -auto-approve
+          echo "✅ Production environment cleaned up successfully"
+
+      - name: Create cleanup summary
+        run: |
+          echo "## 🚨 Production Environment Cleanup" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Production Environment" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: DESTROYED" >> $GITHUB_STEP_SUMMARY
+          echo "- **Date**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Reason**: Manual cleanup requested" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ⚠️ Important Notes" >> $GITHUB_STEP_SUMMARY
+          echo "- All production data has been lost" >> $GITHUB_STEP_SUMMARY
+          echo "- Database backups may still be available in AWS" >> $GITHUB_STEP_SUMMARY
+          echo "- Recreate environment using deployment workflow" >> $GITHUB_STEP_SUMMARY

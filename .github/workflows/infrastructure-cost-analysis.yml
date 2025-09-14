@@ -1,0 +1,279 @@
+name: Infrastructure Cost Analysis
+
+on:
+  pull_request:
+    paths:
+      - 'movoz-infra/**'
+    branches: [ main, master ]
+  push:
+    paths:
+      - 'movoz-infra/**'
+    branches: [ main, master ]
+
+env:
+  TF_VERSION: '1.6.0'
+  INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+
+jobs:
+  cost-analysis:
+    name: Calculate Infrastructure Cost Impact
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        environment: [dev, prod]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for diff analysis
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Setup Infracost
+        uses: infracost/infracost-gh-action@v0.19
+        with:
+          api-key: ${{ env.INFRACOST_API_KEY }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
+      - name: Generate Terraform plan for ${{ matrix.environment }}
+        id: plan
+        run: |
+          cd movoz-infra
+          
+          # Set environment variables
+          export TF_VAR_environment=${{ matrix.environment }}
+          export TF_VAR_aws_region=us-west-2
+          export TF_VAR_db_password="dummy-password-for-plan"  # Dummy password for planning
+          
+          # Initialize Terraform
+          terraform init
+          
+          # Select or create workspace
+          terraform workspace select ${{ matrix.environment }} 2>/dev/null || terraform workspace new ${{ matrix.environment }}
+          
+          # Generate plan
+          terraform plan \
+            -var-file="environments/${{ matrix.environment }}/terraform.tfvars" \
+            -out="${{ matrix.environment }}.tfplan"
+          
+          # Save plan file for cost analysis
+          echo "plan_file=${{ matrix.environment }}.tfplan" >> $GITHUB_OUTPUT
+
+      - name: Calculate cost impact for ${{ matrix.environment }}
+        id: cost
+        run: |
+          cd movoz-infra
+          
+          # Run Infracost cost analysis
+          infracost breakdown \
+            --path="${{ steps.plan.outputs.plan_file }}" \
+            --format=json \
+            --out-file="${{ matrix.environment }}-cost.json"
+          
+          # Generate cost summary
+          infracost diff \
+            --path="${{ steps.plan.outputs.plan_file }}" \
+            --format=table \
+            --out-file="${{ matrix.environment }}-cost-summary.txt"
+          
+          # Extract cost data for PR comment
+          COST_MONTHLY=$(jq -r '.projects[0].breakdown.totalMonthlyCost' ${{ matrix.environment }}-cost.json)
+          COST_HOURLY=$(jq -r '.projects[0].breakdown.totalHourlyCost' ${{ matrix.environment }}-cost.json)
+          
+          echo "monthly_cost=$COST_MONTHLY" >> $GITHUB_OUTPUT
+          echo "hourly_cost=$COST_HOURLY" >> $GITHUB_OUTPUT
+
+      - name: Upload cost analysis artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cost-analysis-${{ matrix.environment }}
+          path: |
+            movoz-infra/${{ matrix.environment }}-cost.json
+            movoz-infra/${{ matrix.environment }}-cost-summary.txt
+            movoz-infra/${{ matrix.environment }}.tfplan
+
+  cost-summary:
+    name: Generate Cost Summary Report
+    runs-on: ubuntu-latest
+    needs: cost-analysis
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download cost analysis artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: cost-artifacts
+
+      - name: Generate cost summary report
+        id: summary
+        run: |
+          echo "## 💰 Infrastructure Cost Impact Analysis" > cost-report.md
+          echo "" >> cost-report.md
+          echo "### 📊 Cost Summary by Environment" >> cost-report.md
+          echo "" >> cost-report.md
+          
+          # Process each environment
+          for env in dev prod; do
+            if [ -f "cost-artifacts/cost-analysis-$env/$env-cost.json" ]; then
+              echo "#### 🌍 $env Environment" >> cost-report.md
+              echo "" >> cost-report.md
+              
+              # Extract cost data
+              MONTHLY_COST=$(jq -r '.projects[0].breakdown.totalMonthlyCost' cost-artifacts/cost-analysis-$env/$env-cost.json)
+              HOURLY_COST=$(jq -r '.projects[0].breakdown.totalHourlyCost' cost-artifacts/cost-analysis-$env/$env-cost.json)
+              
+              echo "- **Monthly Cost**: \$${MONTHLY_COST}" >> cost-report.md
+              echo "- **Hourly Cost**: \$${HOURLY_COST}" >> cost-report.md
+              echo "" >> cost-report.md
+              
+              # Add detailed breakdown if available
+              if [ -f "cost-artifacts/cost-analysis-$env/$env-cost-summary.txt" ]; then
+                echo "**Resource Breakdown:**" >> cost-report.md
+                echo '```' >> cost-report.md
+                cat cost-artifacts/cost-analysis-$env/$env-cost-summary.txt >> cost-report.md
+                echo '```' >> cost-report.md
+                echo "" >> cost-report.md
+              fi
+            fi
+          done
+          
+          # Add recommendations
+          echo "### 💡 Cost Optimization Recommendations" >> cost-report.md
+          echo "" >> cost-report.md
+          echo "- Review resource sizing for non-production environments" >> cost-report.md
+          echo "- Consider using spot instances for development workloads" >> cost-report.md
+          echo "- Implement auto-scaling policies to optimize costs" >> cost-report.md
+          echo "- Set up billing alerts and budgets" >> cost-report.md
+          echo "" >> cost-report.md
+          echo "---" >> cost-report.md
+          echo "*This report was generated automatically by the Infrastructure Cost Analysis workflow.*" >> cost-report.md
+
+      - name: Comment on PR with cost analysis
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('cost-report.md', 'utf8');
+            
+            // Find existing cost analysis comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const existingComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('Infrastructure Cost Impact Analysis')
+            );
+            
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: report
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: report
+              });
+            }
+
+  cost-alert:
+    name: Cost Alert Check
+    runs-on: ubuntu-latest
+    needs: cost-analysis
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download cost analysis artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: cost-artifacts
+
+      - name: Check for high cost increases
+        id: alert
+        run: |
+          HIGH_COST_THRESHOLD=100  # Alert if monthly cost > $100
+          ALERT_TRIGGERED=false
+          
+          for env in dev prod; do
+            if [ -f "cost-artifacts/cost-analysis-$env/$env-cost.json" ]; then
+              MONTHLY_COST=$(jq -r '.projects[0].breakdown.totalMonthlyCost' cost-artifacts/cost-analysis-$env/$env-cost.json)
+              
+              # Remove any non-numeric characters and convert to number
+              COST_NUMERIC=$(echo "$MONTHLY_COST" | sed 's/[^0-9.]//g')
+              
+              if (( $(echo "$COST_NUMERIC > $HIGH_COST_THRESHOLD" | bc -l) )); then
+                echo "⚠️ High cost detected for $env environment: \$${MONTHLY_COST}/month"
+                ALERT_TRIGGERED=true
+              fi
+            fi
+          done
+          
+          if [ "$ALERT_TRIGGERED" = true ]; then
+            echo "alert_triggered=true" >> $GITHUB_OUTPUT
+          else
+            echo "alert_triggered=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create cost alert issue
+        if: steps.alert.outputs.alert_triggered == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🚨 High Infrastructure Cost Alert - ${new Date().toISOString().split('T')[0]}`;
+            const body = `
+            ## High Cost Infrastructure Detected
+            
+            The infrastructure cost analysis has detected costs exceeding the threshold.
+            
+            **Details:**
+            - Repository: ${context.repo.owner}/${context.repo.repo}
+            - Branch: ${context.ref.replace('refs/heads/', '')}
+            - Commit: ${context.sha}
+            - Workflow: ${context.workflow}
+            
+            **Action Required:**
+            Please review the infrastructure changes and consider cost optimization strategies.
+            
+            **Next Steps:**
+            1. Review the cost analysis in the PR comments
+            2. Consider downsizing resources for non-production environments
+            3. Implement auto-scaling policies
+            4. Set up billing alerts
+            
+            ---
+            *This alert was generated automatically by the Infrastructure Cost Analysis workflow.*
+            `;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['cost-alert', 'infrastructure', 'urgent']
+            });
