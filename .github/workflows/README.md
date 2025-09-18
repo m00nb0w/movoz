@@ -178,3 +178,5 @@ HIGH_COST_THRESHOLD=100  # Alert if monthly cost > $100
 - [Infracost Documentation](https://docs.infracost.io)
 - [GitHub Actions Documentation](https://docs.github.com/actions)
 - [AWS RDS Documentation](https://docs.aws.amazon.com/rds)
+
+

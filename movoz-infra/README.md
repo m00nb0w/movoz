@@ -211,3 +211,5 @@ aws sts get-caller-identity
 - [ ] Add CloudFront CDN
 - [ ] Add monitoring and alerting
 - [ ] Add multi-AZ deployment for production
+
+

@@ -72,3 +72,4 @@ variable "maintenance_window" {
   type        = string
   default     = "sun:04:00-sun:05:00"
 }
+

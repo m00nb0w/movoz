@@ -154,3 +154,5 @@ jobs:
           echo "### Network Information" >> $GITHUB_STEP_SUMMARY
           echo "- **VPC ID**: $(terraform output -raw vpc_id)" >> $GITHUB_STEP_SUMMARY
           echo "- **Security Group**: $(terraform output -raw security_group_id)" >> $GITHUB_STEP_SUMMARY
+
+
