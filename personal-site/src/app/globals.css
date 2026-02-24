@@ -1,0 +1,142 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Yellow-tinted paper colors */
+  --zen-bg: #fdf6e3;
+  --zen-text: #3d3520;
+  --zen-muted: #857a5c;
+  --zen-subtle: #f5edd8;
+  --zen-border: #e8dfc5;
+  --zen-paper: #fffaed;
+}
+
+.dark {
+  /* Kindle-like dark mode */
+  --zen-bg: #1a1a1a;
+  --zen-text: #e8e4dc;
+  --zen-muted: #a09080;
+  --zen-subtle: #252525;
+  --zen-border: #3a3a3a;
+  --zen-paper: #222222;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--zen-bg);
+  color: var(--zen-text);
+  font-family: 'Rubik', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Accent text */
+.gradient-text {
+  color: #d4775c;
+}
+
+/* Smooth transitions for theme switching */
+.theme-transition {
+  transition: background-color 0.3s ease,
+              color 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+/* Paper-like header */
+.glass {
+  background: rgba(253, 246, 227, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.dark .glass {
+  background: rgba(26, 26, 26, 0.9);
+}
+
+/* Paper card style */
+.paper-card {
+  background: var(--zen-paper);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05),
+              0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.dark .paper-card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2),
+              0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Heading font */
+.font-heading {
+  font-family: 'Rubik', system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* UI elements use Inter for better readability */
+.font-ui {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--zen-subtle);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--zen-muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #f76f53;
+}
+
+/* Animation delays for staggered effects */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* Card hover effect */
+.card-hover {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
+}
+
+.dark .card-hover:hover {
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.4);
+}
