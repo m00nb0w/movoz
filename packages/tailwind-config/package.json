@@ -1,0 +1,10 @@
+{
+  "name": "@movoz/tailwind-config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "index.ts",
+  "devDependencies": {
+    "tailwindcss": "^3.4.4"
+  }
+}

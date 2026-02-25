@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeProvider } from "@movoz/theme";
 
 export const metadata: Metadata = {
   title: "To Ngoc Long - Software Engineer",

@@ -1,5 +1,4 @@
-export { ThemeProvider, useTheme } from "./ThemeProvider";
-export { ThemeToggle } from "./ThemeToggle";
+export { ThemeProvider, useTheme, ThemeToggle } from "@movoz/theme";
 export { Navigation } from "./Navigation";
 export { Hero } from "./Hero";
 export { Projects } from "./Projects";

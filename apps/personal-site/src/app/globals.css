@@ -1,28 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+@import "@movoz/theme/globals.css";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root {
-  /* Yellow-tinted paper colors */
-  --zen-bg: #fdf6e3;
-  --zen-text: #3d3520;
-  --zen-muted: #857a5c;
-  --zen-subtle: #f5edd8;
-  --zen-border: #e8dfc5;
-  --zen-paper: #fffaed;
-}
-
-.dark {
-  /* Kindle-like dark mode */
-  --zen-bg: #1a1a1a;
-  --zen-text: #e8e4dc;
-  --zen-muted: #a09080;
-  --zen-subtle: #252525;
-  --zen-border: #3a3a3a;
-  --zen-paper: #222222;
-}
 
 * {
   box-sizing: border-box;

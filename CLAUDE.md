@@ -4,12 +4,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is a multi-project monorepo containing four independent projects with no shared build tooling:
+Monorepo using pnpm workspaces + Turborepo for frontend apps, with independent non-JS projects at root.
 
-- **drunken-dolphin/** — Rust CLI for personal fitness tracking (push-ups, sit-ups, pull-ups)
+**Frontend apps** (in `apps/`):
+- **apps/personal-site/** — Next.js 14 portfolio website (default zone at `/`)
+
+**Shared packages** (in `packages/`):
+- **packages/tailwind-config/** — Shared Tailwind CSS preset (`@movoz/tailwind-config`)
+- **packages/theme/** — ThemeProvider, ThemeToggle, CSS variables (`@movoz/theme`)
+- **packages/tsconfig/** — Shared TypeScript base config (`@movoz/tsconfig`)
+
+**Non-JS projects** (at root):
+- **drunken-dolphin/** — Rust CLI for personal fitness tracking
 - **hustle-turtle/** — Go REST API with Gin framework and PostgreSQL
-- **personal-site/** — Next.js 14 portfolio website with Tailwind CSS
 - **movoz-infra/** — Terraform (AWS) infrastructure for database deployment
+
+**Infrastructure** (in `infrastructure/`):
+- Nginx reverse proxy + Docker Compose for multi-zone deployment
 
 ## Build & Development Commands
 
@@ -35,13 +46,19 @@ go run ./cmd/server -version                 # Check migration version
 ```
 Requires PostgreSQL. Default DATABASE_URL: `postgres://localhost/hustle_turtle?sslmode=disable`
 
-### personal-site (Next.js)
+### Frontend (pnpm + Turborepo)
 ```bash
-cd personal-site
-npm install        # Install dependencies
-npm run dev        # Dev server
-npm run build      # Production build
-npm run lint       # ESLint (next lint)
+pnpm install                           # Install all workspace dependencies
+pnpm dev                               # Start all apps via Turborepo
+pnpm build                             # Build all apps
+pnpm --filter personal-site dev        # Start only personal-site
+pnpm --filter personal-site build      # Build only personal-site
+pnpm --filter personal-site lint       # Lint only personal-site
+```
+
+### Docker (multi-zone deployment)
+```bash
+docker compose -f infrastructure/docker-compose.yml up --build
 ```
 
 ### movoz-infra (Terraform)
@@ -56,8 +73,11 @@ Uses workspace-based environments (dev/prod). Region: us-west-2.
 
 ## Architecture Notes
 
-### Project Independence
-Each project is fully self-contained with its own build system, dependencies, and tests. There is no root-level package manager or monorepo orchestration tool.
+### Micro Frontend (Multi-Zones)
+Frontend uses Next.js Multi-Zones architecture. Each app in `apps/` is an independent Next.js zone served under a path prefix on the same domain. Nginx routes in production; Next.js rewrites route in dev. Theme state syncs across zones via shared localStorage. To add a new zone: create app in `apps/`, add `basePath`/`assetPrefix` to its `next.config.mjs`, add Nginx route in `infrastructure/nginx/nginx.conf`.
+
+### Shared Packages
+All frontend apps should use `@movoz/tailwind-config` as a Tailwind preset and `@movoz/theme` for the theme system. The `@movoz/tsconfig/nextjs.json` provides a shared TypeScript base.
 
 ### hustle-turtle — Standard Go Layout
 - `cmd/server/` — Entrypoint with CLI flags for migration control
@@ -71,11 +91,11 @@ Each project is fully self-contained with its own build system, dependencies, an
 - `src/personal.rs` — Core data management; persists to JSON files
 - Adding new commands: create module in `src/commands/`, register in `mod.rs` and `main.rs`
 
-### personal-site — Next.js App Router
+### personal-site — Next.js App Router (default zone)
 - `src/app/` — App Router pages
-- `src/components/` — React components (Hero, Projects, About, Contact, Navigation, Footer, ThemeToggle)
+- `src/components/` — Page-specific components (Hero, Projects, About, Contact, Navigation, Footer)
+- Theme (ThemeProvider, ThemeToggle) lives in `@movoz/theme` shared package
 - Standalone output mode for Docker deployment
-- Tailwind CSS with custom theme variables and dark mode
 
 ### movoz-infra — AWS VPC + RDS
 - VPC with public/private subnets; PostgreSQL RDS in private subnets

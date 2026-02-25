@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ThemeToggle } from "./ThemeToggle";
+import { ThemeToggle } from "@movoz/theme";
 import { Menu, X, ChevronDown } from "lucide-react";
 
 const navLinks = [
