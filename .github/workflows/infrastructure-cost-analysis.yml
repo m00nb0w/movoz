@@ -3,11 +3,11 @@ name: Infrastructure Cost Analysis
 on:
   pull_request:
     paths:
-      - 'movoz-infra/**'
+      - 'infra/terraform/**'
     branches: [ main, master ]
   push:
     paths:
-      - 'movoz-infra/**'
+      - 'infra/terraform/**'
     branches: [ main, master ]
 
 env:
@@ -49,7 +49,7 @@ jobs:
       - name: Generate Terraform plan for ${{ matrix.environment }}
         id: plan
         run: |
-          cd movoz-infra
+          cd infra/terraform
           
           # Set environment variables
           export TF_VAR_environment=${{ matrix.environment }}
@@ -73,7 +73,7 @@ jobs:
       - name: Calculate cost impact for ${{ matrix.environment }}
         id: cost
         run: |
-          cd movoz-infra
+          cd infra/terraform
           
           # Run Infracost cost analysis
           infracost breakdown \
@@ -99,9 +99,9 @@ jobs:
         with:
           name: cost-analysis-${{ matrix.environment }}
           path: |
-            movoz-infra/${{ matrix.environment }}-cost.json
-            movoz-infra/${{ matrix.environment }}-cost-summary.txt
-            movoz-infra/${{ matrix.environment }}.tfplan
+            infra/terraform/${{ matrix.environment }}-cost.json
+            infra/terraform/${{ matrix.environment }}-cost-summary.txt
+            infra/terraform/${{ matrix.environment }}.tfplan
 
   cost-summary:
     name: Generate Cost Summary Report

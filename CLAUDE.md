@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-Monorepo using pnpm workspaces + Turborepo for frontend apps, with independent non-JS projects at root.
+Monorepo using pnpm workspaces + Turborepo for frontend apps, with backend and infra projects organized by section.
 
 **Frontend apps** (in `apps/`):
 - **apps/personal-site/** — Next.js 14 portfolio website (default zone at `/`)
@@ -14,19 +14,19 @@ Monorepo using pnpm workspaces + Turborepo for frontend apps, with independent n
 - **packages/theme/** — ThemeProvider, ThemeToggle, CSS variables (`@movoz/theme`)
 - **packages/tsconfig/** — Shared TypeScript base config (`@movoz/tsconfig`)
 
-**Non-JS projects** (at root):
-- **drunken-dolphin/** — Rust CLI for personal fitness tracking
-- **hustle-turtle/** — Go REST API with Gin framework and PostgreSQL
-- **movoz-infra/** — Terraform (AWS) infrastructure for database deployment
+**Backend** (in `backend/`):
+- **backend/drunken-dolphin/** — Rust CLI for personal fitness tracking
+- **backend/hustle-turtle/** — Go REST API with Gin framework and PostgreSQL
 
-**Infrastructure** (in `infrastructure/`):
-- Nginx reverse proxy + Docker Compose for multi-zone deployment
+**Infrastructure** (in `infra/`):
+- **infra/terraform/** — Terraform (AWS) infrastructure for database deployment
+- **infra/docker-compose.yml** + **infra/nginx/** — Nginx reverse proxy + Docker Compose for multi-zone deployment
 
 ## Build & Development Commands
 
 ### drunken-dolphin (Rust)
 ```bash
-cd drunken-dolphin
+cd backend/drunken-dolphin
 cargo build --release          # Build
 cargo test                     # Run all tests
 cargo run -- fitness today 25 50 15  # Run locally
@@ -35,7 +35,7 @@ cargo install --path .         # Install globally
 
 ### hustle-turtle (Go)
 ```bash
-cd hustle-turtle
+cd backend/hustle-turtle
 go build -o bin/hustle-turtle ./cmd/server   # Build
 go test ./...                                # Run all tests
 go run ./cmd/server                          # Run server (port 8080)
@@ -58,12 +58,12 @@ pnpm --filter personal-site lint       # Lint only personal-site
 
 ### Docker (multi-zone deployment)
 ```bash
-docker compose -f infrastructure/docker-compose.yml up --build
+docker compose -f infra/docker-compose.yml up --build
 ```
 
-### movoz-infra (Terraform)
+### Terraform
 ```bash
-cd movoz-infra
+cd infra/terraform
 terraform init
 terraform fmt -check -recursive   # Format check
 terraform validate                # Validate config
@@ -74,7 +74,7 @@ Uses workspace-based environments (dev/prod). Region: us-west-2.
 ## Architecture Notes
 
 ### Micro Frontend (Multi-Zones)
-Frontend uses Next.js Multi-Zones architecture. Each app in `apps/` is an independent Next.js zone served under a path prefix on the same domain. Nginx routes in production; Next.js rewrites route in dev. Theme state syncs across zones via shared localStorage. To add a new zone: create app in `apps/`, add `basePath`/`assetPrefix` to its `next.config.mjs`, add Nginx route in `infrastructure/nginx/nginx.conf`.
+Frontend uses Next.js Multi-Zones architecture. Each app in `apps/` is an independent Next.js zone served under a path prefix on the same domain. Nginx routes in production; Next.js rewrites route in dev. Theme state syncs across zones via shared localStorage. To add a new zone: create app in `apps/`, add `basePath`/`assetPrefix` to its `next.config.mjs`, add Nginx route in `infra/nginx/nginx.conf`.
 
 ### Shared Packages
 All frontend apps should use `@movoz/tailwind-config` as a Tailwind preset and `@movoz/theme` for the theme system. The `@movoz/tsconfig/nextjs.json` provides a shared TypeScript base.
@@ -97,7 +97,7 @@ All frontend apps should use `@movoz/tailwind-config` as a Tailwind preset and `
 - Theme (ThemeProvider, ThemeToggle) lives in `@movoz/theme` shared package
 - Standalone output mode for Docker deployment
 
-### movoz-infra — AWS VPC + RDS
+### Terraform — AWS VPC + RDS
 - VPC with public/private subnets; PostgreSQL RDS in private subnets
 - Dev: t3.micro/20GB, Prod: t3.small/100GB with enhanced monitoring
 - `scripts/deploy.sh` for manual deployment
@@ -105,6 +105,10 @@ All frontend apps should use `@movoz/tailwind-config` as a Tailwind preset and `
 ## CI/CD (GitHub Actions)
 
 Workflows in `.github/workflows/` focus on infrastructure:
-- **infrastructure-deploy.yml** — Terraform plan/apply on push to master (movoz-infra/ changes)
+- **infrastructure-deploy.yml** — Terraform plan/apply on push to master (infra/terraform/ changes)
 - **infrastructure-cost-analysis.yml** — Infracost analysis on PRs affecting infrastructure
 - **infrastructure-cleanup.yml** — Weekly auto-destroy of dev resources (Sundays 2 AM UTC)
+
+## Workflow Preferences
+
+- Always commit and push changes at the end of a plan execution.

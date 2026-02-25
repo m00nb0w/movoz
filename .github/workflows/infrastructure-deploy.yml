@@ -3,7 +3,7 @@ name: Infrastructure Deployment
 on:
   push:
     paths:
-      - 'movoz-infra/**'
+      - 'infra/terraform/**'
     branches: [ main, master ]
   workflow_dispatch:
     inputs:
@@ -44,17 +44,17 @@ jobs:
 
       - name: Terraform Format Check
         run: |
-          cd movoz-infra
+          cd infra/terraform
           terraform fmt -check -recursive
 
       - name: Terraform Init
         run: |
-          cd movoz-infra
+          cd infra/terraform
           terraform init
 
       - name: Terraform Validate
         run: |
-          cd movoz-infra
+          cd infra/terraform
           terraform validate
 
   security-scan:
@@ -69,7 +69,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'config'
-          scan-ref: 'movoz-infra/'
+          scan-ref: 'infra/terraform/'
           format: 'sarif'
           output: 'trivy-results.sarif'
 
@@ -107,7 +107,7 @@ jobs:
 
       - name: Deploy ${{ matrix.environment }} environment
         run: |
-          cd movoz-infra
+          cd infra/terraform
           
           # Set environment variables
           export TF_VAR_environment=${{ matrix.environment }}
@@ -143,7 +143,7 @@ jobs:
       - name: Output deployment results
         if: steps.deploy.outcome == 'success'
         run: |
-          cd movoz-infra
+          cd infra/terraform
           echo "## 🚀 Deployment Results for ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Database Information" >> $GITHUB_STEP_SUMMARY

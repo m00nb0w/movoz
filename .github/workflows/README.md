@@ -7,7 +7,7 @@ This directory contains GitHub Actions workflows for the Movoz infrastructure pr
 ### 1. Infrastructure Cost Analysis (`infrastructure-cost-analysis.yml`)
 
 **Triggers:**
-- Pull requests that modify `movoz-infra/` files
+- Pull requests that modify `infra/terraform/` files
 - Pushes to main/master branch with infrastructure changes
 
 **Features:**
@@ -83,7 +83,7 @@ INFRACOST_API_KEY=your-infracost-api-key
 
 ### 3. Test the Workflows
 
-Create a pull request that modifies files in `movoz-infra/` to trigger the cost analysis workflow.
+Create a pull request that modifies files in `infra/terraform/` to trigger the cost analysis workflow.
 
 ## 📊 Cost Analysis Features
 
@@ -130,7 +130,7 @@ Create a pull request that modifies files in `movoz-infra/` to trigger the cost 
 ## 🔧 Customization
 
 ### Environment Configuration
-Modify `movoz-infra/environments/*/terraform.tfvars` to customize:
+Modify `infra/terraform/environments/*/terraform.tfvars` to customize:
 - Instance sizes
 - Storage amounts
 - Backup retention

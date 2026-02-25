@@ -16,7 +16,7 @@ This project deploys a PostgreSQL database on AWS RDS with the following compone
 ## 📁 Project Structure
 
 ```
-movoz-infra/
+infra/terraform/
 ├── environments/
 │   ├── dev/                    # Development environment config
 │   │   └── terraform.tfvars

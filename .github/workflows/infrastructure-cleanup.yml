@@ -47,7 +47,7 @@ jobs:
 
       - name: Cleanup dev environment
         run: |
-          cd movoz-infra
+          cd infra/terraform
           
           # Set environment variables
           export TF_VAR_environment=dev
@@ -111,7 +111,7 @@ jobs:
 
       - name: Cleanup prod environment
         run: |
-          cd movoz-infra
+          cd infra/terraform
           
           # Set environment variables
           export TF_VAR_environment=prod
