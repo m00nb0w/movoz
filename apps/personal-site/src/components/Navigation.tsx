@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { ThemeToggle } from "@movoz/theme";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { IconButton, Container, Stack } from "@movoz/ui-web";
 
 const navLinks = [
   { href: "#projects", label: "Projects" },
@@ -25,7 +26,7 @@ export function Navigation() {
         </a>
 
         {/* Desktop Navigation - Centered */}
-        <div className="hidden md:flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
+        <Stack direction="horizontal" gap={2} className="hidden md:flex absolute left-1/2 -translate-x-1/2">
           {navLinks.map((link) => (
             <a
               key={link.href}
@@ -35,7 +36,7 @@ export function Navigation() {
               {link.label}
             </a>
           ))}
-        </div>
+        </Stack>
 
         {/* Right side - Theme Toggle */}
         <div className="hidden md:flex items-center">
@@ -43,26 +44,26 @@ export function Navigation() {
         </div>
 
         {/* Mobile Menu Button */}
-        <div className="flex md:hidden items-center gap-1">
+        <Stack direction="horizontal" gap={1} className="flex md:hidden" align="center">
           <ThemeToggle />
-          <button
+          <IconButton
+            icon={
+              isOpen ? (
+                <X className="w-5 h-5 text-zen-text" />
+              ) : (
+                <Menu className="w-5 h-5 text-zen-text" />
+              )
+            }
+            label="Toggle menu"
             onClick={() => setIsOpen(!isOpen)}
-            className="p-2 rounded-lg hover:bg-zen-subtle transition-colors"
-            aria-label="Toggle menu"
-          >
-            {isOpen ? (
-              <X className="w-5 h-5 text-zen-text" />
-            ) : (
-              <Menu className="w-5 h-5 text-zen-text" />
-            )}
-          </button>
-        </div>
+          />
+        </Stack>
       </nav>
 
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden bg-zen-bg border-t border-zen-border">
-          <div className="px-4 py-3 space-y-1">
+          <Stack gap={1} className="px-4 py-3">
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -73,7 +74,7 @@ export function Navigation() {
                 {link.label}
               </a>
             ))}
-          </div>
+          </Stack>
         </div>
       )}
     </header>

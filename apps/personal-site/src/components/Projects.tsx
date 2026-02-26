@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Text, Container, Stack } from "@movoz/ui-web";
 
 interface Project {
   id: string;
@@ -50,25 +51,30 @@ export function Projects() {
 
   return (
     <section id="projects" className="py-32 px-6 overflow-hidden">
-      <div className="max-w-6xl mx-auto">
+      <Container>
         {/* Header */}
         <div className="mb-10 max-w-2xl">
-          <h2 className="font-serif text-[2rem] md:text-[3rem] lg:text-[4rem] font-bold text-zen-text mb-4 leading-[1.05] tracking-[-0.02em] whitespace-nowrap">
+          <Text
+            as="h2"
+            font="serif"
+            weight="bold"
+            className="text-[2rem] md:text-[3rem] lg:text-[4rem] mb-4 leading-[1.05] tracking-[-0.02em] whitespace-nowrap"
+          >
             Introducing the citizens
-          </h2>
-          <p className="text-zen-text text-base md:text-[1.1rem] leading-[1.6] font-normal">
+          </Text>
+          <Text className="md:text-[1.1rem] leading-[1.6]">
             Zen is packed with features that help you stay productive
             <br className="hidden md:block" />
             and focused. Browsers should be tools that help you get
             <br className="hidden md:block" />
             things done, not distractions that keep you from your work.
-          </p>
+          </Text>
         </div>
 
         {/* Content Grid */}
         <div className="grid lg:grid-cols-[1fr,1.2fr] gap-8 lg:gap-6 items-start">
           {/* Left - Project List */}
-          <div className="space-y-4">
+          <Stack gap={4}>
             {projects.map((project) => (
               <button
                 key={project.id}
@@ -79,15 +85,19 @@ export function Projects() {
                     : "border-l-transparent hover:bg-zen-subtle/50"
                 }`}
               >
-                <h3 className="font-bold text-[1.4rem] md:text-[1.6rem] text-zen-text mb-1 leading-tight">
+                <Text
+                  as="h3"
+                  weight="bold"
+                  className="text-[1.4rem] md:text-[1.6rem] mb-1 leading-tight"
+                >
                   {project.title}
-                </h3>
-                <p className="text-zen-text text-[0.95rem] md:text-base leading-[1.5] font-normal">
+                </Text>
+                <Text className="text-[0.95rem] md:text-base leading-[1.5]">
                   {project.description}
-                </p>
+                </Text>
               </button>
             ))}
-          </div>
+          </Stack>
 
           {/* Right - Media Display */}
           <div className="relative lg:ml-4">
@@ -112,13 +122,15 @@ export function Projects() {
                 )
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-white/60">
-                  <span className="text-lg">Video/Image placeholder</span>
+                  <Text as="span" size="lg">
+                    Video/Image placeholder
+                  </Text>
                 </div>
               )}
             </div>
           </div>
         </div>
-      </div>
+      </Container>
     </section>
   );
 }
