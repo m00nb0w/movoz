@@ -1,6 +1,14 @@
 "use client";
 
 import { Mail, MapPin, Send, Github, Linkedin, Twitter } from "lucide-react";
+import {
+  Button,
+  Input,
+  IconButton,
+  Text,
+  Stack,
+  Container,
+} from "@movoz/ui-web";
 
 const socialLinks = [
   { icon: Github, href: "https://github.com", label: "GitHub" },
@@ -11,28 +19,33 @@ const socialLinks = [
 export function Contact() {
   return (
     <section id="contact" className="py-32 px-6">
-      <div className="max-w-6xl mx-auto">
+      <Container>
         {/* Header */}
         <div className="mb-12 max-w-2xl">
-          <h2 className="font-serif text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] font-bold text-zen-text mb-4 leading-[1.05] tracking-[-0.02em]">
+          <Text
+            as="h2"
+            font="serif"
+            weight="bold"
+            className="text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] leading-[1.05] tracking-[-0.02em] mb-4"
+          >
             Get in touch
-          </h2>
-          <p className="text-zen-text text-base md:text-[1.1rem] leading-[1.6] font-normal">
+          </Text>
+          <Text size="base" className="md:text-[1.1rem] leading-[1.6]">
             Have a project in mind or just want to chat?
             <br className="hidden md:block" />
             I&apos;d love to hear from you.
-          </p>
+          </Text>
         </div>
 
         {/* Content Grid */}
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
           {/* Left - Contact Info */}
-          <div className="space-y-8">
+          <Stack gap={8}>
             <div>
-              <h3 className="font-bold text-[1.4rem] md:text-[1.6rem] text-zen-text mb-4 leading-tight">
+              <Text as="h3" weight="bold" className="text-[1.4rem] md:text-[1.6rem] mb-4 leading-tight">
                 Contact
-              </h3>
-              <div className="space-y-4">
+              </Text>
+              <Stack gap={4}>
                 <div className="flex items-center gap-4">
                   <Mail className="w-5 h-5 text-zen-text" strokeWidth={1.5} />
                   <a
@@ -44,97 +57,74 @@ export function Contact() {
                 </div>
                 <div className="flex items-center gap-4">
                   <MapPin className="w-5 h-5 text-zen-text" strokeWidth={1.5} />
-                  <span className="text-zen-text text-base">San Francisco, CA</span>
+                  <Text as="span">San Francisco, CA</Text>
                 </div>
-              </div>
+              </Stack>
             </div>
 
             <div>
-              <h3 className="font-bold text-[1.4rem] md:text-[1.6rem] text-zen-text mb-4 leading-tight">
+              <Text as="h3" weight="bold" className="text-[1.4rem] md:text-[1.6rem] mb-4 leading-tight">
                 Connect
-              </h3>
-              <div className="flex gap-4">
+              </Text>
+              <Stack direction="horizontal" gap={4}>
                 {socialLinks.map((link) => (
                   <a
                     key={link.label}
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-3 bg-zen-subtle rounded-lg hover:bg-zen-text hover:text-zen-bg transition-all duration-200"
-                    aria-label={link.label}
                   >
-                    <link.icon className="w-5 h-5" />
+                    <IconButton
+                      icon={<link.icon className="w-5 h-5" />}
+                      variant="secondary"
+                      label={link.label}
+                    />
                   </a>
                 ))}
-              </div>
+              </Stack>
             </div>
-          </div>
+          </Stack>
 
           {/* Right - Contact Form */}
           <div>
-            <h3 className="font-bold text-[1.4rem] md:text-[1.6rem] text-zen-text mb-6 leading-tight">
+            <Text as="h3" weight="bold" className="text-[1.4rem] md:text-[1.6rem] mb-6 leading-tight">
               Send a message
-            </h3>
-            <form className="space-y-5">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block font-semibold text-zen-text text-base mb-2"
-                >
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  className="w-full px-4 py-3 bg-zen-subtle border border-zen-border rounded-lg focus:outline-none focus:ring-2 focus:ring-zen-text/20 focus:border-zen-text text-zen-text placeholder-zen-muted text-base transition-all"
-                  placeholder="Your name"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block font-semibold text-zen-text text-base mb-2"
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
+            </Text>
+            <form>
+              <Stack gap={5}>
+                <Input label="Name" name="name" placeholder="Your name" />
+                <Input
+                  label="Email"
                   name="email"
-                  className="w-full px-4 py-3 bg-zen-subtle border border-zen-border rounded-lg focus:outline-none focus:ring-2 focus:ring-zen-text/20 focus:border-zen-text text-zen-text placeholder-zen-muted text-base transition-all"
+                  type="email"
                   placeholder="your@email.com"
                 />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="message"
-                  className="block font-semibold text-zen-text text-base mb-2"
+                <div className="w-full">
+                  <label
+                    htmlFor="message"
+                    className="block font-semibold text-zen-text text-base mb-2"
+                  >
+                    Message
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows={5}
+                    className="w-full px-4 py-3 bg-zen-subtle border border-zen-border rounded-lg focus:outline-none focus:ring-2 focus:ring-zen-text/20 focus:border-zen-text text-zen-text placeholder-zen-muted resize-none text-base transition-all"
+                    placeholder="Your message..."
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  iconRight={<Send className="w-4 h-4" />}
                 >
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows={5}
-                  className="w-full px-4 py-3 bg-zen-subtle border border-zen-border rounded-lg focus:outline-none focus:ring-2 focus:ring-zen-text/20 focus:border-zen-text text-zen-text placeholder-zen-muted resize-none text-base transition-all"
-                  placeholder="Your message..."
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-zen-text text-zen-bg text-base font-medium rounded-lg hover:opacity-90 transition-opacity duration-200"
-              >
-                Send Message
-                <Send className="w-4 h-4" />
-              </button>
+                  Send Message
+                </Button>
+              </Stack>
             </form>
           </div>
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

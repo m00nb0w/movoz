@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "main": "index.ts",
+  "dependencies": {
+    "@movoz/tokens": "workspace:*"
+  },
   "devDependencies": {
     "tailwindcss": "^3.4.4"
   }

@@ -1,20 +1,17 @@
 import type { Config } from "tailwindcss";
+import { palette, fontFamilies, keyframes, animations } from "@movoz/tokens";
 
 const config: Partial<Config> = {
   darkMode: "class",
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Rubik", "system-ui", "sans-serif"],
-        serif: ["Libre Baskerville", "Georgia", "serif"],
-        ui: ["Inter", "system-ui", "sans-serif"],
+        sans: [...fontFamilies.sans],
+        serif: [...fontFamilies.serif],
+        ui: [...fontFamilies.ui],
       },
       colors: {
-        accent: {
-          DEFAULT: "#d4775c",
-          light: "#e08a70",
-          dark: "#c46448",
-        },
+        accent: { ...palette.accent },
         paper: "var(--zen-paper)",
         zen: {
           subtle: "var(--zen-subtle)",
@@ -24,25 +21,8 @@ const config: Partial<Config> = {
           border: "var(--zen-border)",
         },
       },
-      animation: {
-        "fade-in": "fadeIn 0.6s ease-out forwards",
-        "slide-up": "slideUp 0.6s ease-out forwards",
-        "slide-in-right": "slideInRight 0.6s ease-out forwards",
-      },
-      keyframes: {
-        fadeIn: {
-          "0%": { opacity: "0" },
-          "100%": { opacity: "1" },
-        },
-        slideUp: {
-          "0%": { opacity: "0", transform: "translateY(20px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
-        },
-        slideInRight: {
-          "0%": { opacity: "0", transform: "translateX(-20px)" },
-          "100%": { opacity: "1", transform: "translateX(0)" },
-        },
-      },
+      animation: { ...animations },
+      keyframes: { ...keyframes },
     },
   },
 };
