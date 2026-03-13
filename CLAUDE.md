@@ -4,23 +4,56 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-Monorepo using pnpm workspaces + Turborepo for frontend apps, with backend and infra projects organized by section.
+Personal monorepo using pnpm workspaces + Turborepo. Follows **spec-driven development** — every non-trivial feature or change starts with a spec in `wiki/` before implementation begins.
 
-**Frontend apps** (in `apps/`):
+### Directory Structure
+
+```
+movoz/
+├── apps/           # Frontend applications (web, mobile)
+├── packages/       # Shared frontend packages (config, theme, UI)
+├── backend/        # Backend services (APIs, CLIs)
+├── infra/          # Infrastructure (Terraform, Docker, Nginx, CI/CD)
+├── wiki/           # Knowledge base — specs, technical docs, templates (single source of truth)
+└── resources/      # Static assets and resources
+```
+
+### apps/ — Frontend Applications
 - **apps/personal-site/** — Next.js 14 portfolio website (default zone at `/`)
+- **apps/travel-quokka/** — Travel map, marathon tracker, and trip journal (planned)
+- **apps/octopus/** — Second brain — personal knowledge management (planned)
 
-**Shared packages** (in `packages/`):
+### packages/ — Shared Frontend Packages
 - **packages/tailwind-config/** — Shared Tailwind CSS preset (`@movoz/tailwind-config`)
 - **packages/theme/** — ThemeProvider, ThemeToggle, CSS variables (`@movoz/theme`)
 - **packages/tsconfig/** — Shared TypeScript base config (`@movoz/tsconfig`)
 
-**Backend** (in `backend/`):
-- **backend/drunken-dolphin/** — Rust CLI for personal fitness tracking
-- **backend/hustle-turtle/** — Go REST API with Gin framework and PostgreSQL
+### backend/ — Backend Services
+- **backend/drunken-dolphin/** — Rust personal assistant — finance (expenses, investments) and research
+- **backend/hustle-turtle/** — Go REST API for habit tracking (push ups, reading, running)
+- **backend/peaky-bergers/** — AI software team — agents that help build stuff (planned)
 
-**Infrastructure** (in `infra/`):
+### infra/ — Infrastructure
 - **infra/terraform/** — Terraform (AWS) infrastructure for database deployment
 - **infra/docker-compose.yml** + **infra/nginx/** — Nginx reverse proxy + Docker Compose for multi-zone deployment
+- **infra/lonely-moley/** — Personal homelab — self-hosted K8s, CI/CD, databases (planned)
+- **.github/workflows/** — CI/CD pipelines (GitHub Actions)
+
+### wiki/ — Knowledge Base (Single Source of Truth)
+- **wiki/technical/** — Architecture docs, design tokens, component specs, technical design templates
+- **wiki/specs/** — Product specs, feature specs
+- Templates: 1:3:1 decision writeups, bug fix analyses, product specs, technical designs
+
+## Spec-Driven Development
+
+All non-trivial work follows this flow:
+
+1. **Spec first** — Write or update a spec in `wiki/` before writing code. Specs define the what and why.
+2. **Review spec** — Validate the spec covers requirements, edge cases, and acceptance criteria.
+3. **Implement** — Build against the spec. The spec is the contract.
+4. **Update wiki** — After implementation, update relevant wiki docs (architecture, component specs, etc.) to reflect the current state.
+
+When starting new work, always check `wiki/` for existing specs and context.
 
 ## Build & Development Commands
 
@@ -104,7 +137,7 @@ All frontend apps should use `@movoz/tailwind-config` as a Tailwind preset and `
 
 ## CI/CD (GitHub Actions)
 
-Workflows in `.github/workflows/` focus on infrastructure:
+Workflows in `.github/workflows/`:
 - **infrastructure-deploy.yml** — Terraform plan/apply on push to master (infra/terraform/ changes)
 - **infrastructure-cost-analysis.yml** — Infracost analysis on PRs affecting infrastructure
 - **infrastructure-cleanup.yml** — Weekly auto-destroy of dev resources (Sundays 2 AM UTC)
@@ -112,3 +145,4 @@ Workflows in `.github/workflows/` focus on infrastructure:
 ## Workflow Preferences
 
 - Always commit and push changes at the end of a plan execution.
+- Spec before code — check `wiki/` for existing context before starting any feature work.
