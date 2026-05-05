@@ -1,0 +1,28 @@
+[project]
+name = "outlook-google-sync"
+version = "0.1.0"
+description = "One-way sync from macOS Calendar (Outlook) to Google Calendar"
+requires-python = ">=3.12"
+dependencies = [
+    "pyobjc-framework-EventKit>=10.0",
+    "google-api-python-client>=2.140",
+    "google-auth-oauthlib>=1.2",
+    "google-auth-httplib2>=0.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-mock>=3.12",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sync"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
