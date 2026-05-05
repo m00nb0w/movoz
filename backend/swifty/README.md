@@ -8,7 +8,7 @@ Design: `docs/superpowers/specs/2026-04-30-outlook-google-calendar-sync-design.m
 
 - Title + start + end only. No body, attendees, location.
 - All-day events skipped.
-- OOO events skipped (availability=Unavailable, or title matching `OOO|OOF|out of office|vacation|PTO|on leave|holiday`).
+- OOO events skipped (availability=Unavailable, or title matching `OOO|OOF|out of office|vacation|PTO|on leave|holiday|maker blocks`).
 - Recurring events flattened: one mirrored event per occurrence.
 - Window: past 7 days through future 30 days.
 

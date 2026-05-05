@@ -19,6 +19,8 @@ from sync.filters import is_ooo
         ("PTO", "Busy", True),
         ("On Leave", "Busy", True),
         ("Company Holiday", "Busy", True),
+        ("Maker Blocks", "Busy", True),
+        ("maker blocks", "Busy", True),
         # Should NOT match — substrings inside other words
         ("Booking review", "Busy", False),     # contains "boo" not OOO
         ("Approved decisions", "Busy", False),

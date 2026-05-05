@@ -11,7 +11,7 @@ unified view.
 import re
 
 OOO_TITLE_RE = re.compile(
-    r"\b(OOO|OOF|out\s*of\s*office|vacation|PTO|on\s*leave|holiday)\b",
+    r"\b(OOO|OOF|out\s*of\s*office|vacation|PTO|on\s*leave|holiday|maker\s*blocks)\b",
     re.IGNORECASE,
 )
 

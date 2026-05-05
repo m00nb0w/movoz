@@ -396,6 +396,8 @@ from sync.filters import is_ooo
         ("PTO", "Busy", True),
         ("On Leave", "Busy", True),
         ("Company Holiday", "Busy", True),
+        ("Maker Blocks", "Busy", True),
+        ("maker blocks", "Busy", True),
         # Should NOT match — substrings inside other words
         ("Booking review", "Busy", False),     # contains "boo" not OOO
         ("Approved decisions", "Busy", False),
@@ -442,7 +444,7 @@ unified view.
 import re
 
 OOO_TITLE_RE = re.compile(
-    r"\b(OOO|OOF|out\s*of\s*office|vacation|PTO|on\s*leave|holiday)\b",
+    r"\b(OOO|OOF|out\s*of\s*office|vacation|PTO|on\s*leave|holiday|maker\s*blocks)\b",
     re.IGNORECASE,
 )
 

@@ -93,7 +93,7 @@ An event is skipped if any of:
 
 - It is an all-day event (`EKEvent.isAllDay() == true`)
 - `availability == Unavailable` (Exchange's "Out of Office" maps to this in EventKit)
-- `title` matches the case-insensitive regex: `\b(OOO|OOF|out\s*of\s*office|vacation|PTO|on\s*leave|holiday)\b`
+- `title` matches the case-insensitive regex: `\b(OOO|OOF|out\s*of\s*office|vacation|PTO|on\s*leave|holiday|maker\s*blocks)\b`
 
 This applies regardless of organizer. The user's own OOO blocks are intentionally also skipped — they don't need to appear in the unified view.
 
