@@ -43,6 +43,7 @@ movoz/
 - **wiki/technical/** — Architecture docs, design tokens, component specs, technical design templates
 - **wiki/specs/** — Product specs, feature specs
 - Templates: 1:3:1 decision writeups, bug fix analyses, product specs, technical designs
+- Spec Kit (`/speckit-*`) writes the product spec to `wiki/specs/<feature>/spec.md` and all engineering artifacts (`plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`, `tasks.md`) to `wiki/technical/<feature>/`.
 
 ## Spec-Driven Development
 
@@ -146,3 +147,8 @@ Workflows in `.github/workflows/`:
 
 - Always commit and push changes at the end of a plan execution.
 - Spec before code — check `wiki/` for existing context before starting any feature work.
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->
