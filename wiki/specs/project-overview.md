@@ -14,12 +14,13 @@ Movoz is a personal monorepo — a collection of small, independent projects bui
 
 | Project | Location | Stack | Status | Description |
 |---------|----------|-------|--------|-------------|
-| Drunken Dolphin | `backend/drunken-dolphin/` | Rust | Active | Personal assistant — finance management (expenses, investments) and research |
+| Drunken Dolphin | `backend/drunken-dolphin/` | OpenClaw | Active | Personal assistant — finance management (expenses, investments) and research |
 | Peaky Bergers | `backend/peaky-bergers/` | TBD | Planned | AI software team — agents that help build stuff |
 | Hustle Turtle | `backend/hustle-turtle/` | Go | Active | Habit tracker — push ups, reading, running, and more |
 | Lonely Moley | `infra/lonely-moley/` | K8s, Terraform, Ansible | Planned | Personal homelab — self-hosted cloud infrastructure |
 | Travel Quokka | `apps/travel-quokka/` | Next.js | Planned | Travel map — countries visited, Vietnam districts, marathons, trip memories |
 | Óctopus | `apps/octopus/` | Next.js | Planned | Second brain — personal knowledge management and note-taking |
+| Oncarinho | `apps/oncarinho/`, `backend/oncarinho/` | Next.js + Go | Planned | Football team stats tracker — goals, assists, cards, leaderboards |
 
 ## Project Details
 
@@ -58,6 +59,12 @@ Movoz is a personal monorepo — a collection of small, independent projects bui
 - **Target users**: Personal use (To Ngoc Long)
 - **Key features**: Note-taking, knowledge graph, bidirectional linking, search
 - **Spec**: [wiki/specs/octopus.md](./octopus.md)
+
+### Oncarinho
+- **Purpose**: Football team stats tracker
+- **Target users**: Team admin (data entry) + team/public (viewing)
+- **Key features**: Matchday stat entry (goals, assists, cards), year and all-time leaderboards, player profiles
+- **Spec**: [wiki/specs/oncarinho.md](./oncarinho.md)
 
 ## Shared Infrastructure
 
