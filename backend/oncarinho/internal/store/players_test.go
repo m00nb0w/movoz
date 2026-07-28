@@ -76,6 +76,31 @@ func TestPlayerStoreDeactivate(t *testing.T) {
 		t.Fatalf("expected no active players, got %+v", active)
 	}
 
+	exists, err := s.Exists(created.ID)
+	if err != nil {
+		t.Fatalf("Exists failed: %v", err)
+	}
+	if !exists {
+		t.Fatal("expected deactivated player row to still exist (soft delete, not hard delete)")
+	}
+
+	all, err := s.List(false)
+	if err != nil {
+		t.Fatalf("List(false) failed: %v", err)
+	}
+	found := false
+	for _, p := range all {
+		if p.ID == created.ID {
+			found = true
+			if p.IsActive {
+				t.Fatalf("expected deactivated player to have IsActive=false, got %+v", p)
+			}
+		}
+	}
+	if !found {
+		t.Fatalf("expected deactivated player to still be present in List(false), got %+v", all)
+	}
+
 	ok, err = s.Deactivate(99999)
 	if err != nil {
 		t.Fatalf("Deactivate for missing id returned error: %v", err)

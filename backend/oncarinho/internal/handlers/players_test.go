@@ -121,3 +121,15 @@ func TestPlayerHandlerDeactivate(t *testing.T) {
 		t.Fatalf("expected 204, got %d", w.Code)
 	}
 }
+
+func TestPlayerHandlerDeactivateNotFound(t *testing.T) {
+	r, _ := setupPlayerTestRouter(t)
+
+	req := httptest.NewRequest(http.MethodDelete, "/api/players/99999", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", w.Code)
+	}
+}
