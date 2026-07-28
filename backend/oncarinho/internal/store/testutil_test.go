@@ -27,7 +27,7 @@ func setupTestDB(t *testing.T) *sql.DB {
 
 func truncateAll(t *testing.T, db *sql.DB) {
 	t.Helper()
-	if _, err := db.Exec("TRUNCATE matchdays, players RESTART IDENTITY CASCADE"); err != nil {
+	if _, err := db.Exec("TRUNCATE match_stats, matchdays, players RESTART IDENTITY CASCADE"); err != nil {
 		t.Fatalf("failed to truncate tables: %v", err)
 	}
 }
