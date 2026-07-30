@@ -64,6 +64,32 @@ func TestProfileHandlerGet(t *testing.T) {
 	}
 }
 
+func TestProfileHandlerGetDeactivatedPlayer(t *testing.T) {
+	r, playerStore := setupProfileTestRouter(t)
+	player, _ := playerStore.Create("Alex", nil)
+
+	if ok, err := playerStore.Deactivate(player.ID); err != nil || !ok {
+		t.Fatalf("Deactivate failed: ok=%v err=%v", ok, err)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/api/players/"+strconv.Itoa(player.ID), nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200 for deactivated player, got %d: %s", w.Code, w.Body.String())
+	}
+
+	var profile models.PlayerProfile
+	json.Unmarshal(w.Body.Bytes(), &profile)
+	if profile.Player.Name != "Alex" {
+		t.Fatalf("unexpected profile: %+v", profile)
+	}
+	if profile.Player.IsActive {
+		t.Fatalf("expected player to be inactive, got %+v", profile.Player)
+	}
+}
+
 func TestProfileHandlerNotFound(t *testing.T) {
 	r, _ := setupProfileTestRouter(t)
 
