@@ -1,0 +1,54 @@
+package handlers
+
+import (
+	"net/http"
+	"time"
+
+	"oncarinho/internal/auth"
+
+	"github.com/gin-gonic/gin"
+)
+
+const sessionCookieName = "admin_session"
+const sessionMaxAge = 24 * time.Hour
+
+type AuthHandler struct {
+	adminPassword string
+	sessionSecret string
+}
+
+func NewAuthHandler(adminPassword, sessionSecret string) *AuthHandler {
+	return &AuthHandler{adminPassword: adminPassword, sessionSecret: sessionSecret}
+}
+
+type loginRequest struct {
+	Password string `json:"password" binding:"required"`
+}
+
+func (h *AuthHandler) Login(c *gin.Context) {
+	var req loginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "password is required"})
+		return
+	}
+
+	if req.Password != h.adminPassword {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid password"})
+		return
+	}
+
+	token := auth.NewSessionToken(h.sessionSecret, time.Now())
+	c.SetCookie(sessionCookieName, token, int(sessionMaxAge.Seconds()), "/", "", false, true)
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+func RequireAdmin(sessionSecret string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		cookie, err := c.Cookie(sessionCookieName)
+		if err != nil || !auth.ValidateSessionToken(sessionSecret, cookie, time.Now()) {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
+		}
+		c.Next()
+	}
+}
