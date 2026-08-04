@@ -7,9 +7,8 @@ import (
 
 	"oncarinho/internal/config"
 	"oncarinho/internal/database"
-	"oncarinho/internal/handlers"
 
-	"github.com/gin-gonic/gin"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -59,15 +58,17 @@ func main() {
 		}
 	}
 
+	if cfg.AdminPassword == "" || cfg.SessionSecret == "" {
+		log.Fatal("ADMIN_PASSWORD and SESSION_SECRET must be set")
+	}
+
 	db, err := database.Connect(cfg.DatabaseURL)
 	if err != nil {
 		log.Fatalf("could not connect to database: %v", err)
 	}
 	defer db.Close()
 
-	r := gin.Default()
-	healthHandler := handlers.NewHealthHandler()
-	r.GET("/health", healthHandler.HealthCheck)
+	r := buildRouter(db, cfg)
 
 	port := ":" + cfg.Port
 	log.Printf("starting server on port %s", cfg.Port)
