@@ -43,6 +43,7 @@ func setupPlayerTestRouter(t *testing.T) (*gin.Engine, *store.PlayerStore) {
 	r.POST("/api/players", h.Create)
 	r.PUT("/api/players/:id", h.Update)
 	r.DELETE("/api/players/:id", h.Deactivate)
+	r.POST("/api/players/:id/reactivate", h.Reactivate)
 
 	return r, playerStore
 }
@@ -126,6 +127,59 @@ func TestPlayerHandlerDeactivateNotFound(t *testing.T) {
 	r, _ := setupPlayerTestRouter(t)
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/players/99999", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", w.Code)
+	}
+}
+
+func TestPlayerHandlerListActiveAll(t *testing.T) {
+	r, playerStore := setupPlayerTestRouter(t)
+
+	active, _ := playerStore.Create("Alex", nil)
+	inactive, _ := playerStore.Create("Sam", nil)
+	playerStore.Deactivate(inactive.ID)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/players", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	var activeOnly []models.Player
+	json.Unmarshal(w.Body.Bytes(), &activeOnly)
+	if len(activeOnly) != 1 || activeOnly[0].ID != active.ID {
+		t.Fatalf("expected only active player by default, got %+v", activeOnly)
+	}
+
+	req = httptest.NewRequest(http.MethodGet, "/api/players?active=all", nil)
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	var all []models.Player
+	json.Unmarshal(w.Body.Bytes(), &all)
+	if len(all) != 2 {
+		t.Fatalf("expected both players with active=all, got %+v", all)
+	}
+}
+
+func TestPlayerHandlerReactivate(t *testing.T) {
+	r, playerStore := setupPlayerTestRouter(t)
+
+	created, _ := playerStore.Create("Alex", nil)
+	playerStore.Deactivate(created.ID)
+
+	req := httptest.NewRequest(http.MethodPost, "/api/players/"+strconv.Itoa(created.ID)+"/reactivate", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("expected 204, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+func TestPlayerHandlerReactivateNotFound(t *testing.T) {
+	r, _ := setupPlayerTestRouter(t)
+
+	req := httptest.NewRequest(http.MethodPost, "/api/players/99999/reactivate", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 

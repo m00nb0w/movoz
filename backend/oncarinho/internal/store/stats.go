@@ -62,3 +62,18 @@ func (s *StatStore) ListByMatchday(matchdayID int) ([]models.MatchStat, error) {
 	}
 	return stats, rows.Err()
 }
+
+func (s *StatStore) Delete(matchdayID, playerID int) (bool, error) {
+	res, err := s.db.Exec(
+		"DELETE FROM match_stats WHERE matchday_id = $1 AND player_id = $2",
+		matchdayID, playerID,
+	)
+	if err != nil {
+		return false, err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	return n > 0, nil
+}

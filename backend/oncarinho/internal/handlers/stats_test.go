@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"oncarinho/internal/models"
 	"oncarinho/internal/store"
 
 	"github.com/gin-gonic/gin"
@@ -52,6 +53,8 @@ func setupStatTestRouter(t *testing.T) (*gin.Engine, *store.PlayerStore, *store.
 	r := gin.New()
 	h := NewStatHandler(statStore, matchdayStore, playerStore)
 	r.PUT("/api/matchdays/:id/stats", h.UpsertStats)
+	r.GET("/api/matchdays/:id/stats", h.GetStats)
+	r.DELETE("/api/matchdays/:id/stats/:playerId", h.DeleteStat)
 
 	return r, playerStore, matchdayStore
 }
@@ -108,5 +111,81 @@ func TestStatHandlerUnknownPlayer(t *testing.T) {
 
 	if w.Code != http.StatusBadRequest {
 		t.Fatalf("expected 400, got %d", w.Code)
+	}
+}
+
+func TestStatHandlerGetStats(t *testing.T) {
+	r, playerStore, matchdayStore := setupStatTestRouter(t)
+
+	player, _ := playerStore.Create("Alex", nil)
+	matchday, _ := matchdayStore.Create(mustParseDate(t, "2026-03-15"))
+
+	body, _ := json.Marshal(map[string]interface{}{
+		"entries": []map[string]int{{"player_id": player.ID, "goals": 2}},
+	})
+	req := httptest.NewRequest(http.MethodPut, "/api/matchdays/"+strconv.Itoa(matchday.ID)+"/stats", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(httptest.NewRecorder(), req)
+
+	req = httptest.NewRequest(http.MethodGet, "/api/matchdays/"+strconv.Itoa(matchday.ID)+"/stats", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	var stats []models.MatchStat
+	json.Unmarshal(w.Body.Bytes(), &stats)
+	if len(stats) != 1 || stats[0].Goals != 2 {
+		t.Fatalf("unexpected stats: %+v", stats)
+	}
+}
+
+func TestStatHandlerGetStatsUnknownMatchday(t *testing.T) {
+	r, _, _ := setupStatTestRouter(t)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/matchdays/99999/stats", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", w.Code)
+	}
+}
+
+func TestStatHandlerDeleteStat(t *testing.T) {
+	r, playerStore, matchdayStore := setupStatTestRouter(t)
+
+	player, _ := playerStore.Create("Alex", nil)
+	matchday, _ := matchdayStore.Create(mustParseDate(t, "2026-03-15"))
+
+	body, _ := json.Marshal(map[string]interface{}{
+		"entries": []map[string]int{{"player_id": player.ID, "goals": 2}},
+	})
+	req := httptest.NewRequest(http.MethodPut, "/api/matchdays/"+strconv.Itoa(matchday.ID)+"/stats", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(httptest.NewRecorder(), req)
+
+	req = httptest.NewRequest(http.MethodDelete, "/api/matchdays/"+strconv.Itoa(matchday.ID)+"/stats/"+strconv.Itoa(player.ID), nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("expected 204, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+func TestStatHandlerDeleteStatNotFound(t *testing.T) {
+	r, playerStore, matchdayStore := setupStatTestRouter(t)
+
+	player, _ := playerStore.Create("Alex", nil)
+	matchday, _ := matchdayStore.Create(mustParseDate(t, "2026-03-15"))
+
+	req := httptest.NewRequest(http.MethodDelete, "/api/matchdays/"+strconv.Itoa(matchday.ID)+"/stats/"+strconv.Itoa(player.ID), nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", w.Code)
 	}
 }

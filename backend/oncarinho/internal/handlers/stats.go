@@ -71,3 +71,52 @@ func (h *StatHandler) UpsertStats(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, stats)
 }
+
+func (h *StatHandler) GetStats(c *gin.Context) {
+	matchdayID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid matchday id"})
+		return
+	}
+
+	exists, err := h.matchdayStore.Exists(matchdayID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to look up matchday"})
+		return
+	}
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "matchday not found"})
+		return
+	}
+
+	stats, err := h.statStore.ListByMatchday(matchdayID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to load stats"})
+		return
+	}
+	c.JSON(http.StatusOK, stats)
+}
+
+func (h *StatHandler) DeleteStat(c *gin.Context) {
+	matchdayID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid matchday id"})
+		return
+	}
+	playerID, err := strconv.Atoi(c.Param("playerId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid player id"})
+		return
+	}
+
+	ok, err := h.statStore.Delete(matchdayID, playerID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete stat"})
+		return
+	}
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "stat not found"})
+		return
+	}
+	c.Status(http.StatusNoContent)
+}

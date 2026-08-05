@@ -110,6 +110,39 @@ func TestPlayerStoreDeactivate(t *testing.T) {
 	}
 }
 
+func TestPlayerStoreReactivate(t *testing.T) {
+	db := setupTestDB(t)
+	truncateAll(t, db)
+	s := NewPlayerStore(db)
+
+	created, _ := s.Create("Alex", nil)
+	s.Deactivate(created.ID)
+
+	ok, err := s.Reactivate(created.ID)
+	if err != nil {
+		t.Fatalf("Reactivate failed: %v", err)
+	}
+	if !ok {
+		t.Fatal("expected Reactivate to report success")
+	}
+
+	active, err := s.List(true)
+	if err != nil {
+		t.Fatalf("List failed: %v", err)
+	}
+	if len(active) != 1 || active[0].ID != created.ID {
+		t.Fatalf("expected reactivated player back in active list, got %+v", active)
+	}
+
+	ok, err = s.Reactivate(99999)
+	if err != nil {
+		t.Fatalf("Reactivate for missing id returned error: %v", err)
+	}
+	if ok {
+		t.Fatal("expected false for missing player")
+	}
+}
+
 func TestPlayerStoreExists(t *testing.T) {
 	db := setupTestDB(t)
 	truncateAll(t, db)

@@ -54,3 +54,40 @@ func TestStatStoreUpsertBulk(t *testing.T) {
 		t.Fatalf("expected updated goals=3 (no duplicate row), got %+v", stats)
 	}
 }
+
+func TestStatStoreDelete(t *testing.T) {
+	db := setupTestDB(t)
+	truncateAll(t, db)
+
+	playerStore := NewPlayerStore(db)
+	matchdayStore := NewMatchdayStore(db)
+	statStore := NewStatStore(db)
+
+	player, _ := playerStore.Create("Alex", nil)
+	matchday, _ := matchdayStore.Create(mustParseDate(t, "2026-03-15"))
+	statStore.UpsertBulk(matchday.ID, []models.StatInput{{PlayerID: player.ID, Goals: 2}})
+
+	ok, err := statStore.Delete(matchday.ID, player.ID)
+	if err != nil {
+		t.Fatalf("Delete failed: %v", err)
+	}
+	if !ok {
+		t.Fatal("expected Delete to report success")
+	}
+
+	stats, err := statStore.ListByMatchday(matchday.ID)
+	if err != nil {
+		t.Fatalf("ListByMatchday failed: %v", err)
+	}
+	if len(stats) != 0 {
+		t.Fatalf("expected no stats after delete, got %+v", stats)
+	}
+
+	ok, err = statStore.Delete(matchday.ID, player.ID)
+	if err != nil {
+		t.Fatalf("Delete for missing row returned error: %v", err)
+	}
+	if ok {
+		t.Fatal("expected false for already-deleted row")
+	}
+}

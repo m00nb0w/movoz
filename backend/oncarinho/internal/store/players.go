@@ -80,6 +80,18 @@ func (s *PlayerStore) Deactivate(id int) (bool, error) {
 	return n > 0, nil
 }
 
+func (s *PlayerStore) Reactivate(id int) (bool, error) {
+	res, err := s.db.Exec("UPDATE players SET is_active = true WHERE id = $1", id)
+	if err != nil {
+		return false, err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	return n > 0, nil
+}
+
 func (s *PlayerStore) Exists(id int) (bool, error) {
 	var exists bool
 	err := s.db.QueryRow("SELECT EXISTS(SELECT 1 FROM players WHERE id = $1)", id).Scan(&exists)

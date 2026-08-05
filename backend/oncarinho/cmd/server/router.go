@@ -37,6 +37,7 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 	r.GET("/api/matchdays", matchdayHandler.List)
 	r.GET("/api/leaderboard", leaderboardHandler.Get)
 	r.GET("/api/summary", summaryHandler.Get)
+	r.GET("/api/matchdays/:id/stats", statHandler.GetStats)
 
 	admin := r.Group("/api")
 	admin.Use(handlers.RequireAdmin(cfg.SessionSecret))
@@ -44,8 +45,10 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 		admin.POST("/players", playerHandler.Create)
 		admin.PUT("/players/:id", playerHandler.Update)
 		admin.DELETE("/players/:id", playerHandler.Deactivate)
+		admin.POST("/players/:id/reactivate", playerHandler.Reactivate)
 		admin.POST("/matchdays", matchdayHandler.Create)
 		admin.PUT("/matchdays/:id/stats", statHandler.UpsertStats)
+		admin.DELETE("/matchdays/:id/stats/:playerId", statHandler.DeleteStat)
 	}
 
 	return r

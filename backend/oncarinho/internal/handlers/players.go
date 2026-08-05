@@ -23,7 +23,8 @@ type playerRequest struct {
 }
 
 func (h *PlayerHandler) List(c *gin.Context) {
-	players, err := h.store.List(true)
+	activeOnly := c.DefaultQuery("active", "true") != "all"
+	players, err := h.store.List(activeOnly)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list players"})
 		return
@@ -81,6 +82,25 @@ func (h *PlayerHandler) Deactivate(c *gin.Context) {
 	ok, err := h.store.Deactivate(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to deactivate player"})
+		return
+	}
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "player not found"})
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+func (h *PlayerHandler) Reactivate(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid player id"})
+		return
+	}
+
+	ok, err := h.store.Reactivate(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to reactivate player"})
 		return
 	}
 	if !ok {
