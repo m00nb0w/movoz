@@ -96,8 +96,8 @@ func TestSummaryHandlerGetDefaultsToCurrentYear(t *testing.T) {
 
 	var summary models.Summary
 	json.Unmarshal(w.Body.Bytes(), &summary)
-	if summary.Year != time.Now().Year() {
-		t.Fatalf("expected default year %d, got %d", time.Now().Year(), summary.Year)
+	if summary.Year != time.Now().UTC().Year() {
+		t.Fatalf("expected default year %d, got %d", time.Now().UTC().Year(), summary.Year)
 	}
 }
 

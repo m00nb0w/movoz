@@ -31,6 +31,7 @@ movoz/
 ### backend/ — Backend Services
 - **backend/drunken-dolphin/** — Rust personal assistant — finance (expenses, investments) and research
 - **backend/hustle-turtle/** — Go REST API for habit tracking (push ups, reading, running)
+- **backend/oncarinho/** — Go REST API for football team stats tracking (players, matchdays, leaderboards)
 - **backend/peaky-bergers/** — AI software team — agents that help build stuff (planned)
 
 ### infra/ — Infrastructure
@@ -80,6 +81,19 @@ go run ./cmd/server -version                 # Check migration version
 ```
 Requires PostgreSQL. Default DATABASE_URL: `postgres://localhost/hustle_turtle?sslmode=disable`
 
+### oncarinho (Go)
+```bash
+cd backend/oncarinho
+go build -o bin/oncarinho ./cmd/server       # Build
+go test ./...                                # Run all tests
+go run ./cmd/server                          # Run server (port 8081)
+go run ./cmd/server -auto-migrate            # Run with auto-migrations
+go run ./cmd/server -migrate=up              # Apply migrations only
+go run ./cmd/server -migrate=down            # Rollback migrations
+go run ./cmd/server -version                 # Check migration version
+```
+Requires PostgreSQL, `ADMIN_PASSWORD`, and `SESSION_SECRET` env vars (the server refuses to start without the latter two). Default DATABASE_URL: `postgres://localhost/oncarinho?sslmode=disable`
+
 ### Frontend (pnpm + Turborepo)
 ```bash
 pnpm install                           # Install all workspace dependencies
@@ -117,6 +131,11 @@ All frontend apps should use `@movoz/tailwind-config` as a Tailwind preset and `
 - `cmd/server/` — Entrypoint with CLI flags for migration control
 - `internal/` — Private code: `config/`, `database/`, `handlers/`, `models/`
 - `pkg/utils/` — Public utility code
+- `migrations/` — SQL migration files (golang-migrate)
+
+### oncarinho — Standard Go Layout
+- `cmd/server/` — Entrypoint + full route wiring (public vs. admin route groups)
+- `internal/` — Private code: `config/`, `database/`, `models/`, `store/` (SQL access), `handlers/`, `auth/` (session tokens)
 - `migrations/` — SQL migration files (golang-migrate)
 
 ### drunken-dolphin — Modular CLI

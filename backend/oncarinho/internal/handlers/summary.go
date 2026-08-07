@@ -19,7 +19,7 @@ func NewSummaryHandler(s *store.SummaryStore) *SummaryHandler {
 }
 
 func (h *SummaryHandler) Get(c *gin.Context) {
-	yearParam := c.DefaultQuery("year", strconv.Itoa(time.Now().Year()))
+	yearParam := c.DefaultQuery("year", strconv.Itoa(time.Now().UTC().Year()))
 	year, err := strconv.Atoi(yearParam)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "year must be a 4-digit year"})

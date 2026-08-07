@@ -38,6 +38,21 @@ func (s *PlayerStore) List(activeOnly bool) ([]models.Player, error) {
 	return players, rows.Err()
 }
 
+func (s *PlayerStore) GetByID(id int) (*models.Player, error) {
+	var p models.Player
+	err := s.db.QueryRow(
+		"SELECT id, name, position, is_active, created_at FROM players WHERE id = $1",
+		id,
+	).Scan(&p.ID, &p.Name, &p.Position, &p.IsActive, &p.CreatedAt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &p, nil
+}
+
 func (s *PlayerStore) Create(name string, position *string) (*models.Player, error) {
 	var p models.Player
 	err := s.db.QueryRow(

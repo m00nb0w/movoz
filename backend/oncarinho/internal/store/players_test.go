@@ -143,6 +143,43 @@ func TestPlayerStoreReactivate(t *testing.T) {
 	}
 }
 
+func TestPlayerStoreGetByID(t *testing.T) {
+	db := setupTestDB(t)
+	truncateAll(t, db)
+	s := NewPlayerStore(db)
+
+	active, _ := s.Create("Alex", nil)
+	inactive, _ := s.Create("Sam", nil)
+	s.Deactivate(inactive.ID)
+
+	found, err := s.GetByID(active.ID)
+	if err != nil {
+		t.Fatalf("GetByID failed: %v", err)
+	}
+	if found == nil || found.ID != active.ID || found.Name != "Alex" {
+		t.Fatalf("expected to find active player, got %+v", found)
+	}
+
+	foundInactive, err := s.GetByID(inactive.ID)
+	if err != nil {
+		t.Fatalf("GetByID for inactive player returned error: %v", err)
+	}
+	if foundInactive == nil {
+		t.Fatal("expected GetByID to find deactivated player, got nil")
+	}
+	if foundInactive.IsActive {
+		t.Fatalf("expected deactivated player to have IsActive=false, got %+v", foundInactive)
+	}
+
+	missing, err := s.GetByID(99999)
+	if err != nil {
+		t.Fatalf("GetByID for missing id returned error: %v", err)
+	}
+	if missing != nil {
+		t.Fatalf("expected nil for missing player, got %+v", missing)
+	}
+}
+
 func TestPlayerStoreExists(t *testing.T) {
 	db := setupTestDB(t)
 	truncateAll(t, db)

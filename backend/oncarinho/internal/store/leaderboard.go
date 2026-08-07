@@ -8,9 +8,9 @@ import (
 )
 
 var leaderboardStatColumns = map[string]string{
-	"goals":   "goals",
-	"assists": "assists",
-	"cards":   "(yellow_cards + red_cards)",
+	"goals":   "ms.goals",
+	"assists": "ms.assists",
+	"cards":   "(ms.yellow_cards + ms.red_cards)",
 }
 
 type LeaderboardStore struct {
@@ -28,7 +28,7 @@ func (s *LeaderboardStore) Leaderboard(year *int, stat string) ([]models.Leaderb
 	}
 
 	query := fmt.Sprintf(`
-		SELECT p.id, p.name, COALESCE(SUM(ms.%s), 0) AS value
+		SELECT p.id, p.name, COALESCE(SUM(%s), 0) AS value
 		FROM players p
 		JOIN match_stats ms ON ms.player_id = p.id
 		JOIN matchdays m ON m.id = ms.matchday_id

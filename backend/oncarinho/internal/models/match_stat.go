@@ -12,8 +12,8 @@ type MatchStat struct {
 
 type StatInput struct {
 	PlayerID    int `json:"player_id" binding:"required"`
-	Goals       int `json:"goals"`
-	Assists     int `json:"assists"`
-	YellowCards int `json:"yellow_cards"`
-	RedCards    int `json:"red_cards"`
+	Goals       int `json:"goals" binding:"min=0"`
+	Assists     int `json:"assists" binding:"min=0"`
+	YellowCards int `json:"yellow_cards" binding:"min=0"`
+	RedCards    int `json:"red_cards" binding:"min=0"`
 }

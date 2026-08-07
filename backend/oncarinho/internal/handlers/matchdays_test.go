@@ -9,7 +9,6 @@ import (
 	"os"
 	"testing"
 
-	"oncarinho/internal/models"
 	"oncarinho/internal/store"
 
 	"github.com/gin-gonic/gin"
@@ -61,12 +60,52 @@ func TestMatchdayHandlerCreateAndList(t *testing.T) {
 	w = httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	var matchdays []models.Matchday
+	var matchdays []struct {
+		ID       int    `json:"id"`
+		PlayedOn string `json:"played_on"`
+	}
 	if err := json.Unmarshal(w.Body.Bytes(), &matchdays); err != nil {
 		t.Fatalf("failed to unmarshal: %v", err)
 	}
 	if len(matchdays) != 1 {
 		t.Fatalf("expected 1 matchday, got %d", len(matchdays))
+	}
+}
+
+func TestMatchdayHandlerListDateOnlyFormat(t *testing.T) {
+	r := setupMatchdayTestRouter(t)
+
+	body, _ := json.Marshal(map[string]string{"played_on": "2026-03-15"})
+	req := httptest.NewRequest(http.MethodPost, "/api/matchdays", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusCreated {
+		t.Fatalf("expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+
+	req = httptest.NewRequest(http.MethodGet, "/api/matchdays", nil)
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	var matchdays []map[string]interface{}
+	if err := json.Unmarshal(w.Body.Bytes(), &matchdays); err != nil {
+		t.Fatalf("failed to unmarshal: %v", err)
+	}
+	if len(matchdays) != 1 {
+		t.Fatalf("expected 1 matchday, got %d", len(matchdays))
+	}
+
+	playedOn, ok := matchdays[0]["played_on"].(string)
+	if !ok {
+		t.Fatalf("expected played_on to be a string, got %T: %v", matchdays[0]["played_on"], matchdays[0]["played_on"])
+	}
+	if playedOn != "2026-03-15" {
+		t.Fatalf("expected played_on %q, got %q", "2026-03-15", playedOn)
+	}
+	if len(playedOn) != 10 {
+		t.Fatalf("expected played_on to be exactly 10 characters (date-only), got %d: %q", len(playedOn), playedOn)
 	}
 }
 

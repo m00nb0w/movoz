@@ -16,16 +16,9 @@ func NewProfileStore(db *sql.DB, playerStore *PlayerStore) *ProfileStore {
 }
 
 func (s *ProfileStore) Profile(playerID int) (*models.PlayerProfile, error) {
-	players, err := s.playerStore.List(false)
+	player, err := s.playerStore.GetByID(playerID)
 	if err != nil {
 		return nil, err
-	}
-	var player *models.Player
-	for i := range players {
-		if players[i].ID == playerID {
-			player = &players[i]
-			break
-		}
 	}
 	if player == nil {
 		return nil, nil

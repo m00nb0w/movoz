@@ -31,6 +31,12 @@ func (h *StatHandler) UpsertStats(c *gin.Context) {
 		return
 	}
 
+	var req upsertStatsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "entries are required"})
+		return
+	}
+
 	exists, err := h.matchdayStore.Exists(matchdayID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to look up matchday"})
@@ -38,12 +44,6 @@ func (h *StatHandler) UpsertStats(c *gin.Context) {
 	}
 	if !exists {
 		c.JSON(http.StatusNotFound, gin.H{"error": "matchday not found"})
-		return
-	}
-
-	var req upsertStatsRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "entries are required"})
 		return
 	}
 

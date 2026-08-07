@@ -80,6 +80,42 @@ func TestStatHandlerUpsertStats(t *testing.T) {
 	}
 }
 
+func TestStatHandlerNegativeGoalsRejected(t *testing.T) {
+	r, playerStore, matchdayStore := setupStatTestRouter(t)
+
+	player, _ := playerStore.Create("Alex", nil)
+	matchday, _ := matchdayStore.Create(mustParseDate(t, "2026-03-15"))
+
+	body, _ := json.Marshal(map[string]interface{}{
+		"entries": []map[string]int{{"player_id": player.ID, "goals": -5}},
+	})
+	req := httptest.NewRequest(http.MethodPut, "/api/matchdays/"+strconv.Itoa(matchday.ID)+"/stats", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+func TestStatHandlerMalformedBodyAgainstUnknownMatchdayReturns400(t *testing.T) {
+	r, playerStore, _ := setupStatTestRouter(t)
+	player, _ := playerStore.Create("Alex", nil)
+
+	body, _ := json.Marshal(map[string]interface{}{
+		"entries": []map[string]int{{"player_id": player.ID, "goals": -5}},
+	})
+	req := httptest.NewRequest(http.MethodPut, "/api/matchdays/99999/stats", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 (bind validation before matchday lookup), got %d: %s", w.Code, w.Body.String())
+	}
+}
+
 func TestStatHandlerUnknownMatchday(t *testing.T) {
 	r, playerStore, _ := setupStatTestRouter(t)
 	player, _ := playerStore.Create("Alex", nil)
