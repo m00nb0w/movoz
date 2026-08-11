@@ -7,6 +7,7 @@ type Config struct {
 	Port          string
 	AdminPassword string
 	SessionSecret string
+	CookieSecure  bool
 }
 
 func Load() *Config {
@@ -15,6 +16,7 @@ func Load() *Config {
 		Port:          getEnv("PORT", "8081"),
 		AdminPassword: getEnv("ADMIN_PASSWORD", ""),
 		SessionSecret: getEnv("SESSION_SECRET", ""),
+		CookieSecure:  getEnv("COOKIE_SECURE", "false") == "true",
 	}
 }
 

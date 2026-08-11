@@ -25,7 +25,7 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 	leaderboardHandler := handlers.NewLeaderboardHandler(leaderboardStore)
 	profileHandler := handlers.NewProfileHandler(profileStore)
 	summaryHandler := handlers.NewSummaryHandler(summaryStore)
-	authHandler := handlers.NewAuthHandler(cfg.AdminPassword, cfg.SessionSecret)
+	authHandler := handlers.NewAuthHandler(cfg.AdminPassword, cfg.SessionSecret, cfg.CookieSecure)
 
 	r := gin.Default()
 

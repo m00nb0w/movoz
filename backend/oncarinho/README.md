@@ -148,6 +148,27 @@ go run ./cmd/server -version
   2. `./bin/oncarinho` (start the service)
 - **Rollback**: Use `-migrate=down` if you need to rollback migrations
 
+## Testing
+
+Tests require a running Postgres and a dedicated test database — without one, `go test ./...` reports `ok` for every package because each test gracefully skips (this is intentional so the suite doesn't hard-fail in environments without Postgres, but it means a green `go test ./...` does NOT by itself prove the tests ran).
+
+To run the real suite:
+
+```bash
+createdb oncarinho_test
+go test ./...
+```
+
+To point at a non-default test database:
+```bash
+TEST_DATABASE_URL="postgres://localhost/oncarinho_test?sslmode=disable" go test ./...
+```
+
+To confirm tests are actually running (not skipping), use `-v` and check for `--- PASS` lines rather than `--- SKIP`:
+```bash
+go test ./... -v 2>&1 | grep -c '^--- SKIP'   # should print 0
+```
+
 ## Architecture
 
 The project follows the **Standard Go Project Layout**:

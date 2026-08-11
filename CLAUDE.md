@@ -92,7 +92,7 @@ go run ./cmd/server -migrate=up              # Apply migrations only
 go run ./cmd/server -migrate=down            # Rollback migrations
 go run ./cmd/server -version                 # Check migration version
 ```
-Requires PostgreSQL, `ADMIN_PASSWORD`, and `SESSION_SECRET` env vars (the server refuses to start without the latter two). Default DATABASE_URL: `postgres://localhost/oncarinho?sslmode=disable`
+Requires PostgreSQL, `ADMIN_PASSWORD`, and `SESSION_SECRET` env vars (the server refuses to start without the latter two). Default DATABASE_URL: `postgres://localhost/oncarinho?sslmode=disable`. `go test ./...` requires the `oncarinho_test` database to exist locally.
 
 ### Frontend (pnpm + Turborepo)
 ```bash

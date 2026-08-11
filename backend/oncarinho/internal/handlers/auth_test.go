@@ -16,7 +16,7 @@ import (
 func TestLoginCorrectPassword(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	h := NewAuthHandler("correct-password", "session-secret")
+	h := NewAuthHandler("correct-password", "session-secret", false)
 	r.POST("/api/auth/login", h.Login)
 
 	body, _ := json.Marshal(map[string]string{"password": "correct-password"})
@@ -36,7 +36,7 @@ func TestLoginCorrectPassword(t *testing.T) {
 func TestLoginWrongPassword(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	h := NewAuthHandler("correct-password", "session-secret")
+	h := NewAuthHandler("correct-password", "session-secret", false)
 	r.POST("/api/auth/login", h.Login)
 
 	body, _ := json.Marshal(map[string]string{"password": "wrong"})

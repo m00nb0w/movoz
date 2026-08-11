@@ -10,6 +10,7 @@ func TestLoadDefaults(t *testing.T) {
 	os.Unsetenv("PORT")
 	os.Unsetenv("ADMIN_PASSWORD")
 	os.Unsetenv("SESSION_SECRET")
+	os.Unsetenv("COOKIE_SECURE")
 
 	cfg := Load()
 
@@ -19,6 +20,9 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.Port != "8081" {
 		t.Errorf("expected default Port 8081, got %q", cfg.Port)
 	}
+	if cfg.CookieSecure != false {
+		t.Errorf("expected default CookieSecure false, got %v", cfg.CookieSecure)
+	}
 }
 
 func TestLoadFromEnv(t *testing.T) {
@@ -26,11 +30,13 @@ func TestLoadFromEnv(t *testing.T) {
 	os.Setenv("PORT", "9090")
 	os.Setenv("ADMIN_PASSWORD", "secret")
 	os.Setenv("SESSION_SECRET", "shh")
+	os.Setenv("COOKIE_SECURE", "true")
 	defer func() {
 		os.Unsetenv("DATABASE_URL")
 		os.Unsetenv("PORT")
 		os.Unsetenv("ADMIN_PASSWORD")
 		os.Unsetenv("SESSION_SECRET")
+		os.Unsetenv("COOKIE_SECURE")
 	}()
 
 	cfg := Load()
@@ -46,5 +52,8 @@ func TestLoadFromEnv(t *testing.T) {
 	}
 	if cfg.SessionSecret != "shh" {
 		t.Errorf("expected env SessionSecret, got %q", cfg.SessionSecret)
+	}
+	if cfg.CookieSecure != true {
+		t.Errorf("expected env CookieSecure true, got %v", cfg.CookieSecure)
 	}
 }

@@ -10,15 +10,15 @@ import (
 )
 
 const sessionCookieName = "admin_session"
-const sessionMaxAge = 24 * time.Hour
 
 type AuthHandler struct {
 	adminPassword string
 	sessionSecret string
+	cookieSecure  bool
 }
 
-func NewAuthHandler(adminPassword, sessionSecret string) *AuthHandler {
-	return &AuthHandler{adminPassword: adminPassword, sessionSecret: sessionSecret}
+func NewAuthHandler(adminPassword, sessionSecret string, cookieSecure bool) *AuthHandler {
+	return &AuthHandler{adminPassword: adminPassword, sessionSecret: sessionSecret, cookieSecure: cookieSecure}
 }
 
 type loginRequest struct {
@@ -38,7 +38,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	token := auth.NewSessionToken(h.sessionSecret, time.Now())
-	c.SetCookie(sessionCookieName, token, int(sessionMaxAge.Seconds()), "/", "", false, true)
+	c.SetCookie(sessionCookieName, token, int(auth.SessionDuration.Seconds()), "/", "", h.cookieSecure, true)
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 

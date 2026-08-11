@@ -5,10 +5,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"oncarinho/internal/config"
@@ -96,7 +98,9 @@ func TestFullMatchdayFlow(t *testing.T) {
 		t.Fatalf("create matchday failed: %v", err)
 	}
 	var matchday models.Matchday
-	json.NewDecoder(resp.Body).Decode(&matchday)
+	if err := json.NewDecoder(resp.Body).Decode(&matchday); err != nil {
+		t.Fatalf("failed to decode matchday: %v", err)
+	}
 	resp.Body.Close()
 
 	statsBody, _ := json.Marshal(map[string]interface{}{
@@ -147,4 +151,54 @@ func TestFullMatchdayFlow(t *testing.T) {
 	if summary.MatchesPlayed != 1 || summary.GoalsScored != 2 || summary.RosterSize != 1 {
 		t.Fatalf("unexpected summary: %+v", summary)
 	}
+}
+
+func TestAdminRoutesRequireAuth(t *testing.T) {
+	server, client := setupIntegrationTest(t)
+
+	adminRoutes := []struct {
+		method string
+		path   string
+		body   io.Reader
+	}{
+		{http.MethodPost, "/api/players", strings.NewReader(`{"name":"Alex"}`)},
+		{http.MethodPut, "/api/players/1", strings.NewReader(`{"name":"Alex"}`)},
+		{http.MethodDelete, "/api/players/1", nil},
+		{http.MethodPost, "/api/players/1/reactivate", nil},
+		{http.MethodPost, "/api/matchdays", strings.NewReader(`{"played_on":"2026-03-15"}`)},
+		{http.MethodPut, "/api/matchdays/1/stats", strings.NewReader(`{"entries":[]}`)},
+		{http.MethodDelete, "/api/matchdays/1/stats/1", nil},
+	}
+
+	for _, route := range adminRoutes {
+		t.Run(fmt.Sprintf("%s %s", route.method, route.path), func(t *testing.T) {
+			req, err := http.NewRequest(route.method, server.URL+route.path, route.body)
+			if err != nil {
+				t.Fatalf("failed to build request: %v", err)
+			}
+			req.Header.Set("Content-Type", "application/json")
+
+			resp, err := client.Do(req)
+			if err != nil {
+				t.Fatalf("request failed: %v", err)
+			}
+			resp.Body.Close()
+
+			if resp.StatusCode != http.StatusUnauthorized {
+				t.Fatalf("expected 401 without auth, got %d", resp.StatusCode)
+			}
+		})
+	}
+
+	t.Run("GET /api/matchdays/1/stats is public", func(t *testing.T) {
+		resp, err := client.Get(server.URL + "/api/matchdays/1/stats")
+		if err != nil {
+			t.Fatalf("request failed: %v", err)
+		}
+		resp.Body.Close()
+
+		if resp.StatusCode == http.StatusUnauthorized {
+			t.Fatalf("expected public route to not require auth, got 401")
+		}
+	})
 }

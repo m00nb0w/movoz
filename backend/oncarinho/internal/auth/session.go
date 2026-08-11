@@ -10,10 +10,10 @@ import (
 	"time"
 )
 
-const sessionDuration = 24 * time.Hour
+const SessionDuration = 24 * time.Hour
 
 func NewSessionToken(secret string, now time.Time) string {
-	expiry := now.Add(sessionDuration).Unix()
+	expiry := now.Add(SessionDuration).Unix()
 	payload := strconv.FormatInt(expiry, 10)
 	sig := sign(secret, payload)
 	return base64.URLEncoding.EncodeToString([]byte(payload + "." + sig))
