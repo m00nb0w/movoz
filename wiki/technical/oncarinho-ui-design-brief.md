@@ -34,9 +34,19 @@ Overall feel: warm, paper/parchment-like in light mode; Kindle-inspired dark mod
 
 ## Global layout (all pages)
 
-- Top nav bar: team/site name (left, serif wordmark), primary nav links — Dashboard / Leaderboard (center or left-aligned), theme toggle (light/dark, sun/moon icon button, syncs across the whole movoz site via shared localStorage), and an unobtrusive "Admin" link (right, low visual weight — this is not a consumer-facing CTA).
+- Top nav bar: team/site name (left, serif wordmark), primary nav links — Dashboard / Leaderboard (center or left-aligned), a language toggle (EN | VI, or a globe-icon `Dropdown` — see Internationalization below), theme toggle (light/dark, sun/moon icon button, syncs across the whole movoz site via shared localStorage), and an unobtrusive "Admin" link (right, low visual weight — this is not a consumer-facing CTA).
 - Served under a path prefix (e.g. `/oncarinho`) per the site's multi-zone architecture — footer can be minimal or shared with the rest of the site.
-- Fully responsive: single-column stacking on mobile, nav collapses to a simple bar (no complex hamburger menu needed — there are only 2-3 public nav items).
+- Fully responsive: single-column stacking on mobile, nav collapses to a simple bar (no complex hamburger menu needed — there are only 2-3 public nav items plus the language/theme toggles, which can collapse into a single overflow menu on narrow screens).
+
+## Internationalization
+
+Full UI (public and admin) is available in English and Vietnamese — see spec F9/NF4. Defaults to the visitor's browser language; a manual EN/VI toggle in the nav overrides it and persists across visits (cookie-based). No localized URLs — `/leaderboard` is the same path in both languages.
+
+Design implications:
+- Every string in every mock/screen should be treated as a translation key, not fixed text — expect Vietnamese text to run noticeably longer than English for some labels (e.g. button/badge text), so avoid fixed-width containers around short text.
+- Dates render locale-aware (e.g. "March 15, 2026" vs "15 Th3, 2026") — don't hardcode a date format in any mockup.
+- Player names and the team name are never translated — they're user data, not UI chrome.
+- Position labels (Goalkeeper/Defender/Midfielder/Forward) ARE translated — the admin player form is a dropdown of these 4 fixed options, not free text (this is a backend contract change, not just a UI one — see spec Data Model).
 
 ## Public pages
 
@@ -97,7 +107,7 @@ Single centered card: "Admin" heading, one password `Input`, one `Button` ("Log 
 
 **Purpose**: manage the roster.
 
-A table: Name, Position, Status (Active/Inactive badge), actions (Edit, Deactivate/Reactivate depending on current state). "+ Add Player" button opens a small form/modal (Name required, Position optional). Toggle or filter to show inactive players too (maps to `?active=all`) — default view shows active only, matching the public roster.
+A table: Name, Position (translated label), Status (Active/Inactive badge), actions (Edit, Deactivate/Reactivate depending on current state). "+ Add Player" button opens a small form/modal (Name required text input; Position optional — a dropdown of the 4 fixed, translated options, not free text). Toggle or filter to show inactive players too (maps to `?active=all`) — default view shows active only, matching the public roster.
 
 ## Component inventory to design (beyond existing `@movoz/ui-web` primitives)
 
@@ -108,6 +118,7 @@ A table: Name, Position, Status (Active/Inactive badge), actions (Edit, Deactiva
 5. **MatchdayStatGrid** — the admin stat-entry table described above; this is the most complex custom component in the app.
 6. **YearSelector** — dropdown/segmented control, options = each year with data + "All-time".
 7. **StatTypeTabs** — Goals / Assists / Cards toggle for the leaderboard.
+8. **LanguageToggle** — EN/VI switch in the global nav, compact enough to sit alongside the theme toggle without crowding.
 
 ## Interaction/tone notes
 
