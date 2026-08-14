@@ -15,6 +15,7 @@ Engineering documentation — design docs, architecture decisions, component spe
 
 - [Drunken Dolphin — Backend, API & Agent Integration](./drunken-dolphin-backend.md) — schema, REST API contract, auth model, Rust agent rewiring (Slices 4 + 5)
 - [Oncarinho — UI Design Brief](./oncarinho-ui-design-brief.md) — visual system, page-by-page layout/content, and component inventory for the frontend
+- [Oncarinho — Design Handoff (archived)](./oncarinho-design-handoff/README.md) — raw design-tool prototype handoff; layout/content merged into the UI design brief, visual system not adopted
 
 ## Implementation Plans
 

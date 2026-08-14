@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/modernist-71426dfa-3920-4c7d-a816-42e81789a96a/styles.css">
+  <script src="_ds/modernist-71426dfa-3920-4c7d-a816-42e81789a96a/_ds_bundle.js"></script>
+  <style>
+    body { margin: 0; }
+    a { color: var(--color-accent-700); text-decoration: none; }
+    a:hover { color: var(--color-accent); text-decoration: underline; }
+  </style>
+</helmet>
+<div style="{{rootVars}}">
+  <div style="min-height:100vh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body)">
+  <nav class="nav">
+    <span class="nav-brand">ONCARINHO</span>
+    <a href="javascript:void(0)" onClick="{{goDashboard}}" aria-current="{{navDashboardCurrent}}">{{t.nav_dashboard}}</a>
+    <a href="javascript:void(0)" onClick="{{goLeaderboard}}" aria-current="{{navLeaderboardCurrent}}">{{t.nav_leaderboard}}</a>
+    <div class="seg" role="radiogroup" aria-label="Language" style="margin-left:8px">
+      <label class="seg-opt"><input type="radio" name="locale" checked="{{isEn}}" onChange="{{setLocaleEn}}" />EN</label>
+      <label class="seg-opt"><input type="radio" name="locale" checked="{{isVi}}" onChange="{{setLocaleVi}}" />VI</label>
+    </div>
+    <sc-if value="{{isDark}}" hint-placeholder-val="{{false}}">
+      <button type="button" class="btn btn-ghost btn-icon" onClick="{{toggleDarkMode}}" aria-label="Switch to light mode"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></button>
+    </sc-if>
+    <sc-if value="{{isLight}}" hint-placeholder-val="{{true}}">
+      <button type="button" class="btn btn-ghost btn-icon" onClick="{{toggleDarkMode}}" aria-label="Switch to dark mode"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></button>
+    </sc-if>
+  </nav>
+
+  <div style="max-width:1100px;margin:0 auto;padding:48px 32px 96px">
+
+    <sc-if value="{{isDashboard}}" hint-placeholder-val="{{true}}">
+      <div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:24px">
+          <h1 style="font-family:var(--font-heading);font-size:36px;margin:0">{{t.dashboard_title}}</h1>
+          <div class="seg" role="radiogroup" aria-label="Season">
+            <sc-for list="{{dashYearOptions}}" as="y" hint-placeholder-count="2">
+              <label class="seg-opt"><input type="radio" name="dashYear" checked="{{y.checked}}" onChange="{{y.onSelect}}" />{{y.label}}</label>
+            </sc-for>
+          </div>
+        </div>
+        <div class="hr" style="margin-bottom:32px"></div>
+        <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:48px">
+          <div>
+            <h2 style="font-family:var(--font-heading);font-size:20px;margin:0 0 16px">{{t.top_scorers}} — {{dashYearLabel}}</h2>
+            <table class="table">
+              <thead><tr><th>#</th><th>{{t.player}}</th><th style="text-align:right">{{t.goals}}</th></tr></thead>
+              <tbody>
+                <sc-for list="{{dashPreviewRows}}" as="row" hint-placeholder-count="5">
+                  <tr>
+                    <td>{{row.rank}}</td>
+                    <td><a href="javascript:void(0)" onClick="{{row.onView}}">{{row.name}}</a></td>
+                    <td style="text-align:right">{{row.value}}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+            <sc-if value="{{dashPreviewEmpty}}" hint-placeholder-val="{{false}}"><p class="text-muted" style="margin-top:12px">{{t.no_goals_year}}</p></sc-if>
+            <button type="button" class="btn btn-ghost" onClick="{{goLeaderboard}}" style="margin-top:16px">{{t.view_full_leaderboard}}</button>
+          </div>
+          <div>
+            <h2 style="font-family:var(--font-heading);font-size:20px;margin:0 0 16px">{{t.roster}}</h2>
+            <div style="display:grid;gap:0">
+              <sc-for list="{{dashRoster}}" as="p" hint-placeholder-count="8">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider)">
+                  <a href="javascript:void(0)" onClick="{{p.onView}}">{{p.name}}</a>
+                  <span class="tag tag-neutral">{{p.positionLabel}}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isLeaderboard}}" hint-placeholder-val="{{false}}">
+      <div>
+        <h1 style="font-family:var(--font-heading);font-size:36px;margin:0 0 24px">{{t.leaderboard_title}}</h1>
+        <div style="display:flex;gap:32px;flex-wrap:wrap;margin-bottom:24px">
+          <div class="field" style="margin:0"><label>{{t.season}}</label>
+            <div class="seg" role="radiogroup" aria-label="Leaderboard season">
+              <sc-for list="{{lbYearOptions}}" as="y" hint-placeholder-count="3">
+                <label class="seg-opt"><input type="radio" name="lbYear" checked="{{y.checked}}" onChange="{{y.onSelect}}" />{{y.label}}</label>
+              </sc-for>
+            </div>
+          </div>
+          <div class="field" style="margin:0"><label>{{t.stat}}</label>
+            <div class="seg" role="radiogroup" aria-label="Leaderboard stat">
+              <sc-for list="{{lbStatOptions}}" as="s" hint-placeholder-count="3">
+                <label class="seg-opt"><input type="radio" name="lbStat" checked="{{s.checked}}" onChange="{{s.onSelect}}" />{{s.label}}</label>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <table class="table">
+          <thead><tr><th>#</th><th>{{t.player}}</th><th>{{t.position}}</th><th>{{t.status}}</th><th style="text-align:right">{{lbStatLabel}}</th></tr></thead>
+          <tbody>
+            <sc-for list="{{lbRows}}" as="row" hint-placeholder-count="10">
+              <tr>
+                <td>{{row.rank}}</td>
+                <td><a href="javascript:void(0)" onClick="{{row.onView}}">{{row.name}}</a></td>
+                <td>{{row.positionLabel}}</td>
+                <td><span class="{{row.statusTagClass}}">{{row.statusLabel}}</span></td>
+                <td style="text-align:right">{{row.value}}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+        <sc-if value="{{lbEmpty}}" hint-placeholder-val="{{false}}"><p class="text-muted" style="margin-top:16px">{{t.no_stats_selection}}</p></sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isProfile}}" hint-placeholder-val="{{false}}">
+      <div>
+        <button type="button" class="btn btn-ghost" onClick="{{goLeaderboard}}" style="margin-bottom:24px">{{t.back}}</button>
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:8px;flex-wrap:wrap">
+          <h1 style="font-family:var(--font-heading);font-size:36px;margin:0">{{selectedPlayer.name}}</h1>
+          <span class="tag tag-neutral">{{selectedPlayer.positionLabel}}</span>
+          <span class="{{selectedPlayer.statusTagClass}}">{{selectedPlayer.statusLabel}}</span>
+        </div>
+        <div class="hr" style="margin:24px 0 32px"></div>
+        <h2 style="font-family:var(--font-heading);font-size:18px;margin:0 0 16px">{{t.all_time_totals}}</h2>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:48px">
+          <div class="card"><div class="card-kicker">{{t.matches}}</div><div class="card-title">{{profileTotals.matches}}</div></div>
+          <div class="card"><div class="card-kicker">{{t.goals}}</div><div class="card-title">{{profileTotals.goals}}</div></div>
+          <div class="card"><div class="card-kicker">{{t.assists}}</div><div class="card-title">{{profileTotals.assists}}</div></div>
+          <div class="card"><div class="card-kicker">{{t.yellow_cards}}</div><div class="card-title">{{profileTotals.yellow}}</div></div>
+          <div class="card"><div class="card-kicker">{{t.red_cards}}</div><div class="card-title">{{profileTotals.red}}</div></div>
+        </div>
+        <h2 style="font-family:var(--font-heading);font-size:18px;margin:0 0 16px">{{t.season_by_season}}</h2>
+        <table class="table">
+          <thead><tr><th>{{t.season}}</th><th style="text-align:right">{{t.matches}}</th><th style="text-align:right">{{t.goals}}</th><th style="text-align:right">{{t.assists}}</th><th style="text-align:right">{{t.yellow}}</th><th style="text-align:right">{{t.red}}</th></tr></thead>
+          <tbody>
+            <sc-for list="{{profileYearRows}}" as="row" hint-placeholder-count="3">
+              <tr>
+                <td>{{row.year}}</td>
+                <td style="text-align:right">{{row.matches}}</td>
+                <td style="text-align:right">{{row.goals}}</td>
+                <td style="text-align:right">{{row.assists}}</td>
+                <td style="text-align:right">{{row.yellow}}</td>
+                <td style="text-align:right">{{row.red}}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </sc-if>
+
+  </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const TRANSLATIONS = {
+  en: {
+    nav_dashboard: 'Dashboard', nav_leaderboard: 'Leaderboard', nav_admin: 'Admin',
+    dashboard_title: 'Team Dashboard', season: 'Season',
+    matches_played: 'Matches Played', goals_scored: 'Goals Scored', roster_size: 'Roster Size',
+    top_scorers: 'Top Scorers', view_full_leaderboard: 'View full leaderboard →', roster: 'Roster',
+    no_goals_year: 'No goals recorded yet for this season.',
+    leaderboard_title: 'Leaderboard', stat: 'Stat', goals: 'Goals', assists: 'Assists', cards: 'Cards',
+    player: 'Player', position: 'Position', status: 'Status',
+    no_stats_selection: 'No stats recorded for this selection.',
+    back: '← Back', all_time_totals: 'All-time Totals', matches: 'Matches',
+    yellow_cards: 'Yellow Cards', red_cards: 'Red Cards', yellow: 'Yellow', red: 'Red',
+    season_by_season: 'Season by Season',
+    admin_login: 'Admin Login', admin_login_sub: 'Enter the shared admin password to unlock write access.',
+    password: 'Password', log_in: 'Log in', demo_password: 'Demo password: onca2026',
+    incorrect_password: 'Incorrect password.',
+    matchdays: 'Matchdays', players: 'Players', log_out: 'Log out',
+    new_matchday_date: 'New matchday date', create_matchday: 'Create matchday',
+    date: 'Date', players_logged: 'Players Logged', enter_stats: 'Enter stats',
+    back_to_matchdays: '← Back to matchdays', enter_stats_title: 'Enter Stats — ',
+    autosave_note: 'Changes save automatically.',
+    add_player: '+ Add player', name: 'Name', save: 'Save', cancel: 'Cancel',
+    edit: 'Edit', deactivate: 'Deactivate', reactivate: 'Reactivate',
+    add_player_title: 'Add player', edit_player_title: 'Edit player',
+    active: 'Active', inactive: 'Inactive', all_time: 'All-time', none_option: '— None —',
+    positions: { goalkeeper: 'Goalkeeper', defender: 'Defender', midfielder: 'Midfielder', forward: 'Forward' }
+  },
+  vi: {
+    nav_dashboard: 'Tổng quan', nav_leaderboard: 'Bảng xếp hạng', nav_admin: 'Quản trị',
+    dashboard_title: 'Tổng quan đội', season: 'Mùa',
+    matches_played: 'Trận đã đấu', goals_scored: 'Bàn thắng', roster_size: 'Số cầu thủ',
+    top_scorers: 'Vua phá lưới', view_full_leaderboard: 'Xem toàn bộ bảng xếp hạng →', roster: 'Danh sách cầu thủ',
+    no_goals_year: 'Chưa có bàn thắng nào được ghi nhận cho mùa này.',
+    leaderboard_title: 'Bảng xếp hạng', stat: 'Chỉ số', goals: 'Bàn thắng', assists: 'Kiến tạo', cards: 'Thẻ phạt',
+    player: 'Cầu thủ', position: 'Vị trí', status: 'Trạng thái',
+    no_stats_selection: 'Không có chỉ số nào cho lựa chọn này.',
+    back: '← Quay lại', all_time_totals: 'Tổng số toàn thời gian', matches: 'Trận',
+    yellow_cards: 'Thẻ vàng', red_cards: 'Thẻ đỏ', yellow: 'Vàng', red: 'Đỏ',
+    season_by_season: 'Theo từng mùa',
+    admin_login: 'Đăng nhập quản trị', admin_login_sub: 'Nhập mật khẩu quản trị chung để mở quyền chỉnh sửa.',
+    password: 'Mật khẩu', log_in: 'Đăng nhập', demo_password: 'Mật khẩu demo: onca2026',
+    incorrect_password: 'Sai mật khẩu.',
+    matchdays: 'Ngày đấu', players: 'Cầu thủ', log_out: 'Đăng xuất',
+    new_matchday_date: 'Ngày đấu mới', create_matchday: 'Tạo ngày đấu',
+    date: 'Ngày', players_logged: 'Số cầu thủ đã ghi nhận', enter_stats: 'Nhập chỉ số',
+    back_to_matchdays: '← Quay lại danh sách ngày đấu', enter_stats_title: 'Nhập chỉ số — ',
+    autosave_note: 'Thay đổi được lưu tự động.',
+    add_player: '+ Thêm cầu thủ', name: 'Tên', save: 'Lưu', cancel: 'Hủy',
+    edit: 'Sửa', deactivate: 'Ngừng h.động', reactivate: 'Kích hoạt lại',
+    add_player_title: 'Thêm cầu thủ', edit_player_title: 'Sửa cầu thủ',
+    active: 'Đang hoạt động', inactive: 'Ngừng hoạt động', all_time: 'Toàn thời gian', none_option: '— Không —',
+    positions: { goalkeeper: 'Thủ môn', defender: 'Hậu vệ', midfielder: 'Tiền vệ', forward: 'Tiền đạo' }
+  }
+};
+
+function mulberry32(seed) {
+  return function () {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const INITIAL_PLAYERS = [
+  { id: 1, name: 'Rafael Silva', position: 'forward', active: true },
+  { id: 2, name: 'Bruno Costa', position: 'midfielder', active: true },
+  { id: 3, name: 'Diego Alves', position: 'defender', active: true },
+  { id: 4, name: 'Thiago Santos', position: 'goalkeeper', active: true },
+  { id: 5, name: 'Lucas Pereira', position: 'forward', active: true },
+  { id: 6, name: 'Matheus Souza', position: 'midfielder', active: true },
+  { id: 7, name: 'Gabriel Rocha', position: 'defender', active: true },
+  { id: 8, name: 'Felipe Araujo', position: 'forward', active: true },
+  { id: 9, name: 'Andre Lima', position: 'midfielder', active: true },
+  { id: 10, name: 'Caio Barros', position: 'defender', active: true },
+  { id: 11, name: 'Vinicius Melo', position: 'goalkeeper', active: true },
+  { id: 12, name: 'Pedro Nunes', position: 'midfielder', active: false }
+];
+
+const INITIAL_MATCHDAYS = [
+  { id: 1, played_on: '2025-03-08' }, { id: 2, played_on: '2025-04-12' },
+  { id: 3, played_on: '2025-05-17' }, { id: 4, played_on: '2025-06-21' },
+  { id: 5, played_on: '2025-08-16' }, { id: 6, played_on: '2025-10-04' },
+  { id: 7, played_on: '2026-02-14' }, { id: 8, played_on: '2026-04-11' },
+  { id: 9, played_on: '2026-06-13' }, { id: 10, played_on: '2026-08-08' }
+];
+
+function buildStats(players, matchdays) {
+  const rand = mulberry32(42);
+  const stats = [];
+  let statId = 1;
+  matchdays.forEach(md => {
+    const year = new Date(md.played_on + 'T00:00:00').getFullYear();
+    players.forEach(p => {
+      if (p.id === 12 && year >= 2026) return;
+      if (rand() < 0.15) return;
+      let goals = 0;
+      if (p.position === 'forward') goals = Math.floor(rand() * 3);
+      else if (p.position === 'midfielder') goals = Math.floor(rand() * 2);
+      else if (p.position === 'defender') goals = rand() > 0.82 ? 1 : 0;
+      let assists = 0;
+      if (p.position === 'midfielder') assists = Math.floor(rand() * 2);
+      else if (p.position === 'forward') assists = rand() > 0.6 ? 1 : 0;
+      else assists = rand() > 0.85 ? 1 : 0;
+      const yellow = rand() > 0.85 ? 1 : 0;
+      const red = rand() > 0.97 ? 1 : 0;
+      stats.push({ id: statId++, matchday_id: md.id, player_id: p.id, goals, assists, yellow_cards: yellow, red_cards: red });
+    });
+  });
+  return stats;
+}
+
+class Component extends DCLogic {
+  state = {
+    screen: 'dashboard',
+    players: INITIAL_PLAYERS.map(p => ({ ...p })),
+    matchdays: INITIAL_MATCHDAYS.map(m => ({ ...m })),
+    stats: buildStats(INITIAL_PLAYERS, INITIAL_MATCHDAYS),
+    nextPlayerId: 13,
+    nextMatchdayId: 11,
+    nextStatId: 1000,
+    selectedPlayerId: 1,
+    lbYear: 'all',
+    lbStat: 'goals',
+    dashYear: 2026,
+    darkMode: false,
+    locale: 'en'
+  };
+
+  toggleDarkMode = () => this.setState(s => ({ darkMode: !s.darkMode }));
+  setLocaleEn = () => this.setState({ locale: 'en' });
+  setLocaleVi = () => this.setState({ locale: 'vi' });
+
+  getYears() {
+    const set = new Set(this.state.matchdays.map(m => new Date(m.played_on + 'T00:00:00').getFullYear()));
+    return Array.from(set).sort((a, b) => b - a);
+  }
+
+  matchdayYearMap() {
+    const map = {};
+    this.state.matchdays.forEach(m => { map[m.id] = new Date(m.played_on + 'T00:00:00').getFullYear(); });
+    return map;
+  }
+
+  aggregate(playerId, year) {
+    const mdYear = this.matchdayYearMap();
+    let matches = 0, goals = 0, assists = 0, yellow = 0, red = 0;
+    this.state.stats.forEach(s => {
+      if (playerId != null && s.player_id !== playerId) return;
+      if (year != null && year !== 'all' && mdYear[s.matchday_id] !== year) return;
+      matches++; goals += s.goals; assists += s.assists; yellow += s.yellow_cards; red += s.red_cards;
+    });
+    return { matches, goals, assists, yellow, red };
+  }
+
+  leaderboardRows(year, stat, t) {
+    const mdYear = this.matchdayYearMap();
+    const totals = {};
+    this.state.players.forEach(p => { totals[p.id] = { player: p, goals: 0, assists: 0, cards: 0 }; });
+    this.state.stats.forEach(s => {
+      if (year !== 'all' && mdYear[s.matchday_id] !== year) return;
+      const tt = totals[s.player_id]; if (!tt) return;
+      tt.goals += s.goals; tt.assists += s.assists; tt.cards += s.yellow_cards + s.red_cards;
+    });
+    let rows = Object.values(totals).filter(tt => tt[stat] > 0);
+    rows.sort((a, b) => b[stat] - a[stat]);
+    return rows.map((tt, i) => ({
+      rank: i + 1, id: tt.player.id, name: tt.player.name,
+      positionLabel: t.positions[tt.player.position] || '—', value: tt[stat],
+      statusTagClass: tt.player.active ? 'tag tag-accent' : 'tag tag-neutral',
+      statusLabel: tt.player.active ? t.active : t.inactive
+    }));
+  }
+
+  dashboardSummary(year) {
+    const matchesSet = new Set(this.state.matchdays.filter(m => new Date(m.played_on + 'T00:00:00').getFullYear() === year).map(m => m.id));
+    const mdYear = this.matchdayYearMap();
+    let goals = 0;
+    this.state.stats.forEach(s => { if (mdYear[s.matchday_id] === year) goals += s.goals; });
+    const rosterSize = this.state.players.filter(p => p.active).length;
+    return { matches: matchesSet.size, goals, rosterSize };
+  }
+
+  goToProfile(id) { this.setState({ screen: 'profile', selectedPlayerId: id }); }
+  goDashboard = () => this.setState({ screen: 'dashboard' });
+  goLeaderboard = () => this.setState({ screen: 'leaderboard' });
+
+  renderVals() {
+    const s = this.state;
+    const t = TRANSLATIONS[s.locale];
+    const years = this.getYears();
+    const screen = s.screen;
+
+    const rootVars = s.darkMode ? {
+      '--color-bg': 'var(--color-neutral-900)',
+      '--color-surface': 'var(--color-neutral-800)',
+      '--color-text': 'var(--color-neutral-100)',
+      '--color-divider': 'color-mix(in srgb, var(--color-neutral-100) 30%, transparent)'
+    } : {};
+
+    const dashSummary = this.dashboardSummary(s.dashYear);
+    const dashPreview = this.leaderboardRows(s.dashYear, 'goals', t).slice(0, 5)
+      .map(r => ({ ...r, onView: () => this.goToProfile(r.id) }));
+    const dashRoster = s.players.filter(p => p.active).slice().sort((a, b) => a.name.localeCompare(b.name))
+      .map(p => ({ id: p.id, name: p.name, positionLabel: t.positions[p.position] || '—', onView: () => this.goToProfile(p.id) }));
+
+    const lbRowsRaw = this.leaderboardRows(s.lbYear, s.lbStat, t);
+    const lbRows = lbRowsRaw.map(r => ({ ...r, onView: () => this.goToProfile(r.id) }));
+
+    const selPlayer = s.players.find(p => p.id === s.selectedPlayerId) || s.players[0];
+    const selectedPlayer = selPlayer ? {
+      name: selPlayer.name, positionLabel: t.positions[selPlayer.position] || '—',
+      statusTagClass: selPlayer.active ? 'tag tag-accent' : 'tag tag-neutral',
+      statusLabel: selPlayer.active ? t.active : t.inactive
+    } : { name: '', positionLabel: '', statusTagClass: 'tag tag-neutral', statusLabel: '' };
+    const profileTotals = selPlayer ? this.aggregate(selPlayer.id, 'all') : { matches: 0, goals: 0, assists: 0, yellow: 0, red: 0 };
+    const profileYearRows = selPlayer ? years.map(y => ({ year: y, ...this.aggregate(selPlayer.id, y) })) : [];
+
+    return {
+      t, rootVars,
+      isDark: s.darkMode, isLight: !s.darkMode,
+      isEn: s.locale === 'en', isVi: s.locale === 'vi', setLocaleEn: this.setLocaleEn, setLocaleVi: this.setLocaleVi,
+      toggleDarkMode: this.toggleDarkMode,
+
+      isDashboard: screen === 'dashboard',
+      isLeaderboard: screen === 'leaderboard',
+      isProfile: screen === 'profile',
+
+      navDashboardCurrent: screen === 'dashboard' ? 'page' : undefined,
+      navLeaderboardCurrent: screen === 'leaderboard' ? 'page' : undefined,
+      goDashboard: this.goDashboard, goLeaderboard: this.goLeaderboard,
+
+      dashYearLabel: String(s.dashYear),
+      dashYearOptions: years.map(y => ({ label: String(y), checked: y === s.dashYear, onSelect: () => this.setState({ dashYear: y }) })),
+      dashSummary, dashPreviewRows: dashPreview, dashPreviewEmpty: dashPreview.length === 0, dashRoster,
+
+      lbYearOptions: [{ label: t.all_time, checked: s.lbYear === 'all', onSelect: () => this.setState({ lbYear: 'all' }) },
+        ...years.map(y => ({ label: String(y), checked: s.lbYear === y, onSelect: () => this.setState({ lbYear: y }) }))],
+      lbStatOptions: [
+        { label: t.goals, checked: s.lbStat === 'goals', onSelect: () => this.setState({ lbStat: 'goals' }) },
+        { label: t.assists, checked: s.lbStat === 'assists', onSelect: () => this.setState({ lbStat: 'assists' }) },
+        { label: t.cards, checked: s.lbStat === 'cards', onSelect: () => this.setState({ lbStat: 'cards' }) }
+      ],
+      lbStatLabel: { goals: t.goals, assists: t.assists, cards: t.cards }[s.lbStat],
+      lbRows, lbEmpty: lbRows.length === 0,
+
+      selectedPlayer, profileTotals, profileYearRows
+    };
+  }
+}
+
+</script>
+</body>
+</html>
