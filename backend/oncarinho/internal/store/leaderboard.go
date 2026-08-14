@@ -28,7 +28,7 @@ func (s *LeaderboardStore) Leaderboard(year *int, stat string) ([]models.Leaderb
 	}
 
 	query := fmt.Sprintf(`
-		SELECT p.id, p.name, COALESCE(SUM(%s), 0) AS value
+		SELECT p.id, p.name, p.position, p.is_active, COALESCE(SUM(%s), 0) AS value
 		FROM players p
 		JOIN match_stats ms ON ms.player_id = p.id
 		JOIN matchdays m ON m.id = ms.matchday_id
@@ -39,7 +39,11 @@ func (s *LeaderboardStore) Leaderboard(year *int, stat string) ([]models.Leaderb
 		query += " WHERE EXTRACT(YEAR FROM m.played_on) = $1"
 		args = append(args, *year)
 	}
-	query += " GROUP BY p.id, p.name ORDER BY value DESC, p.name ASC"
+	query += fmt.Sprintf(`
+		GROUP BY p.id, p.name, p.position, p.is_active
+		HAVING COALESCE(SUM(%s), 0) > 0
+		ORDER BY value DESC, p.name ASC
+	`, column)
 
 	rows, err := s.db.Query(query, args...)
 	if err != nil {
@@ -50,7 +54,7 @@ func (s *LeaderboardStore) Leaderboard(year *int, stat string) ([]models.Leaderb
 	entries := []models.LeaderboardEntry{}
 	for rows.Next() {
 		var e models.LeaderboardEntry
-		if err := rows.Scan(&e.PlayerID, &e.PlayerName, &e.Value); err != nil {
+		if err := rows.Scan(&e.PlayerID, &e.PlayerName, &e.Position, &e.IsActive, &e.Value); err != nil {
 			return nil, err
 		}
 		entries = append(entries, e)

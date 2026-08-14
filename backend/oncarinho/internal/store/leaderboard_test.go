@@ -95,3 +95,41 @@ func TestLeaderboardCardsAndAssists(t *testing.T) {
 		t.Fatalf("unexpected assists leaderboard: %+v", assists)
 	}
 }
+
+func TestLeaderboardIncludesPositionStatusAndExcludesZero(t *testing.T) {
+	db := setupTestDB(t)
+	truncateAll(t, db)
+
+	playerStore := NewPlayerStore(db)
+	matchdayStore := NewMatchdayStore(db)
+	statStore := NewStatStore(db)
+	leaderboardStore := NewLeaderboardStore(db)
+
+	position := "forward"
+	scorer, _ := playerStore.Create("Alex", &position)
+	nonScorer, _ := playerStore.Create("Sam", nil)
+	playerStore.Deactivate(scorer.ID)
+
+	matchday, _ := matchdayStore.Create(mustParseDate(t, "2026-03-15"))
+	statStore.UpsertBulk(matchday.ID, []models.StatInput{
+		{PlayerID: scorer.ID, Goals: 3},
+		{PlayerID: nonScorer.ID, Goals: 0, Assists: 1},
+	})
+
+	entries, err := leaderboardStore.Leaderboard(nil, "goals")
+	if err != nil {
+		t.Fatalf("Leaderboard failed: %v", err)
+	}
+	if len(entries) != 1 {
+		t.Fatalf("expected only the zero-goals player excluded, got %+v", entries)
+	}
+	if entries[0].PlayerID != scorer.ID {
+		t.Fatalf("expected scorer to be the only entry, got %+v", entries[0])
+	}
+	if entries[0].Position == nil || *entries[0].Position != "forward" {
+		t.Fatalf("expected position 'forward', got %+v", entries[0].Position)
+	}
+	if entries[0].IsActive {
+		t.Fatalf("expected scorer to be marked inactive (was deactivated), got IsActive=true")
+	}
+}
