@@ -19,7 +19,7 @@ func NewPlayerHandler(s *store.PlayerStore) *PlayerHandler {
 
 type playerRequest struct {
 	Name     string  `json:"name" binding:"required"`
-	Position *string `json:"position"`
+	Position *string `json:"position" binding:"omitempty,oneof=goalkeeper defender midfielder forward"`
 }
 
 func (h *PlayerHandler) List(c *gin.Context) {

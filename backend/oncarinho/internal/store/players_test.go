@@ -7,7 +7,7 @@ func TestPlayerStoreCreateAndList(t *testing.T) {
 	truncateAll(t, db)
 	s := NewPlayerStore(db)
 
-	position := "Forward"
+	position := "forward"
 	created, err := s.Create("Alex", &position)
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
@@ -15,7 +15,7 @@ func TestPlayerStoreCreateAndList(t *testing.T) {
 	if created.ID == 0 {
 		t.Fatal("expected non-zero ID")
 	}
-	if created.Name != "Alex" || *created.Position != "Forward" || !created.IsActive {
+	if created.Name != "Alex" || *created.Position != "forward" || !created.IsActive {
 		t.Fatalf("unexpected player: %+v", created)
 	}
 
@@ -35,12 +35,12 @@ func TestPlayerStoreUpdate(t *testing.T) {
 
 	created, _ := s.Create("Alex", nil)
 
-	newPosition := "Midfielder"
+	newPosition := "midfielder"
 	updated, err := s.Update(created.ID, "Alexandra", &newPosition)
 	if err != nil {
 		t.Fatalf("Update failed: %v", err)
 	}
-	if updated.Name != "Alexandra" || *updated.Position != "Midfielder" {
+	if updated.Name != "Alexandra" || *updated.Position != "midfielder" {
 		t.Fatalf("unexpected updated player: %+v", updated)
 	}
 
