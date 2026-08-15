@@ -21,6 +21,7 @@ Movoz is a personal monorepo — a collection of small, independent projects bui
 | Travel Quokka | `apps/travel-quokka/` | Next.js | Planned | Travel map — countries visited, Vietnam districts, marathons, trip memories |
 | Óctopus | `apps/octopus/` | Next.js | Planned | Second brain — personal knowledge management and note-taking |
 | Oncarinho | `apps/oncarinho/`, `backend/oncarinho/` | Next.js + Go | Planned | Football team stats tracker — goals, assists, cards, leaderboards |
+| Scout | `apps/scout/`, `backend/scout/` | Next.js + Go | Planned | Private engineering team tracker — FIFA-style attribute cards, GitHub/Jira metrics, AI-assisted ranking |
 
 ## Project Details
 
@@ -65,6 +66,12 @@ Movoz is a personal monorepo — a collection of small, independent projects bui
 - **Target users**: Team admin (data entry) + team/public (viewing)
 - **Key features**: Matchday stat entry (goals, assists, cards), year and all-time leaderboards, player profiles
 - **Spec**: [wiki/specs/oncarinho.md](./oncarinho.md)
+
+### Scout
+- **Purpose**: Private tool for tracking engineering team performance
+- **Target users**: Personal use (To Ngoc Long, as engineering manager)
+- **Key features**: FIFA-style attribute cards (6 main attributes, growable sub-attributes) scored via biweekly forced ranking, GitHub/Jira metrics sync, AI-assisted conversational ranking
+- **Spec**: [wiki/specs/scout.md](./scout.md)
 
 ## Shared Infrastructure
 

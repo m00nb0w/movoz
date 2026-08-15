@@ -11,7 +11,13 @@ Product requirements documents organized by project. Each spec defines what we'r
 - *(no specs yet)*
 
 ### drunken-dolphin
-- *(no specs yet)*
+- [Drunken Dolphin PRD](./drunken-dolphin.md) — personal assistant (agent) + private dashboard for newsletter digest, expenses, and future modules
+
+### swifty
+- [Swifty Design](./swifty.md) — one-way sync from macOS Calendar (Outlook) to Google Calendar via EventKit + launchd
+
+### scout
+- [Scout Spec](./scout.md) — private engineering team tracker: FIFA-style attribute cards, GitHub/Jira metrics sync, AI-assisted biweekly ranking
 
 ## Templates
 
