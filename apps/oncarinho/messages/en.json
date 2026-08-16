@@ -8,5 +8,23 @@
     "dashboard": "Dashboard",
     "leaderboard": "Leaderboard",
     "admin": "Admin"
+  },
+  "dashboard": {
+    "title": "Team Dashboard",
+    "matchesPlayed": "Matches Played",
+    "goalsScored": "Goals Scored",
+    "rosterSize": "Roster Size",
+    "topScorers": "Top Scorers — {year}",
+    "noGoals": "No goals recorded yet for {year}.",
+    "player": "Player",
+    "goals": "Goals",
+    "viewFullLeaderboard": "View full leaderboard →",
+    "roster": "Roster"
+  },
+  "positions": {
+    "goalkeeper": "Goalkeeper",
+    "defender": "Defender",
+    "midfielder": "Midfielder",
+    "forward": "Forward"
   }
 }

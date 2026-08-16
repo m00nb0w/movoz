@@ -8,5 +8,23 @@
     "dashboard": "Trang chủ",
     "leaderboard": "Bảng xếp hạng",
     "admin": "Quản trị"
+  },
+  "dashboard": {
+    "title": "Tổng Quan Đội",
+    "matchesPlayed": "Số Trận Đã Đấu",
+    "goalsScored": "Số Bàn Thắng",
+    "rosterSize": "Số Cầu Thủ",
+    "topScorers": "Vua Phá Lưới — {year}",
+    "noGoals": "Chưa có bàn thắng nào được ghi nhận cho {year}.",
+    "player": "Cầu Thủ",
+    "goals": "Bàn Thắng",
+    "viewFullLeaderboard": "Xem toàn bộ bảng xếp hạng →",
+    "roster": "Đội Hình"
+  },
+  "positions": {
+    "goalkeeper": "Thủ Môn",
+    "defender": "Hậu Vệ",
+    "midfielder": "Tiền Vệ",
+    "forward": "Tiền Đạo"
   }
 }
