@@ -1,0 +1,12 @@
+{
+  "common": {
+    "appName": "Oncarinho",
+    "loading": "Đang tải…",
+    "allTime": "Toàn thời gian"
+  },
+  "nav": {
+    "dashboard": "Trang chủ",
+    "leaderboard": "Bảng xếp hạng",
+    "admin": "Quản trị"
+  }
+}

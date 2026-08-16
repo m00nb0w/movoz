@@ -1,0 +1,12 @@
+{
+  "common": {
+    "appName": "Oncarinho",
+    "loading": "Loading…",
+    "allTime": "All-time"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "leaderboard": "Leaderboard",
+    "admin": "Admin"
+  }
+}
