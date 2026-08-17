@@ -22,6 +22,18 @@
     "roster": "Roster",
     "loadError": "Couldn't load dashboard data. Try refreshing."
   },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "goals": "Goals",
+    "assists": "Assists",
+    "cards": "Cards",
+    "player": "Player",
+    "position": "Position",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "empty": "No stats recorded for this selection."
+  },
   "positions": {
     "goalkeeper": "Goalkeeper",
     "defender": "Defender",

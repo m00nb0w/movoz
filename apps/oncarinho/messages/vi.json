@@ -22,6 +22,18 @@
     "roster": "Đội Hình",
     "loadError": "Không thể tải dữ liệu tổng quan. Vui lòng thử tải lại trang."
   },
+  "leaderboard": {
+    "title": "Bảng Xếp Hạng",
+    "goals": "Bàn Thắng",
+    "assists": "Kiến Tạo",
+    "cards": "Thẻ Phạt",
+    "player": "Cầu Thủ",
+    "position": "Vị Trí",
+    "status": "Trạng Thái",
+    "active": "Đang Hoạt Động",
+    "inactive": "Ngừng Hoạt Động",
+    "empty": "Không có thống kê nào cho lựa chọn này."
+  },
   "positions": {
     "goalkeeper": "Thủ Môn",
     "defender": "Hậu Vệ",
