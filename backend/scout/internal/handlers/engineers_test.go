@@ -86,6 +86,26 @@ func TestEngineerHandlerCreateMissingName(t *testing.T) {
 	}
 }
 
+func TestEngineerHandlerDeactivate(t *testing.T) {
+	r := setupEngineerTestRouter(t)
+
+	body, _ := json.Marshal(map[string]string{"name": "Alex Kim", "started_at": "2024-01-15"})
+	createReq := httptest.NewRequest(http.MethodPost, "/api/engineers", bytes.NewReader(body))
+	createReq.Header.Set("Content-Type", "application/json")
+	createW := httptest.NewRecorder()
+	r.ServeHTTP(createW, createReq)
+	var created models.Engineer
+	json.Unmarshal(createW.Body.Bytes(), &created)
+
+	req := httptest.NewRequest(http.MethodDelete, "/api/engineers/"+strconv.Itoa(created.ID), nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("expected 204, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
 func TestEngineerHandlerDeactivateNotFound(t *testing.T) {
 	r := setupEngineerTestRouter(t)
 
