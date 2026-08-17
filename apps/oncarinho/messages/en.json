@@ -1,0 +1,106 @@
+{
+  "common": {
+    "appName": "Oncarinho",
+    "appDescription": "Football team stats tracker",
+    "loading": "Loading…",
+    "allTime": "All-time"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "leaderboard": "Leaderboard",
+    "admin": "Admin",
+    "languageLabel": "Language"
+  },
+  "dashboard": {
+    "title": "Team Dashboard",
+    "matchesPlayed": "Matches Played",
+    "goalsScored": "Goals Scored",
+    "rosterSize": "Roster Size",
+    "topScorers": "Top Scorers — {year}",
+    "noGoals": "No goals recorded yet for {year}.",
+    "player": "Player",
+    "goals": "Goals",
+    "viewFullLeaderboard": "View full leaderboard →",
+    "roster": "Roster",
+    "loadError": "Couldn't load dashboard data. Try refreshing."
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "goals": "Goals",
+    "assists": "Assists",
+    "cards": "Cards",
+    "player": "Player",
+    "position": "Position",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "empty": "No stats recorded for this selection.",
+    "loadError": "Couldn't load the leaderboard. Try refreshing."
+  },
+  "positions": {
+    "goalkeeper": "Goalkeeper",
+    "defender": "Defender",
+    "midfielder": "Midfielder",
+    "forward": "Forward"
+  },
+  "playerProfile": {
+    "back": "← Back",
+    "notFound": "Player not found.",
+    "loadError": "Couldn't load this player's profile. Try refreshing.",
+    "inactive": "Inactive",
+    "matchesPlayed": "Matches Played",
+    "goals": "Goals",
+    "assists": "Assists",
+    "yellowCards": "Yellow Cards",
+    "redCards": "Red Cards",
+    "seasonBySeason": "Season by Season",
+    "year": "Year",
+    "matches": "Matches",
+    "yellow": "Yellow",
+    "red": "Red"
+  },
+  "admin": {
+    "login": {
+      "title": "Admin",
+      "passwordLabel": "Password",
+      "submit": "Log in",
+      "incorrectPassword": "Incorrect password",
+      "genericError": "Something went wrong — try again"
+    },
+    "matchdays": {
+      "title": "Matchdays",
+      "newMatchdayLabel": "Date",
+      "create": "Create",
+      "statsTitle": "Matchday Stats",
+      "statsTitleForDate": "Matchday Stats — {date}",
+      "player": "Player",
+      "goals": "Goals",
+      "assists": "Assists",
+      "yellow": "Yellow",
+      "red": "Red",
+      "save": "Save",
+      "saved": "Saved",
+      "loadError": "Something went wrong. Try refreshing.",
+      "invalidInput": "Please check the values you entered."
+    },
+    "players": {
+      "title": "Players",
+      "nameLabel": "Name",
+      "positionLabel": "Position",
+      "add": "Add Player",
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "showInactive": "Show inactive players",
+      "name": "Name",
+      "position": "Position",
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "loadError": "Something went wrong. Try refreshing.",
+      "invalidInput": "Please check the values you entered."
+    }
+  }
+}

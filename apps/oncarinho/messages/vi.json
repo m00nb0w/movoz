@@ -1,0 +1,106 @@
+{
+  "common": {
+    "appName": "Oncarinho",
+    "appDescription": "Ứng dụng theo dõi thống kê đội bóng đá",
+    "loading": "Đang tải…",
+    "allTime": "Toàn thời gian"
+  },
+  "nav": {
+    "dashboard": "Trang chủ",
+    "leaderboard": "Bảng xếp hạng",
+    "admin": "Quản trị",
+    "languageLabel": "Ngôn ngữ"
+  },
+  "dashboard": {
+    "title": "Tổng Quan Đội",
+    "matchesPlayed": "Số Trận Đã Đấu",
+    "goalsScored": "Số Bàn Thắng",
+    "rosterSize": "Số Cầu Thủ",
+    "topScorers": "Vua Phá Lưới — {year}",
+    "noGoals": "Chưa có bàn thắng nào được ghi nhận cho {year}.",
+    "player": "Cầu Thủ",
+    "goals": "Bàn Thắng",
+    "viewFullLeaderboard": "Xem toàn bộ bảng xếp hạng →",
+    "roster": "Đội Hình",
+    "loadError": "Không thể tải dữ liệu tổng quan. Vui lòng thử tải lại trang."
+  },
+  "leaderboard": {
+    "title": "Bảng Xếp Hạng",
+    "goals": "Bàn Thắng",
+    "assists": "Kiến Tạo",
+    "cards": "Thẻ Phạt",
+    "player": "Cầu Thủ",
+    "position": "Vị Trí",
+    "status": "Trạng Thái",
+    "active": "Đang Hoạt Động",
+    "inactive": "Ngừng Hoạt Động",
+    "empty": "Không có thống kê nào cho lựa chọn này.",
+    "loadError": "Không thể tải bảng xếp hạng. Vui lòng thử tải lại trang."
+  },
+  "positions": {
+    "goalkeeper": "Thủ Môn",
+    "defender": "Hậu Vệ",
+    "midfielder": "Tiền Vệ",
+    "forward": "Tiền Đạo"
+  },
+  "playerProfile": {
+    "back": "← Quay Lại",
+    "notFound": "Không tìm thấy cầu thủ.",
+    "loadError": "Không thể tải hồ sơ cầu thủ. Vui lòng thử tải lại trang.",
+    "inactive": "Ngừng Hoạt Động",
+    "matchesPlayed": "Số Trận",
+    "goals": "Bàn Thắng",
+    "assists": "Kiến Tạo",
+    "yellowCards": "Thẻ Vàng",
+    "redCards": "Thẻ Đỏ",
+    "seasonBySeason": "Theo Từng Mùa",
+    "year": "Năm",
+    "matches": "Số Trận",
+    "yellow": "Thẻ Vàng",
+    "red": "Thẻ Đỏ"
+  },
+  "admin": {
+    "login": {
+      "title": "Quản Trị",
+      "passwordLabel": "Mật Khẩu",
+      "submit": "Đăng Nhập",
+      "incorrectPassword": "Sai mật khẩu",
+      "genericError": "Đã xảy ra lỗi — vui lòng thử lại"
+    },
+    "matchdays": {
+      "title": "Trận Đấu",
+      "newMatchdayLabel": "Ngày",
+      "create": "Tạo",
+      "statsTitle": "Thống Kê Trận Đấu",
+      "statsTitleForDate": "Thống Kê Trận Đấu — {date}",
+      "player": "Cầu Thủ",
+      "goals": "Bàn Thắng",
+      "assists": "Kiến Tạo",
+      "yellow": "Thẻ Vàng",
+      "red": "Thẻ Đỏ",
+      "save": "Lưu",
+      "saved": "Đã lưu",
+      "loadError": "Đã xảy ra lỗi. Vui lòng thử tải lại trang.",
+      "invalidInput": "Vui lòng kiểm tra lại các giá trị đã nhập."
+    },
+    "players": {
+      "title": "Cầu Thủ",
+      "nameLabel": "Tên",
+      "positionLabel": "Vị Trí",
+      "add": "Thêm Cầu Thủ",
+      "save": "Lưu",
+      "cancel": "Hủy",
+      "edit": "Sửa",
+      "showInactive": "Hiện cầu thủ ngừng hoạt động",
+      "name": "Tên",
+      "position": "Vị Trí",
+      "status": "Trạng Thái",
+      "active": "Đang Hoạt Động",
+      "inactive": "Ngừng Hoạt Động",
+      "deactivate": "Vô Hiệu Hóa",
+      "reactivate": "Kích Hoạt Lại",
+      "loadError": "Đã xảy ra lỗi. Vui lòng thử tải lại trang.",
+      "invalidInput": "Vui lòng kiểm tra lại các giá trị đã nhập."
+    }
+  }
+}

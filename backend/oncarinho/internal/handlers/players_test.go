@@ -187,3 +187,31 @@ func TestPlayerHandlerReactivateNotFound(t *testing.T) {
 		t.Fatalf("expected 404, got %d", w.Code)
 	}
 }
+
+func TestPlayerHandlerCreateInvalidPosition(t *testing.T) {
+	r, _ := setupPlayerTestRouter(t)
+
+	body, _ := json.Marshal(map[string]string{"name": "Alex", "position": "striker"})
+	req := httptest.NewRequest(http.MethodPost, "/api/players", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d: %s", w.Code, w.Body.String())
+	}
+}
+
+func TestPlayerHandlerCreateValidPosition(t *testing.T) {
+	r, _ := setupPlayerTestRouter(t)
+
+	body, _ := json.Marshal(map[string]string{"name": "Alex", "position": "forward"})
+	req := httptest.NewRequest(http.MethodPost, "/api/players", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusCreated {
+		t.Fatalf("expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+}
