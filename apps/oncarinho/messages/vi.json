@@ -32,7 +32,8 @@
     "status": "Trạng Thái",
     "active": "Đang Hoạt Động",
     "inactive": "Ngừng Hoạt Động",
-    "empty": "Không có thống kê nào cho lựa chọn này."
+    "empty": "Không có thống kê nào cho lựa chọn này.",
+    "loadError": "Không thể tải bảng xếp hạng. Vui lòng thử tải lại trang."
   },
   "positions": {
     "goalkeeper": "Thủ Môn",

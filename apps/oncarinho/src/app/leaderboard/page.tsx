@@ -18,14 +18,25 @@ export default async function LeaderboardPage({
   const tp = await getTranslations("positions");
   const params = await searchParams;
 
-  const year: number | "all" =
+  const parsedYear =
     params.year && params.year !== "all" ? parseInt(params.year, 10) : "all";
+  const year: number | "all" =
+    parsedYear === "all" || (Number.isInteger(parsedYear) && parsedYear > 0) ? parsedYear : "all";
   const stat: Stat = VALID_STATS.includes(params.stat as Stat) ? (params.stat as Stat) : "goals";
 
-  const [entries, matchdays] = await Promise.all([
-    api.getLeaderboard(year, stat),
-    api.getMatchdays(),
-  ]);
+  let entries, matchdays;
+  try {
+    [entries, matchdays] = await Promise.all([
+      api.getLeaderboard(year, stat),
+      api.getMatchdays(),
+    ]);
+  } catch {
+    return (
+      <main className="mx-auto max-w-5xl px-4 py-12 text-center">
+        <p className="text-zen-muted">{t("loadError")}</p>
+      </main>
+    );
+  }
   const years = availableYears(matchdays);
 
   return (

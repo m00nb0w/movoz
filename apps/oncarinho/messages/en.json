@@ -32,7 +32,8 @@
     "status": "Status",
     "active": "Active",
     "inactive": "Inactive",
-    "empty": "No stats recorded for this selection."
+    "empty": "No stats recorded for this selection.",
+    "loadError": "Couldn't load the leaderboard. Try refreshing."
   },
   "positions": {
     "goalkeeper": "Goalkeeper",
