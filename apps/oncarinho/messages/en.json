@@ -64,6 +64,20 @@
       "submit": "Log in",
       "incorrectPassword": "Incorrect password",
       "genericError": "Something went wrong — try again"
+    },
+    "matchdays": {
+      "title": "Matchdays",
+      "newMatchdayLabel": "Date",
+      "create": "Create",
+      "statsTitle": "Matchday Stats",
+      "player": "Player",
+      "goals": "Goals",
+      "assists": "Assists",
+      "yellow": "Yellow",
+      "red": "Red",
+      "remove": "Remove",
+      "save": "Save",
+      "loadError": "Something went wrong. Try refreshing."
     }
   }
 }

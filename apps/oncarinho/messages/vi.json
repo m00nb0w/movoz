@@ -64,6 +64,20 @@
       "submit": "Đăng Nhập",
       "incorrectPassword": "Sai mật khẩu",
       "genericError": "Đã xảy ra lỗi — vui lòng thử lại"
+    },
+    "matchdays": {
+      "title": "Trận Đấu",
+      "newMatchdayLabel": "Ngày",
+      "create": "Tạo",
+      "statsTitle": "Thống Kê Trận Đấu",
+      "player": "Cầu Thủ",
+      "goals": "Bàn Thắng",
+      "assists": "Kiến Tạo",
+      "yellow": "Thẻ Vàng",
+      "red": "Thẻ Đỏ",
+      "remove": "Xóa",
+      "save": "Lưu",
+      "loadError": "Đã xảy ra lỗi. Vui lòng thử tải lại trang."
     }
   }
 }
