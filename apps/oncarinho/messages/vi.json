@@ -77,6 +77,24 @@
       "red": "Thẻ Đỏ",
       "save": "Lưu",
       "loadError": "Đã xảy ra lỗi. Vui lòng thử tải lại trang."
+    },
+    "players": {
+      "title": "Cầu Thủ",
+      "nameLabel": "Tên",
+      "positionLabel": "Vị Trí",
+      "add": "Thêm Cầu Thủ",
+      "save": "Lưu",
+      "cancel": "Hủy",
+      "edit": "Sửa",
+      "showInactive": "Hiện cầu thủ ngừng hoạt động",
+      "name": "Tên",
+      "position": "Vị Trí",
+      "status": "Trạng Thái",
+      "active": "Đang Hoạt Động",
+      "inactive": "Ngừng Hoạt Động",
+      "deactivate": "Vô Hiệu Hóa",
+      "reactivate": "Kích Hoạt Lại",
+      "loadError": "Đã xảy ra lỗi. Vui lòng thử tải lại trang."
     }
   }
 }

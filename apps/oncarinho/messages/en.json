@@ -77,6 +77,24 @@
       "red": "Red",
       "save": "Save",
       "loadError": "Something went wrong. Try refreshing."
+    },
+    "players": {
+      "title": "Players",
+      "nameLabel": "Name",
+      "positionLabel": "Position",
+      "add": "Add Player",
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "showInactive": "Show inactive players",
+      "name": "Name",
+      "position": "Position",
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "loadError": "Something went wrong. Try refreshing."
     }
   }
 }
