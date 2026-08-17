@@ -72,6 +72,52 @@ func TestEngineerHandlerCreateAndList(t *testing.T) {
 	}
 }
 
+func TestEngineerHandlerListActiveAll(t *testing.T) {
+	r := setupEngineerTestRouter(t)
+
+	// Create one active engineer
+	body, _ := json.Marshal(map[string]string{"name": "Alice", "started_at": "2024-01-15"})
+	createReq := httptest.NewRequest(http.MethodPost, "/api/engineers", bytes.NewReader(body))
+	createReq.Header.Set("Content-Type", "application/json")
+	createW := httptest.NewRecorder()
+	r.ServeHTTP(createW, createReq)
+	var active models.Engineer
+	json.Unmarshal(createW.Body.Bytes(), &active)
+
+	// Create another engineer and deactivate it
+	body, _ = json.Marshal(map[string]string{"name": "Bob", "started_at": "2024-01-15"})
+	createReq = httptest.NewRequest(http.MethodPost, "/api/engineers", bytes.NewReader(body))
+	createReq.Header.Set("Content-Type", "application/json")
+	createW = httptest.NewRecorder()
+	r.ServeHTTP(createW, createReq)
+	var inactive models.Engineer
+	json.Unmarshal(createW.Body.Bytes(), &inactive)
+
+	deactivateReq := httptest.NewRequest(http.MethodDelete, "/api/engineers/"+strconv.Itoa(inactive.ID), nil)
+	deactivateW := httptest.NewRecorder()
+	r.ServeHTTP(deactivateW, deactivateReq)
+
+	// Test default (active only)
+	req := httptest.NewRequest(http.MethodGet, "/api/engineers", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	var activeOnly []models.Engineer
+	json.Unmarshal(w.Body.Bytes(), &activeOnly)
+	if len(activeOnly) != 1 || activeOnly[0].ID != active.ID {
+		t.Fatalf("expected only active engineer by default, got %+v", activeOnly)
+	}
+
+	// Test ?active=all
+	req = httptest.NewRequest(http.MethodGet, "/api/engineers?active=all", nil)
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	var all []models.Engineer
+	json.Unmarshal(w.Body.Bytes(), &all)
+	if len(all) != 2 {
+		t.Fatalf("expected both engineers with active=all, got %+v", all)
+	}
+}
+
 func TestEngineerHandlerCreateMissingName(t *testing.T) {
 	r := setupEngineerTestRouter(t)
 
