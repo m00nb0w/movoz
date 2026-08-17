@@ -24,3 +24,10 @@ func setupTestDB(t *testing.T) *sql.DB {
 	t.Cleanup(func() { db.Close() })
 	return db
 }
+
+func truncateAll(t *testing.T, db *sql.DB) {
+	t.Helper()
+	if _, err := db.Exec("TRUNCATE engineers RESTART IDENTITY CASCADE"); err != nil {
+		t.Fatalf("failed to truncate tables: %v", err)
+	}
+}
