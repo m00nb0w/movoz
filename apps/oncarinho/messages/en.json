@@ -40,5 +40,21 @@
     "defender": "Defender",
     "midfielder": "Midfielder",
     "forward": "Forward"
+  },
+  "playerProfile": {
+    "back": "← Back",
+    "notFound": "Player not found.",
+    "loadError": "Couldn't load this player's profile. Try refreshing.",
+    "inactive": "Inactive",
+    "matchesPlayed": "Matches Played",
+    "goals": "Goals",
+    "assists": "Assists",
+    "yellowCards": "Yellow Cards",
+    "redCards": "Red Cards",
+    "seasonBySeason": "Season by Season",
+    "year": "Year",
+    "matches": "Matches",
+    "yellow": "Yellow",
+    "red": "Red"
   }
 }

@@ -40,5 +40,21 @@
     "defender": "Hậu Vệ",
     "midfielder": "Tiền Vệ",
     "forward": "Tiền Đạo"
+  },
+  "playerProfile": {
+    "back": "← Quay Lại",
+    "notFound": "Không tìm thấy cầu thủ.",
+    "loadError": "Không thể tải hồ sơ cầu thủ. Vui lòng thử tải lại trang.",
+    "inactive": "Ngừng Hoạt Động",
+    "matchesPlayed": "Số Trận",
+    "goals": "Bàn Thắng",
+    "assists": "Kiến Tạo",
+    "yellowCards": "Thẻ Vàng",
+    "redCards": "Thẻ Đỏ",
+    "seasonBySeason": "Theo Từng Mùa",
+    "year": "Năm",
+    "matches": "Số Trận",
+    "yellow": "Thẻ Vàng",
+    "red": "Thẻ Đỏ"
   }
 }
