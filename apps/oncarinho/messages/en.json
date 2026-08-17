@@ -56,5 +56,14 @@
     "matches": "Matches",
     "yellow": "Yellow",
     "red": "Red"
+  },
+  "admin": {
+    "login": {
+      "title": "Admin",
+      "passwordLabel": "Password",
+      "submit": "Log in",
+      "incorrectPassword": "Incorrect password",
+      "genericError": "Something went wrong — try again"
+    }
   }
 }

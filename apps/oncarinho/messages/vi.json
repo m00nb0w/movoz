@@ -56,5 +56,14 @@
     "matches": "Số Trận",
     "yellow": "Thẻ Vàng",
     "red": "Thẻ Đỏ"
+  },
+  "admin": {
+    "login": {
+      "title": "Quản Trị",
+      "passwordLabel": "Mật Khẩu",
+      "submit": "Đăng Nhập",
+      "incorrectPassword": "Sai mật khẩu",
+      "genericError": "Đã xảy ra lỗi — vui lòng thử lại"
+    }
   }
 }
