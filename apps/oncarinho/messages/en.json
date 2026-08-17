@@ -75,7 +75,6 @@
       "assists": "Assists",
       "yellow": "Yellow",
       "red": "Red",
-      "remove": "Remove",
       "save": "Save",
       "loadError": "Something went wrong. Try refreshing."
     }

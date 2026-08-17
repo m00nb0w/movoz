@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Button, IconButton } from "@movoz/ui-web";
-import { Trash2 } from "lucide-react";
+import { Button } from "@movoz/ui-web";
 import { api } from "@/lib/api/client";
 import type { Player, MatchStat } from "@/lib/api/types";
 
@@ -18,6 +17,10 @@ interface Row {
 
 const FIELDS = ["goals", "assists", "yellowCards", "redCards"] as const;
 
+function isZeroRow(row: Row): boolean {
+  return row.goals === 0 && row.assists === 0 && row.yellowCards === 0 && row.redCards === 0;
+}
+
 export default function AdminMatchdayStatsPage() {
   const t = useTranslations("admin.matchdays");
   const params = useParams<{ id: string }>();
@@ -25,6 +28,7 @@ export default function AdminMatchdayStatsPage() {
 
   const [players, setPlayers] = useState<Player[]>([]);
   const [rows, setRows] = useState<Row[]>([]);
+  const [existingPlayerIds, setExistingPlayerIds] = useState<Set<number>>(new Set());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,6 +37,7 @@ export default function AdminMatchdayStatsPage() {
       .then(([activePlayers, stats]) => {
         setPlayers(activePlayers);
         const byPlayer = new Map(stats.map((s: MatchStat) => [s.player_id, s]));
+        setExistingPlayerIds(new Set(byPlayer.keys()));
         setRows(
           activePlayers.map((p) => {
             const existing = byPlayer.get(p.id);
@@ -55,29 +60,32 @@ export default function AdminMatchdayStatsPage() {
     );
   }
 
-  async function handleRemove(playerId: number) {
-    try {
-      await api.deleteMatchdayStat(matchdayId, playerId);
-      setRows((prev) => prev.filter((row) => row.playerId !== playerId));
-    } catch {
-      setError(t("loadError"));
-    }
-  }
-
   async function handleSave() {
     setSaving(true);
     setError(null);
     try {
-      await api.upsertMatchdayStats(
-        matchdayId,
-        rows.map((row) => ({
-          player_id: row.playerId,
-          goals: row.goals,
-          assists: row.assists,
-          yellow_cards: row.yellowCards,
-          red_cards: row.redCards,
-        }))
-      );
+      // A row left at all zeros means "this player didn't play" — it must never
+      // create a match_stats row (which is what "matches played" counts), and if
+      // they previously had a nonzero row that's now been zeroed out, that row
+      // must be deleted so they stop counting as having played.
+      const toUpsert = rows.filter((row) => !isZeroRow(row));
+      const toDelete = rows.filter((row) => isZeroRow(row) && existingPlayerIds.has(row.playerId));
+
+      if (toUpsert.length > 0) {
+        await api.upsertMatchdayStats(
+          matchdayId,
+          toUpsert.map((row) => ({
+            player_id: row.playerId,
+            goals: row.goals,
+            assists: row.assists,
+            yellow_cards: row.yellowCards,
+            red_cards: row.redCards,
+          }))
+        );
+      }
+      await Promise.all(toDelete.map((row) => api.deleteMatchdayStat(matchdayId, row.playerId)));
+
+      setExistingPlayerIds(new Set(toUpsert.map((row) => row.playerId)));
     } catch {
       setError(t("loadError"));
     } finally {
@@ -98,7 +106,6 @@ export default function AdminMatchdayStatsPage() {
             <th className="py-2 text-right">{t("assists")}</th>
             <th className="py-2 text-right">{t("yellow")}</th>
             <th className="py-2 text-right">{t("red")}</th>
-            <th className="py-2" />
           </tr>
         </thead>
         <tbody>
@@ -118,13 +125,6 @@ export default function AdminMatchdayStatsPage() {
                     />
                   </td>
                 ))}
-                <td className="py-2">
-                  <IconButton
-                    icon={<Trash2 size={16} />}
-                    label={t("remove")}
-                    onClick={() => handleRemove(row.playerId)}
-                  />
-                </td>
               </tr>
             );
           })}
