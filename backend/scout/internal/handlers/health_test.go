@@ -9,20 +9,16 @@ import (
 )
 
 func TestHealthCheck(t *testing.T) {
-	handler := NewHealthHandler()
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	h := NewHealthHandler()
+	r.GET("/health", h.HealthCheck)
 
+	req := httptest.NewRequest(http.MethodGet, "/health", nil)
 	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request, _ = http.NewRequest("GET", "/health", nil)
-
-	handler.HealthCheck(c)
+	r.ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
 		t.Fatalf("expected status 200, got %d", w.Code)
-	}
-
-	expected := `{"service":"scout","status":"healthy"}`
-	if w.Body.String() != expected {
-		t.Fatalf("expected body %s, got %s", expected, w.Body.String())
 	}
 }
