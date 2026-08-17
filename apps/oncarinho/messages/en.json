@@ -19,7 +19,8 @@
     "player": "Player",
     "goals": "Goals",
     "viewFullLeaderboard": "View full leaderboard →",
-    "roster": "Roster"
+    "roster": "Roster",
+    "loadError": "Couldn't load dashboard data. Try refreshing."
   },
   "positions": {
     "goalkeeper": "Goalkeeper",

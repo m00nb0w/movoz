@@ -15,14 +15,24 @@ export default async function DashboardPage({
   const tp = await getTranslations("positions");
   const params = await searchParams;
   const currentYear = new Date().getUTCFullYear();
-  const year = params.year ? parseInt(params.year, 10) : currentYear;
+  const parsedYear = params.year ? parseInt(params.year, 10) : NaN;
+  const year = Number.isInteger(parsedYear) && parsedYear > 0 ? parsedYear : currentYear;
 
-  const [summary, players, leaderboard, matchdays] = await Promise.all([
-    api.getSummary(year),
-    api.getPlayers(),
-    api.getLeaderboard(year, "goals"),
-    api.getMatchdays(),
-  ]);
+  let summary, players, leaderboard, matchdays;
+  try {
+    [summary, players, leaderboard, matchdays] = await Promise.all([
+      api.getSummary(year),
+      api.getPlayers(),
+      api.getLeaderboard(year, "goals"),
+      api.getMatchdays(),
+    ]);
+  } catch {
+    return (
+      <main className="mx-auto max-w-5xl px-4 py-12 text-center">
+        <p className="text-zen-muted">{t("loadError")}</p>
+      </main>
+    );
+  }
 
   const years = availableYears(matchdays);
   const topScorers = leaderboard.slice(0, 5);

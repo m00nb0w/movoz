@@ -19,7 +19,8 @@
     "player": "Cầu Thủ",
     "goals": "Bàn Thắng",
     "viewFullLeaderboard": "Xem toàn bộ bảng xếp hạng →",
-    "roster": "Đội Hình"
+    "roster": "Đội Hình",
+    "loadError": "Không thể tải dữ liệu tổng quan. Vui lòng thử tải lại trang."
   },
   "positions": {
     "goalkeeper": "Thủ Môn",
