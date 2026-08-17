@@ -20,6 +20,7 @@ export default function AdminPlayersPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setError(null);
     api.getPlayers(showInactive).then(setPlayers).catch(() => setError(t("loadError")));
   }, [showInactive, t]);
 
@@ -58,15 +59,15 @@ export default function AdminPlayersPage() {
   }
 
   async function toggleActive(player: Player) {
+    setError(null);
     try {
       if (player.is_active) {
         await api.deactivatePlayer(player.id);
       } else {
         await api.reactivatePlayer(player.id);
       }
-      setPlayers((prev) =>
-        prev.map((p) => (p.id === player.id ? { ...p, is_active: !p.is_active } : p))
-      );
+      const updated = await api.getPlayers(showInactive);
+      setPlayers(updated);
     } catch {
       setError(t("loadError"));
     }
