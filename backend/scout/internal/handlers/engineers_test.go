@@ -134,3 +134,84 @@ func TestEngineerHandlerGetNotFound(t *testing.T) {
 		t.Fatalf("expected 404, got %d", w.Code)
 	}
 }
+
+func TestEngineerHandlerUpdate(t *testing.T) {
+	r := setupEngineerTestRouter(t)
+
+	body, _ := json.Marshal(map[string]string{"name": "Alex Kim", "started_at": "2024-01-15"})
+	createReq := httptest.NewRequest(http.MethodPost, "/api/engineers", bytes.NewReader(body))
+	createReq.Header.Set("Content-Type", "application/json")
+	createW := httptest.NewRecorder()
+	r.ServeHTTP(createW, createReq)
+	var created models.Engineer
+	json.Unmarshal(createW.Body.Bytes(), &created)
+
+	updateBody, _ := json.Marshal(map[string]string{"name": "Alex K.", "started_at": "2024-01-15"})
+	req := httptest.NewRequest(http.MethodPut, "/api/engineers/"+strconv.Itoa(created.ID), bytes.NewReader(updateBody))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	var updated models.Engineer
+	json.Unmarshal(w.Body.Bytes(), &updated)
+	if updated.Name != "Alex K." {
+		t.Fatalf("expected name to be updated to 'Alex K.', got %s", updated.Name)
+	}
+}
+
+func TestEngineerHandlerUpdateNotFound(t *testing.T) {
+	r := setupEngineerTestRouter(t)
+
+	body, _ := json.Marshal(map[string]string{"name": "Alex Kim", "started_at": "2024-01-15"})
+	req := httptest.NewRequest(http.MethodPut, "/api/engineers/99999", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", w.Code)
+	}
+}
+
+func TestEngineerHandlerReactivate(t *testing.T) {
+	r := setupEngineerTestRouter(t)
+
+	body, _ := json.Marshal(map[string]string{"name": "Alex Kim", "started_at": "2024-01-15"})
+	createReq := httptest.NewRequest(http.MethodPost, "/api/engineers", bytes.NewReader(body))
+	createReq.Header.Set("Content-Type", "application/json")
+	createW := httptest.NewRecorder()
+	r.ServeHTTP(createW, createReq)
+	var created models.Engineer
+	json.Unmarshal(createW.Body.Bytes(), &created)
+
+	// Deactivate first
+	deactivateReq := httptest.NewRequest(http.MethodDelete, "/api/engineers/"+strconv.Itoa(created.ID), nil)
+	deactivateW := httptest.NewRecorder()
+	r.ServeHTTP(deactivateW, deactivateReq)
+	if deactivateW.Code != http.StatusNoContent {
+		t.Fatalf("expected 204 on deactivate, got %d", deactivateW.Code)
+	}
+
+	// Reactivate
+	reactivateReq := httptest.NewRequest(http.MethodPost, "/api/engineers/"+strconv.Itoa(created.ID)+"/reactivate", nil)
+	reactivateW := httptest.NewRecorder()
+	r.ServeHTTP(reactivateW, reactivateReq)
+	if reactivateW.Code != http.StatusNoContent {
+		t.Fatalf("expected 204 on reactivate, got %d: %s", reactivateW.Code, reactivateW.Body.String())
+	}
+}
+
+func TestEngineerHandlerReactivateNotFound(t *testing.T) {
+	r := setupEngineerTestRouter(t)
+
+	req := httptest.NewRequest(http.MethodPost, "/api/engineers/99999/reactivate", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", w.Code)
+	}
+}
