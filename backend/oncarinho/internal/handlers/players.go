@@ -35,7 +35,7 @@ func (h *PlayerHandler) List(c *gin.Context) {
 func (h *PlayerHandler) Create(c *gin.Context) {
 	var req playerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "name is required"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid player data"})
 		return
 	}
 
@@ -56,7 +56,7 @@ func (h *PlayerHandler) Update(c *gin.Context) {
 
 	var req playerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "name is required"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid player data"})
 		return
 	}
 

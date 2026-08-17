@@ -1,13 +1,15 @@
 {
   "common": {
     "appName": "Oncarinho",
+    "appDescription": "Football team stats tracker",
     "loading": "Loading…",
     "allTime": "All-time"
   },
   "nav": {
     "dashboard": "Dashboard",
     "leaderboard": "Leaderboard",
-    "admin": "Admin"
+    "admin": "Admin",
+    "languageLabel": "Language"
   },
   "dashboard": {
     "title": "Team Dashboard",
@@ -70,13 +72,16 @@
       "newMatchdayLabel": "Date",
       "create": "Create",
       "statsTitle": "Matchday Stats",
+      "statsTitleForDate": "Matchday Stats — {date}",
       "player": "Player",
       "goals": "Goals",
       "assists": "Assists",
       "yellow": "Yellow",
       "red": "Red",
       "save": "Save",
-      "loadError": "Something went wrong. Try refreshing."
+      "saved": "Saved",
+      "loadError": "Something went wrong. Try refreshing.",
+      "invalidInput": "Please check the values you entered."
     },
     "players": {
       "title": "Players",
@@ -94,7 +99,8 @@
       "inactive": "Inactive",
       "deactivate": "Deactivate",
       "reactivate": "Reactivate",
-      "loadError": "Something went wrong. Try refreshing."
+      "loadError": "Something went wrong. Try refreshing.",
+      "invalidInput": "Please check the values you entered."
     }
   }
 }

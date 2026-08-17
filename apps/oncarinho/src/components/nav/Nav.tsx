@@ -8,6 +8,7 @@ import { LanguageToggle } from "./LanguageToggle";
 
 export function Nav() {
   const t = useTranslations("nav");
+  const tc = useTranslations("common");
   const pathname = usePathname();
 
   const links = [
@@ -19,7 +20,7 @@ export function Nav() {
     <nav className="border-b border-zen-border">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4">
         <Link href="/" className="font-serif text-lg font-bold text-zen-text">
-          Oncarinho
+          {tc("appName")}
         </Link>
         <div className="flex flex-wrap items-center gap-4">
           {links.map((link) => (

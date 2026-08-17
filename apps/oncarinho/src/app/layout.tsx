@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages, getLocale } from "next-intl/server";
+import { getMessages, getLocale, getTranslations } from "next-intl/server";
 import { ThemeProvider } from "@movoz/theme";
 import { Nav } from "@/components/nav/Nav";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "Oncarinho",
-  description: "Football team stats tracker",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("common");
+  return {
+    title: t("appName"),
+    description: t("appDescription"),
+  };
+}
 
 export default async function RootLayout({
   children,

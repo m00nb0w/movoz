@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@movoz/ui-web";
-import { api } from "@/lib/api/client";
+import { api, ApiError } from "@/lib/api/client";
 import type { Player, MatchStat } from "@/lib/api/types";
 
 interface Row {
@@ -23,18 +23,22 @@ function isZeroRow(row: Row): boolean {
 
 export default function AdminMatchdayStatsPage() {
   const t = useTranslations("admin.matchdays");
+  const locale = useLocale();
+  const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" });
   const params = useParams<{ id: string }>();
   const matchdayId = Number(params.id);
 
   const [players, setPlayers] = useState<Player[]>([]);
   const [rows, setRows] = useState<Row[]>([]);
   const [existingPlayerIds, setExistingPlayerIds] = useState<Set<number>>(new Set());
+  const [matchdayDate, setMatchdayDate] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([api.getPlayers(), api.getMatchdayStats(matchdayId)])
-      .then(([activePlayers, stats]) => {
+    Promise.all([api.getPlayers(), api.getMatchdayStats(matchdayId), api.getMatchdays()])
+      .then(([activePlayers, stats, matchdays]) => {
         setPlayers(activePlayers);
         const byPlayer = new Map(stats.map((s: MatchStat) => [s.player_id, s]));
         setExistingPlayerIds(new Set(byPlayer.keys()));
@@ -50,8 +54,13 @@ export default function AdminMatchdayStatsPage() {
             };
           })
         );
+        const matchday = matchdays.find((m) => m.id === matchdayId);
+        setMatchdayDate(matchday?.played_on ?? null);
       })
-      .catch(() => setError(t("loadError")));
+      .catch((err) => {
+        console.error("admin matchday stats: failed to load", err);
+        setError(t("loadError"));
+      });
   }, [matchdayId, t]);
 
   function updateRow(playerId: number, field: (typeof FIELDS)[number], value: number) {
@@ -63,6 +72,7 @@ export default function AdminMatchdayStatsPage() {
   async function handleSave() {
     setSaving(true);
     setError(null);
+    setSaved(false);
     try {
       // A row left at all zeros means "this player didn't play" — it must never
       // create a match_stats row (which is what "matches played" counts), and if
@@ -86,8 +96,10 @@ export default function AdminMatchdayStatsPage() {
       await Promise.all(toDelete.map((row) => api.deleteMatchdayStat(matchdayId, row.playerId)));
 
       setExistingPlayerIds(new Set(toUpsert.map((row) => row.playerId)));
-    } catch {
-      setError(t("loadError"));
+      setSaved(true);
+    } catch (err) {
+      console.error("admin matchday stats: failed to save", err);
+      setError(err instanceof ApiError && err.status === 400 ? t("invalidInput") : t("loadError"));
     } finally {
       setSaving(false);
     }
@@ -95,8 +107,13 @@ export default function AdminMatchdayStatsPage() {
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-12">
-      <h1 className="mb-6 font-serif text-3xl font-bold text-zen-text">{t("statsTitle")}</h1>
+      <h1 className="mb-6 font-serif text-3xl font-bold text-zen-text">
+        {matchdayDate
+          ? t("statsTitleForDate", { date: dateFormatter.format(new Date(matchdayDate)) })
+          : t("statsTitle")}
+      </h1>
       {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
+      {saved && <p className="mb-4 text-sm text-zen-text">{t("saved")}</p>}
 
       <table className="w-full text-sm">
         <thead>

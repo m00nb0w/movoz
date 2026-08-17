@@ -30,7 +30,8 @@ export default async function LeaderboardPage({
       api.getLeaderboard(year, stat),
       api.getMatchdays(),
     ]);
-  } catch {
+  } catch (err) {
+    console.error("leaderboard: failed to load data", err);
     return (
       <main className="mx-auto max-w-5xl px-4 py-12 text-center">
         <p className="text-zen-muted">{t("loadError")}</p>

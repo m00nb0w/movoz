@@ -21,6 +21,7 @@ export default function AdminLoginPage() {
       await api.login(password);
       router.push("/admin/matchdays");
     } catch (err) {
+      if (!(err instanceof ApiError && err.status === 401)) console.error(err);
       setError(
         err instanceof ApiError && err.status === 401 ? t("incorrectPassword") : t("genericError")
       );

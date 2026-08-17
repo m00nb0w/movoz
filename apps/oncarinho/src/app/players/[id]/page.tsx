@@ -11,14 +11,19 @@ export default async function PlayerProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const numericId = Number(id);
+  if (!Number.isInteger(numericId)) {
+    notFound();
+  }
   const t = await getTranslations("playerProfile");
   const tp = await getTranslations("positions");
 
   let profile;
   try {
-    profile = await api.getPlayerProfile(Number(id));
+    profile = await api.getPlayerProfile(numericId);
   } catch (err) {
     if (err instanceof ApiError && err.status === 404) notFound();
+    console.error("player profile: failed to load", err);
     return (
       <main className="mx-auto max-w-5xl px-4 py-24 text-center">
         <p className="text-zen-muted">{t("loadError")}</p>

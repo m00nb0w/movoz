@@ -1,13 +1,15 @@
 {
   "common": {
     "appName": "Oncarinho",
+    "appDescription": "Ứng dụng theo dõi thống kê đội bóng đá",
     "loading": "Đang tải…",
     "allTime": "Toàn thời gian"
   },
   "nav": {
     "dashboard": "Trang chủ",
     "leaderboard": "Bảng xếp hạng",
-    "admin": "Quản trị"
+    "admin": "Quản trị",
+    "languageLabel": "Ngôn ngữ"
   },
   "dashboard": {
     "title": "Tổng Quan Đội",
@@ -70,13 +72,16 @@
       "newMatchdayLabel": "Ngày",
       "create": "Tạo",
       "statsTitle": "Thống Kê Trận Đấu",
+      "statsTitleForDate": "Thống Kê Trận Đấu — {date}",
       "player": "Cầu Thủ",
       "goals": "Bàn Thắng",
       "assists": "Kiến Tạo",
       "yellow": "Thẻ Vàng",
       "red": "Thẻ Đỏ",
       "save": "Lưu",
-      "loadError": "Đã xảy ra lỗi. Vui lòng thử tải lại trang."
+      "saved": "Đã lưu",
+      "loadError": "Đã xảy ra lỗi. Vui lòng thử tải lại trang.",
+      "invalidInput": "Vui lòng kiểm tra lại các giá trị đã nhập."
     },
     "players": {
       "title": "Cầu Thủ",
@@ -94,7 +99,8 @@
       "inactive": "Ngừng Hoạt Động",
       "deactivate": "Vô Hiệu Hóa",
       "reactivate": "Kích Hoạt Lại",
-      "loadError": "Đã xảy ra lỗi. Vui lòng thử tải lại trang."
+      "loadError": "Đã xảy ra lỗi. Vui lòng thử tải lại trang.",
+      "invalidInput": "Vui lòng kiểm tra lại các giá trị đã nhập."
     }
   }
 }

@@ -2,20 +2,28 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button, Input, Card } from "@movoz/ui-web";
-import { api } from "@/lib/api/client";
+import { api, ApiError } from "@/lib/api/client";
 import type { Matchday } from "@/lib/api/types";
 
 export default function AdminMatchdaysPage() {
   const t = useTranslations("admin.matchdays");
+  const locale = useLocale();
+  const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" });
   const [matchdays, setMatchdays] = useState<Matchday[]>([]);
   const [newDate, setNewDate] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api.getMatchdays().then(setMatchdays).catch(() => setError(t("loadError")));
+    api
+      .getMatchdays()
+      .then(setMatchdays)
+      .catch((err) => {
+        console.error("admin matchdays: failed to load", err);
+        setError(t("loadError"));
+      });
   }, [t]);
 
   async function handleCreate(e: React.FormEvent) {
@@ -26,8 +34,9 @@ export default function AdminMatchdaysPage() {
       const matchday = await api.createMatchday(newDate);
       setMatchdays((prev) => [matchday, ...prev]);
       setNewDate("");
-    } catch {
-      setError(t("loadError"));
+    } catch (err) {
+      console.error("admin matchdays: failed to create", err);
+      setError(err instanceof ApiError && err.status === 400 ? t("invalidInput") : t("loadError"));
     } finally {
       setCreating(false);
     }
@@ -57,7 +66,7 @@ export default function AdminMatchdaysPage() {
         {matchdays.map((matchday) => (
           <li key={matchday.id} className="border-b border-zen-border py-3">
             <Link href={`/admin/matchdays/${matchday.id}`} className="hover:underline">
-              {matchday.played_on}
+              {dateFormatter.format(new Date(matchday.played_on))}
             </Link>
           </li>
         ))}

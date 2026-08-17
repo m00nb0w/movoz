@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button, Input, Badge, Dropdown } from "@movoz/ui-web";
-import { api } from "@/lib/api/client";
+import { api, ApiError } from "@/lib/api/client";
 import type { Player, Position } from "@/lib/api/types";
 
 const POSITIONS: Position[] = ["goalkeeper", "defender", "midfielder", "forward"];
@@ -21,7 +21,13 @@ export default function AdminPlayersPage() {
 
   useEffect(() => {
     setError(null);
-    api.getPlayers(showInactive).then(setPlayers).catch(() => setError(t("loadError")));
+    api
+      .getPlayers(showInactive)
+      .then(setPlayers)
+      .catch((err) => {
+        console.error("admin players: failed to load", err);
+        setError(t("loadError"));
+      });
   }, [showInactive, t]);
 
   function startEdit(player: Player) {
@@ -51,8 +57,9 @@ export default function AdminPlayersPage() {
         setName("");
         setPosition(null);
       }
-    } catch {
-      setError(t("loadError"));
+    } catch (err) {
+      console.error("admin players: failed to save", err);
+      setError(err instanceof ApiError && err.status === 400 ? t("invalidInput") : t("loadError"));
     } finally {
       setSaving(false);
     }
@@ -68,7 +75,8 @@ export default function AdminPlayersPage() {
       }
       const updated = await api.getPlayers(showInactive);
       setPlayers(updated);
-    } catch {
+    } catch (err) {
+      console.error("admin players: failed to toggle active state", err);
       setError(t("loadError"));
     }
   }
