@@ -9,3 +9,6 @@ Engineering documentation — architecture, design docs, component specs, 1:3:1 
 
 ### [Specs](./specs/index.md)
 Product requirements documents — feature specs, user stories, and acceptance criteria organized by project.
+
+### [Design](./design/index.md)
+UI / UX design handoffs and prototypes — visual + behavioral specs that pair with product specs.

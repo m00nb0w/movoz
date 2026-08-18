@@ -9,12 +9,12 @@
     "./globals.css": "./src/globals.css"
   },
   "peerDependencies": {
-    "react": "^18.0.0",
-    "lucide-react": "^0.400.0"
+    "react": "^18.0.0 || ^19.0.0",
+    "lucide-react": ">=0.400.0"
   },
   "devDependencies": {
     "@movoz/tsconfig": "workspace:*",
-    "@types/react": "^18.3.0",
-    "typescript": "^5.4.0"
+    "@types/react": "catalog:",
+    "typescript": "catalog:"
   }
 }

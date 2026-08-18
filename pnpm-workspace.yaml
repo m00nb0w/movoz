@@ -1,3 +1,24 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+# Single source of truth for versions shared across apps.
+# Reference from package.json with `"react": "catalog:"`, etc.
+# Bumping a version here updates every consumer in one place.
+catalog:
+  next: ^15.0.0
+  react: ^19.0.0
+  react-dom: ^19.0.0
+  "@types/react": ^19.0.0
+  "@types/react-dom": ^19.0.0
+  "@types/node": ^20.0.0
+  eslint: ^8.57.0
+  eslint-config-next: ^15.0.0
+  typescript: ^5.4.0
+  tailwindcss: ^3.4.4
+  postcss: ^8.4.38
+  autoprefixer: ^10.4.19
+  lucide-react: ^0.460.0
+  tsup: ^8.0.0
+  clsx: ^2.1.0
+  tailwind-merge: ^2.3.0

@@ -8,6 +8,6 @@
     "@movoz/tokens": "workspace:*"
   },
   "devDependencies": {
-    "tailwindcss": "^3.4.4"
+    "tailwindcss": "catalog:"
   }
 }
