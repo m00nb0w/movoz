@@ -28,6 +28,8 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 	engineerCardHandler := handlers.NewEngineerCardHandler(scoreStore, engineerStore)
 	cycleViewHandler := handlers.NewCycleViewHandler(scoreStore, engineerStore, cycleStore)
 	dashboardHandler := handlers.NewDashboardHandler(scoreStore, engineerStore)
+	metricStore := store.NewMetricStore(db)
+	metricsHandler := handlers.NewMetricsHandler(metricStore, engineerStore)
 
 	r := gin.Default()
 
@@ -67,6 +69,7 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 
 		api.GET("/engineers/:id/card", engineerCardHandler.Card)
 		api.GET("/engineers/:id/trend", engineerCardHandler.Trend)
+		api.GET("/engineers/:id/metrics", metricsHandler.Get)
 	}
 
 	return r
