@@ -253,6 +253,157 @@ func TestJiraClientFetchTicketStatsRespectsContextCancellation(t *testing.T) {
 	}
 }
 
+func TestJiraClientFetchTicketStatsPaginatesAcrossMultiplePages(t *testing.T) {
+	var requestCount int
+	var seenStartAts []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestCount++
+		startAt := r.URL.Query().Get("startAt")
+		seenStartAts = append(seenStartAts, startAt)
+
+		var issues []map[string]interface{}
+		switch startAt {
+		case "0":
+			for i := 0; i < 50; i++ {
+				issues = append(issues, map[string]interface{}{"fields": map[string]interface{}{"customfield_10016": 1.0}})
+			}
+		case "50":
+			for i := 0; i < 25; i++ {
+				issues = append(issues, map[string]interface{}{"fields": map[string]interface{}{"customfield_10016": 1.0}})
+			}
+		default:
+			t.Errorf("unexpected startAt value %q", startAt)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"total":  75,
+			"issues": issues,
+		})
+	}))
+	defer server.Close()
+
+	client := NewJiraClient(server.URL, "manager@example.com", "fake-token", server.Client())
+
+	ticketsClosed, complexityScore, err := client.FetchTicketStats(
+		context.Background(), "abc123", []string{"ENG"},
+		time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2026, 1, 14, 0, 0, 0, 0, time.UTC),
+	)
+	if err != nil {
+		t.Fatalf("fetch ticket stats failed: %v", err)
+	}
+	if ticketsClosed != 75 {
+		t.Fatalf("expected 75 tickets closed (from total), got %d", ticketsClosed)
+	}
+	// Each of the 75 issues (across both pages) contributes 1.0 to the
+	// complexity score. If pagination were broken and only the first page
+	// were read, this would come back as 50, not 75.
+	if complexityScore != 75 {
+		t.Fatalf("expected complexity score summed across both pages = 75 (not just first page's 50), got %v", complexityScore)
+	}
+	if requestCount != 2 {
+		t.Fatalf("expected exactly 2 HTTP requests (2 pages of 50 + 25), got %d", requestCount)
+	}
+	if len(seenStartAts) != 2 || seenStartAts[0] != "0" || seenStartAts[1] != "50" {
+		t.Fatalf("expected startAt sequence [0, 50], got %v", seenStartAts)
+	}
+}
+
+func TestJiraClientFetchTicketStatsPaginationStopsOnEmptyPageWithoutInfiniteLoop(t *testing.T) {
+	// Guards against an infinite loop if a server reports a total larger
+	// than the issues it actually has available (e.g. total: 5 but the
+	// second page comes back empty instead of erroring). FetchTicketStats
+	// must terminate rather than looping forever re-requesting the same or
+	// advancing startAt indefinitely.
+	var requestCount int
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestCount++
+		startAt := r.URL.Query().Get("startAt")
+		w.Header().Set("Content-Type", "application/json")
+		if startAt == "0" {
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"total": 5,
+				"issues": []map[string]interface{}{
+					{"fields": map[string]interface{}{"customfield_10016": 2.0}},
+					{"fields": map[string]interface{}{"customfield_10016": 3.0}},
+				},
+			})
+			return
+		}
+		// Any subsequent page: server has nothing more, despite total: 5.
+		json.NewEncoder(w).Encode(map[string]interface{}{"total": 5, "issues": []map[string]interface{}{}})
+	}))
+	defer server.Close()
+
+	client := NewJiraClient(server.URL, "manager@example.com", "fake-token", server.Client())
+
+	done := make(chan struct{})
+	var ticketsClosed int
+	var complexityScore float64
+	var fetchErr error
+	go func() {
+		ticketsClosed, complexityScore, fetchErr = client.FetchTicketStats(
+			context.Background(), "abc123", []string{"ENG"},
+			time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2026, 1, 14, 0, 0, 0, 0, time.UTC),
+		)
+		close(done)
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatalf("FetchTicketStats did not return within 5s — likely infinite pagination loop")
+	}
+
+	if fetchErr != nil {
+		t.Fatalf("fetch ticket stats failed: %v", fetchErr)
+	}
+	if ticketsClosed != 5 {
+		t.Fatalf("expected ticketsClosed=5 (from total), got %d", ticketsClosed)
+	}
+	if complexityScore != 5 {
+		t.Fatalf("expected complexityScore=5 (2+3 from the one non-empty page), got %v", complexityScore)
+	}
+	if requestCount != 2 {
+		t.Fatalf("expected exactly 2 requests (first page + one empty page before stopping), got %d", requestCount)
+	}
+}
+
+func TestJiraClientFetchTicketStatsPageErrorFailsWholeCall(t *testing.T) {
+	// The first page succeeds; the second page (triggered by pagination)
+	// fails. The whole call must return an error, not silently return
+	// partial results.
+	var requestCount int
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestCount++
+		startAt := r.URL.Query().Get("startAt")
+		if startAt == "0" {
+			w.Header().Set("Content-Type", "application/json")
+			var issues []map[string]interface{}
+			for i := 0; i < 50; i++ {
+				issues = append(issues, map[string]interface{}{"fields": map[string]interface{}{"customfield_10016": 1.0}})
+			}
+			json.NewEncoder(w).Encode(map[string]interface{}{"total": 75, "issues": issues})
+			return
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer server.Close()
+
+	client := NewJiraClient(server.URL, "manager@example.com", "fake-token", server.Client())
+
+	ticketsClosed, complexityScore, err := client.FetchTicketStats(
+		context.Background(), "abc123", []string{"ENG"},
+		time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2026, 1, 14, 0, 0, 0, 0, time.UTC),
+	)
+	if err == nil {
+		t.Fatalf("expected error when a later page fails, got nil (tickets=%d complexity=%v)", ticketsClosed, complexityScore)
+	}
+	if requestCount != 2 {
+		t.Fatalf("expected exactly 2 requests (first page succeeds, second page fails), got %d", requestCount)
+	}
+}
+
 func TestJiraClientFetchTicketStatsDateRangeIsHalfOpen(t *testing.T) {
 	var seenJQL string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
