@@ -41,7 +41,11 @@ type searchIssuesResponse struct {
 // FetchPRStats returns the number of pull requests username raised and the
 // number they reviewed, across repos, with created dates in [since, until]
 // (GitHub's day-granularity date-range search, "created:YYYY-MM-DD..YYYY-MM-DD",
-// is inclusive of both endpoints).
+// is inclusive of both endpoints). Because both endpoints are inclusive,
+// callers computing consecutive sync-cycle boundaries must not pass the same
+// date as both one cycle's until and the next cycle's since — doing so will
+// double-count that boundary day's PRs in both cycles' snapshots; offset by
+// one day (e.g. next since = previous until + 24h) to avoid overlap.
 //
 // If repos is empty, FetchPRStats returns (0, 0, nil) without making any
 // request, since an unscoped query would search every repo on GitHub rather

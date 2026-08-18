@@ -43,6 +43,45 @@ func TestGitHubClientFetchPRStats(t *testing.T) {
 	}
 }
 
+func TestGitHubClientFetchPRStatsMultiRepoAddsRepoQualifierPerRepo(t *testing.T) {
+	var seenQueries []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		seenQueries = append(seenQueries, r.URL.Query().Get("q"))
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]int{"total_count": 1})
+	}))
+	defer server.Close()
+
+	client := NewGitHubClient("fake-token", server.Client())
+	client.baseURL = server.URL
+
+	if _, _, err := client.FetchPRStats(
+		context.Background(), "octocat", []string{"org/repo-a", "org/repo-b", "org/repo-c"},
+		time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC), time.Date(2026, 1, 14, 0, 0, 0, 0, time.UTC),
+	); err != nil {
+		t.Fatalf("fetch pr stats failed: %v", err)
+	}
+
+	// FetchPRStats issues one request for raised PRs and one for reviewed
+	// PRs; both must carry a separate "repo:" qualifier per configured repo.
+	if len(seenQueries) != 2 {
+		t.Fatalf("expected 2 requests (raised + reviewed), got %d: %v", len(seenQueries), seenQueries)
+	}
+	for _, q := range seenQueries {
+		for _, repo := range []string{"repo:org/repo-a", "repo:org/repo-b", "repo:org/repo-c"} {
+			if !strings.Contains(q, repo) {
+				t.Fatalf("expected query %q to contain %q", q, repo)
+			}
+		}
+		// Guard against a sloppy implementation that folds all repos into a
+		// single qualifier (e.g. "repo:org/repo-a,org/repo-b") instead of one
+		// "repo:" qualifier per repo, which GitHub's search syntax requires.
+		if strings.Count(q, "repo:") != 3 {
+			t.Fatalf("expected exactly 3 \"repo:\" qualifiers in query %q, got %d", q, strings.Count(q, "repo:"))
+		}
+	}
+}
+
 func TestGitHubClientFetchPRStatsSendsBearerAuthAndAcceptHeaders(t *testing.T) {
 	var gotAuth, gotAccept string
 	var reqCount int
