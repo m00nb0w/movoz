@@ -1,12 +1,10 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 
@@ -15,12 +13,11 @@ import (
 	"scout/internal/store"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/lib/pq"
 )
 
 func setupEngineerCardTestRouter(t *testing.T) (*gin.Engine, *store.EngineerStore, *store.MainAttributeStore, *store.SubAttributeStore, *store.CycleStore, *store.RankingStore, *store.ScoreStore) {
 	gin.SetMode(gin.TestMode)
-	db := setupTestDB(t)
+	db := setupTestDBForHandlers(t)
 
 	engineerStore := store.NewEngineerStore(db)
 	mainStore := store.NewMainAttributeStore(db)
@@ -37,28 +34,11 @@ func setupEngineerCardTestRouter(t *testing.T) (*gin.Engine, *store.EngineerStor
 	return r, engineerStore, mainStore, subStore, cycleStore, rankingStore, scoreStore
 }
 
-func setupTestDB(t *testing.T) *sql.DB {
-	t.Helper()
-	url := os.Getenv("TEST_DATABASE_URL")
-	if url == "" {
-		url = "postgres://localhost/scout_test?sslmode=disable"
-	}
-	db, err := sql.Open("postgres", url)
-	if err != nil {
-		t.Fatalf("failed to open test db: %v", err)
-	}
-	if err := db.Ping(); err != nil {
-		t.Skipf("skipping: test database not available at %s: %v", url, err)
-	}
-	t.Cleanup(func() { db.Close() })
-	return db
-}
-
 // TestEngineerCardHandlerValid tests the happy path: engineer with rankings
 // in a cycle gets a card with hand-computed expected scores.
 func TestEngineerCardHandlerValid(t *testing.T) {
 	r, engineerStore, mainStore, subStore, cycleStore, rankingStore, _ := setupEngineerCardTestRouter(t)
-	db := setupTestDB(t)
+	db := setupTestDBForHandlers(t)
 	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
 		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
 			t.Fatalf("failed to truncate %s: %v", table, err)
@@ -114,7 +94,7 @@ func TestEngineerCardHandlerValid(t *testing.T) {
 // card for a non-existent engineer returns 404.
 func TestEngineerCardHandlerNotFound(t *testing.T) {
 	r, _, _, _, cycleStore, _, _ := setupEngineerCardTestRouter(t)
-	db := setupTestDB(t)
+	db := setupTestDBForHandlers(t)
 	for _, table := range []string{"rating_cycles", "engineers"} {
 		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
 			t.Fatalf("failed to truncate %s: %v", table, err)
@@ -148,7 +128,7 @@ func TestEngineerCardHandlerInvalidEngineerID(t *testing.T) {
 // TestEngineerCardHandlerMissingCycleId tests the missing cycleId query param case.
 func TestEngineerCardHandlerMissingCycleId(t *testing.T) {
 	r, engineerStore, _, _, _, _, _ := setupEngineerCardTestRouter(t)
-	db := setupTestDB(t)
+	db := setupTestDBForHandlers(t)
 	for _, table := range []string{"engineers"} {
 		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
 			t.Fatalf("failed to truncate %s: %v", table, err)
@@ -169,7 +149,7 @@ func TestEngineerCardHandlerMissingCycleId(t *testing.T) {
 // TestEngineerCardHandlerInvalidCycleId tests the invalid cycleId query param case.
 func TestEngineerCardHandlerInvalidCycleId(t *testing.T) {
 	r, engineerStore, _, _, _, _, _ := setupEngineerCardTestRouter(t)
-	db := setupTestDB(t)
+	db := setupTestDBForHandlers(t)
 	for _, table := range []string{"engineers"} {
 		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
 			t.Fatalf("failed to truncate %s: %v", table, err)
@@ -191,7 +171,7 @@ func TestEngineerCardHandlerInvalidCycleId(t *testing.T) {
 // across all past cycles an engineer has rankings in, in chronological order.
 func TestEngineerTrendHandlerValid(t *testing.T) {
 	r, engineerStore, mainStore, subStore, cycleStore, rankingStore, _ := setupEngineerCardTestRouter(t)
-	db := setupTestDB(t)
+	db := setupTestDBForHandlers(t)
 	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
 		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
 			t.Fatalf("failed to truncate %s: %v", table, err)
@@ -203,25 +183,27 @@ func TestEngineerTrendHandlerValid(t *testing.T) {
 	main, _ := mainStore.Create("technical", "Technical Skills")
 	sub, _ := subStore.Create(main.ID, "Code Review", nil)
 
-	// Create three cycles with different dates.
+	// Create three cycles with different dates, in non-chronological order to test
+	// that sorting happens correctly (not relying on insertion/ID order).
 	base := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 	cycle1Start := base
 	cycle2Start := base.Add(24 * time.Hour)
 	cycle3Start := base.Add(2 * 24 * time.Hour)
 
-	cycle1, _ := cycleStore.Create(cycle1Start, cycle1Start.AddDate(0, 0, 14))
-	cycle2, _ := cycleStore.Create(cycle2Start, cycle2Start.AddDate(0, 0, 14))
+	// Create in order: cycle3, cycle2, cycle1 (reverse chronological)
 	cycle3, _ := cycleStore.Create(cycle3Start, cycle3Start.AddDate(0, 0, 14))
+	cycle2, _ := cycleStore.Create(cycle2Start, cycle2Start.AddDate(0, 0, 14))
+	cycle1, _ := cycleStore.Create(cycle1Start, cycle1Start.AddDate(0, 0, 14))
 
 	// Submit rankings: Emma ranks 1st in cycles 1, 3; ranks 2nd in cycle 2.
+	if _, err := rankingStore.SubmitRanking(cycle3.ID, sub.ID, []scoring.RankEntry{{EngineerID: e1.ID, Rank: 1}, {EngineerID: e2.ID, Rank: 2}}); err != nil {
+		t.Fatalf("submit cycle3 ranking failed: %v", err)
+	}
 	if _, err := rankingStore.SubmitRanking(cycle1.ID, sub.ID, []scoring.RankEntry{{EngineerID: e1.ID, Rank: 1}, {EngineerID: e2.ID, Rank: 2}}); err != nil {
 		t.Fatalf("submit cycle1 ranking failed: %v", err)
 	}
 	if _, err := rankingStore.SubmitRanking(cycle2.ID, sub.ID, []scoring.RankEntry{{EngineerID: e1.ID, Rank: 2}, {EngineerID: e2.ID, Rank: 1}}); err != nil {
 		t.Fatalf("submit cycle2 ranking failed: %v", err)
-	}
-	if _, err := rankingStore.SubmitRanking(cycle3.ID, sub.ID, []scoring.RankEntry{{EngineerID: e1.ID, Rank: 1}, {EngineerID: e2.ID, Rank: 2}}); err != nil {
-		t.Fatalf("submit cycle3 ranking failed: %v", err)
 	}
 
 	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/engineers/%d/trend", e1.ID), nil)
@@ -268,7 +250,7 @@ func TestEngineerTrendHandlerValid(t *testing.T) {
 // with no rating history: returns an empty slice, not an error.
 func TestEngineerTrendHandlerNoHistory(t *testing.T) {
 	r, engineerStore, _, _, _, _, _ := setupEngineerCardTestRouter(t)
-	db := setupTestDB(t)
+	db := setupTestDBForHandlers(t)
 	for _, table := range []string{"rating_cycles", "engineers"} {
 		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
 			t.Fatalf("failed to truncate %s: %v", table, err)
