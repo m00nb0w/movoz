@@ -84,3 +84,23 @@ func TestCycleViewHandlerNotFound(t *testing.T) {
 		t.Fatalf("expected 404, got %d", w.Code)
 	}
 }
+
+func TestCycleViewHandlerInvalidCycleID(t *testing.T) {
+	db := setupTestDBForHandlers(t)
+	engineerStore := store.NewEngineerStore(db)
+	cycleStore := store.NewCycleStore(db)
+	scoreStore := store.NewScoreStore(db)
+
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	h := NewCycleViewHandler(scoreStore, engineerStore, cycleStore)
+	r.GET("/api/cycles/:id/scores", h.Get)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/cycles/not-a-number/scores", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for invalid cycle ID, got %d", w.Code)
+	}
+}

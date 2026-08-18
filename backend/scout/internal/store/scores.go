@@ -169,38 +169,19 @@ func (s *ScoreStore) EngineerTrend(engineerStore *EngineerStore, engineerID int)
 	return trend, nil
 }
 
-// CycleScores returns every engineer who has at least one ranking in this
-// cycle, each with their Overall + main-attribute scores as of that cycle
-// (F15) — so the team can be compared at a single point in time.
+// CycleScores returns every active engineer with their Overall + main-attribute
+// scores as of the given cycle (F15) — so the team can be compared at a single
+// point in time. Active engineers with no rankings for this cycle appear with
+// nil Overall and empty MainAttributes. Deactivated engineers are excluded even
+// if they have rankings in the cycle.
 func (s *ScoreStore) CycleScores(engineerStore *EngineerStore, cycleID int) ([]models.EngineerCycleScore, error) {
-	rows, err := s.db.Query(
-		`SELECT DISTINCT e.id, e.name
-		 FROM engineers e
-		 JOIN sub_attribute_rankings sar ON sar.engineer_id = e.id
-		 WHERE sar.cycle_id = $1
-		 ORDER BY e.name`,
-		cycleID,
-	)
+	activeIDs, err := engineerStore.ListActiveIDs()
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
-	engineerIDs := []int{}
-	for rows.Next() {
-		var id int
-		var name string
-		if err := rows.Scan(&id, &name); err != nil {
-			return nil, err
-		}
-		engineerIDs = append(engineerIDs, id)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	results := make([]models.EngineerCycleScore, 0, len(engineerIDs))
-	for _, id := range engineerIDs {
+	results := make([]models.EngineerCycleScore, 0, len(activeIDs))
+	for _, id := range activeIDs {
 		engineer, err := engineerStore.GetByID(id)
 		if err != nil {
 			return nil, err

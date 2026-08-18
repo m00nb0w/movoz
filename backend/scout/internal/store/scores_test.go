@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"scout/internal/models"
 	"scout/internal/scoring"
 )
 
@@ -706,8 +707,9 @@ func TestScoreStoreEngineerTrendNoHistory(t *testing.T) {
 }
 
 // TestScoreStoreCycleScores tests the cycle view endpoint (F15): returns all
-// engineers who have rankings in a given cycle, each with their Overall + main-attribute
-// scores, hand-computed with exact expected values.
+// active engineers with their Overall + main-attribute scores for the cycle,
+// hand-computed with exact expected values. For n=2 engineers, rank 1 scores 100,
+// rank 2 scores 50 per RankToScore (linear interpolation).
 func TestScoreStoreCycleScores(t *testing.T) {
 	db := setupTestDB(t)
 	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
@@ -723,6 +725,7 @@ func TestScoreStoreCycleScores(t *testing.T) {
 	rankingStore := NewRankingStore(db, engineerStore)
 	scoreStore := NewScoreStore(db)
 
+	// Create 2 active engineers: Alex (rank 1, expects 100) and Sam (rank 2, expects 50).
 	e1, _ := engineerStore.Create("Alex", nil, nil, nil, time.Now())
 	e2, _ := engineerStore.Create("Sam", nil, nil, nil, time.Now())
 	main, _ := mainStore.Create("test_main_cv", "Test Main CV")
@@ -735,6 +738,104 @@ func TestScoreStoreCycleScores(t *testing.T) {
 		t.Fatalf("cycle scores failed: %v", err)
 	}
 	if len(scores) != 2 {
-		t.Fatalf("expected 2 engineers in cycle view, got %+v", scores)
+		t.Fatalf("expected 2 engineers in cycle view, got %d", len(scores))
+	}
+
+	// Verify scores by engineer name (order may vary).
+	scoresByName := make(map[string]*models.EngineerCycleScore)
+	for i := range scores {
+		scoresByName[scores[i].Engineer.Name] = &scores[i]
+	}
+
+	alexScore := scoresByName["Alex"]
+	if alexScore == nil {
+		t.Fatalf("expected Alex in cycle scores")
+	}
+	if alexScore.Overall == nil || *alexScore.Overall != 100 {
+		t.Fatalf("expected Alex overall score 100 (rank 1 of 2), got %v", alexScore.Overall)
+	}
+	if len(alexScore.MainAttributes) != 1 || alexScore.MainAttributes[0].Score != 100 {
+		t.Fatalf("expected Alex main attribute score 100, got %+v", alexScore.MainAttributes)
+	}
+
+	samScore := scoresByName["Sam"]
+	if samScore == nil {
+		t.Fatalf("expected Sam in cycle scores")
+	}
+	if samScore.Overall == nil || *samScore.Overall != 50 {
+		t.Fatalf("expected Sam overall score 50 (rank 2 of 2), got %v", samScore.Overall)
+	}
+	if len(samScore.MainAttributes) != 1 || samScore.MainAttributes[0].Score != 50 {
+		t.Fatalf("expected Sam main attribute score 50, got %+v", samScore.MainAttributes)
+	}
+}
+
+// TestScoreStoreCycleScoresActiveEngineerWithNoRankings verifies that an active
+// engineer with no rankings for the cycle appears in the cycle view with nil
+// Overall and empty MainAttributes, rather than being silently dropped. This is
+// tested by creating an engineer AFTER ranking submission, so the engineer is
+// active but has no data for that cycle (ValidatePermutation requires all active
+// engineers be ranked at submission time).
+func TestScoreStoreCycleScoresActiveEngineerWithNoRankings(t *testing.T) {
+	db := setupTestDB(t)
+	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
+		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
+			t.Fatalf("failed to truncate %s: %v", table, err)
+		}
+	}
+
+	engineerStore := NewEngineerStore(db)
+	mainStore := NewMainAttributeStore(db)
+	subStore := NewSubAttributeStore(db)
+	cycleStore := NewCycleStore(db)
+	rankingStore := NewRankingStore(db, engineerStore)
+	scoreStore := NewScoreStore(db)
+
+	// Create e1 and submit ranking for the cycle.
+	e1, _ := engineerStore.Create("Alex", nil, nil, nil, time.Now())
+	main, _ := mainStore.Create("test_main_no_rank", "Test Main No Rank")
+	sub, _ := subStore.Create(main.ID, "Ownership", nil)
+	cycle, _ := cycleStore.Create(time.Now(), time.Now().AddDate(0, 0, 14))
+	rankingStore.SubmitRanking(cycle.ID, sub.ID, []scoring.RankEntry{{EngineerID: e1.ID, Rank: 1}})
+
+	// Create e2 AFTER ranking submission. Now e2 is active but has no rankings for this cycle.
+	_, _ = engineerStore.Create("Sam", nil, nil, nil, time.Now())
+
+	scores, err := scoreStore.CycleScores(engineerStore, cycle.ID)
+	if err != nil {
+		t.Fatalf("cycle scores failed: %v", err)
+	}
+	// Both active engineers should appear in the result.
+	if len(scores) != 2 {
+		t.Fatalf("expected 2 active engineers (one with rankings, one without), got %d", len(scores))
+	}
+
+	scoresByName := make(map[string]*models.EngineerCycleScore)
+	for i := range scores {
+		scoresByName[scores[i].Engineer.Name] = &scores[i]
+	}
+
+	// Alex should have scores.
+	alexScore := scoresByName["Alex"]
+	if alexScore == nil {
+		t.Fatalf("expected Alex in cycle scores")
+	}
+	if alexScore.Overall == nil || *alexScore.Overall != 100 {
+		t.Fatalf("expected Alex overall 100, got %v", alexScore.Overall)
+	}
+
+	// Sam (active but unranked) should appear with nil overall and empty main attributes.
+	samScore := scoresByName["Sam"]
+	if samScore == nil {
+		t.Fatalf("expected Sam (active, unranked engineer) in cycle scores")
+	}
+	if samScore.Overall != nil {
+		t.Fatalf("expected Sam overall to be nil (unranked), got %v", *samScore.Overall)
+	}
+	if samScore.MainAttributes == nil {
+		t.Fatalf("expected empty main attributes slice, got nil")
+	}
+	if len(samScore.MainAttributes) != 0 {
+		t.Fatalf("expected Sam main attributes to be empty (unranked), got %d", len(samScore.MainAttributes))
 	}
 }
