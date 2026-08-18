@@ -20,12 +20,12 @@ func TestValidatePermutationRejectsTie(t *testing.T) {
 	}
 }
 
-func TestValidatePermutationRejectsGap(t *testing.T) {
+func TestValidatePermutationRejectsOutOfRangeRank(t *testing.T) {
 	entries := []RankEntry{{EngineerID: 1, Rank: 1}, {EngineerID: 2, Rank: 3}}
 	active := []int{1, 2}
 
 	if err := ValidatePermutation(entries, active); err == nil {
-		t.Fatal("expected error for gap in ranks (1, 3 with only 2 engineers)")
+		t.Fatal("expected error for out-of-range rank (3 exceeds N=2)")
 	}
 }
 
@@ -49,7 +49,7 @@ func TestValidatePermutationRejectsUnknownEngineer(t *testing.T) {
 
 func TestValidatePermutationRejectsDuplicateEngineer(t *testing.T) {
 	entries := []RankEntry{{EngineerID: 1, Rank: 1}, {EngineerID: 1, Rank: 2}}
-	active := []int{1}
+	active := []int{1, 2}
 
 	if err := ValidatePermutation(entries, active); err == nil {
 		t.Fatal("expected error for duplicate engineer entry")

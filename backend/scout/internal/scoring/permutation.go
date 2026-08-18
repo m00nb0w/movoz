@@ -40,11 +40,5 @@ func ValidatePermutation(entries []RankEntry, activeEngineerIDs []int) error {
 		seenRanks[e.Rank] = true
 	}
 
-	for rank := 1; rank <= len(entries); rank++ {
-		if !seenRanks[rank] {
-			return fmt.Errorf("rank %d is missing (ranks must be a contiguous 1..%d sequence)", rank, len(entries))
-		}
-	}
-
 	return nil
 }
