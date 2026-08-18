@@ -15,6 +15,7 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 	mainAttributeStore := store.NewMainAttributeStore(db)
 	subAttributeStore := store.NewSubAttributeStore(db)
 	cycleStore := store.NewCycleStore(db)
+	rankingStore := store.NewRankingStore(db, engineerStore)
 
 	healthHandler := handlers.NewHealthHandler()
 	authHandler := handlers.NewAuthHandler(cfg.AdminPassword, cfg.SessionSecret, cfg.CookieSecure)
@@ -22,6 +23,7 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 	mainAttributeHandler := handlers.NewMainAttributeHandler(mainAttributeStore)
 	subAttributeHandler := handlers.NewSubAttributeHandler(subAttributeStore, mainAttributeStore)
 	cycleHandler := handlers.NewCycleHandler(cycleStore)
+	rankingHandler := handlers.NewRankingHandler(rankingStore, cycleStore, subAttributeStore)
 
 	r := gin.Default()
 
@@ -53,6 +55,9 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 
 		api.GET("/cycles", cycleHandler.List)
 		api.POST("/cycles", cycleHandler.Create)
+
+		api.PUT("/cycles/:id/sub-attributes/:subId/ranking", rankingHandler.Submit)
+		api.GET("/cycles/:id/sub-attributes/:subId/ranking", rankingHandler.Get)
 	}
 
 	return r
