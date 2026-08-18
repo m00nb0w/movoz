@@ -1,12 +1,16 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
 
 	"scout/internal/config"
 	"scout/internal/database"
+	"scout/internal/integrations"
+	"scout/internal/store"
+	"scout/internal/syncer"
 
 	_ "github.com/lib/pq"
 )
@@ -67,6 +71,16 @@ func main() {
 		log.Fatalf("could not connect to database: %v", err)
 	}
 	defer db.Close()
+
+	githubClient := integrations.NewGitHubClient(cfg.GitHubToken, nil)
+	jiraClient := integrations.NewJiraClient(cfg.JiraBaseURL, cfg.JiraEmail, cfg.JiraAPIToken, nil)
+	engineerStoreForSync := store.NewEngineerStore(db)
+	metricStoreForSync := store.NewMetricStore(db)
+	syncWorker := syncer.NewSyncer(engineerStoreForSync, metricStoreForSync, githubClient, jiraClient, cfg.GitHubRepos, cfg.JiraProjects)
+
+	syncCtx, cancelSync := context.WithCancel(context.Background())
+	defer cancelSync()
+	syncer.StartScheduler(syncCtx, syncWorker, cfg.SyncInterval)
 
 	r := buildRouter(db, cfg)
 
