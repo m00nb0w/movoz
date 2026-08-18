@@ -16,14 +16,22 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 	subAttributeStore := store.NewSubAttributeStore(db)
 
 	healthHandler := handlers.NewHealthHandler()
+	authHandler := handlers.NewAuthHandler(cfg.AdminPassword, cfg.SessionSecret, cfg.CookieSecure)
 	engineerHandler := handlers.NewEngineerHandler(engineerStore)
 	mainAttributeHandler := handlers.NewMainAttributeHandler(mainAttributeStore)
 	subAttributeHandler := handlers.NewSubAttributeHandler(subAttributeStore, mainAttributeStore)
 
 	r := gin.Default()
+
+	// Exempt from auth: infra liveness probe and the login endpoint itself
+	// (which by definition cannot require a session). Every other route
+	// below sits behind RequireAuth — there is no public application-data
+	// group, per NF1.
 	r.GET("/health", healthHandler.HealthCheck)
+	r.POST("/api/auth/login", authHandler.Login)
 
 	api := r.Group("/api")
+	api.Use(handlers.RequireAuth(cfg.SessionSecret))
 	{
 		api.GET("/engineers", engineerHandler.List)
 		api.GET("/engineers/:id", engineerHandler.Get)
