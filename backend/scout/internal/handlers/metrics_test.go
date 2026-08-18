@@ -1,13 +1,14 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
+	"scout/internal/models"
 	"scout/internal/store"
 
 	"github.com/gin-gonic/gin"
@@ -82,11 +83,31 @@ func TestMetricsHandlerEmptyHistory(t *testing.T) {
 		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
 	}
 
-	// Verify response is empty array, not null
-	if w.Body.String() != "[]" && w.Body.String() != "null" {
-		// Check if it's a JSON array (even if not exactly "[]")
-		if w.Body.Len() > 0 && !strings.Contains(w.Body.String(), "[]") {
-			t.Logf("response body: %s", w.Body.String())
-		}
+	var snapshots []models.MetricSnapshot
+	if err := json.Unmarshal(w.Body.Bytes(), &snapshots); err != nil {
+		t.Fatalf("failed to unmarshal response: %v", err)
+	}
+
+	if len(snapshots) != 0 {
+		t.Fatalf("expected empty snapshots for engineer with no history, got %d snapshots", len(snapshots))
+	}
+}
+
+func TestMetricsHandlerInvalidEngineerID(t *testing.T) {
+	db := setupTestDBForHandlers(t)
+	engineerStore := store.NewEngineerStore(db)
+	metricStore := store.NewMetricStore(db)
+
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	h := NewMetricsHandler(metricStore, engineerStore)
+	r.GET("/api/engineers/:id/metrics", h.Get)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/engineers/not-a-number/metrics", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for invalid engineer ID, got %d", w.Code)
 	}
 }
