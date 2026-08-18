@@ -31,3 +31,6 @@ pnpm-debug.log*
 # Runtime data (drunken-dolphin)
 backend/drunken-dolphin/fitness_data.json
 backend/drunken-dolphin/personal_data.json
+
+# Claude Code worktrees (live git worktree checkouts, not project config)
+.claude/worktrees/
