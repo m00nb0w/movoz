@@ -839,3 +839,61 @@ func TestScoreStoreCycleScoresActiveEngineerWithNoRankings(t *testing.T) {
 		t.Fatalf("expected Sam main attributes to be empty (unranked), got %d", len(samScore.MainAttributes))
 	}
 }
+
+// TestScoreStoreCycleScoresExcludesDeactivatedEngineer is a regression test for
+// the specific scenario flagged in code review: an engineer ranked in a cycle
+// who is later deactivated must NOT appear in CycleScores for that cycle. This
+// verifies the filtering by ListActiveIDs() correctly excludes deactivated
+// engineers even when they have historical rankings.
+func TestScoreStoreCycleScoresExcludesDeactivatedEngineer(t *testing.T) {
+	db := setupTestDB(t)
+	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
+		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
+			t.Fatalf("failed to truncate %s: %v", table, err)
+		}
+	}
+
+	engineerStore := NewEngineerStore(db)
+	mainStore := NewMainAttributeStore(db)
+	subStore := NewSubAttributeStore(db)
+	cycleStore := NewCycleStore(db)
+	rankingStore := NewRankingStore(db, engineerStore)
+	scoreStore := NewScoreStore(db)
+
+	// Create 2 active engineers and rank both in a cycle.
+	e1, _ := engineerStore.Create("Alex", nil, nil, nil, time.Now())
+	e2, _ := engineerStore.Create("Sam", nil, nil, nil, time.Now())
+	main, _ := mainStore.Create("test_main_deactivated", "Test Main Deactivated")
+	sub, _ := subStore.Create(main.ID, "Ownership", nil)
+	cycle, _ := cycleStore.Create(time.Now(), time.Now().AddDate(0, 0, 14))
+	rankingStore.SubmitRanking(cycle.ID, sub.ID, []scoring.RankEntry{{EngineerID: e1.ID, Rank: 1}, {EngineerID: e2.ID, Rank: 2}})
+
+	// Both should appear in cycle scores initially.
+	scoresBeforeDeactivation, err := scoreStore.CycleScores(engineerStore, cycle.ID)
+	if err != nil {
+		t.Fatalf("cycle scores before deactivation failed: %v", err)
+	}
+	if len(scoresBeforeDeactivation) != 2 {
+		t.Fatalf("expected 2 engineers before deactivation, got %d", len(scoresBeforeDeactivation))
+	}
+
+	// Deactivate Sam (who ranked 2nd).
+	if _, err := engineerStore.Deactivate(e2.ID); err != nil {
+		t.Fatalf("deactivate e2 failed: %v", err)
+	}
+
+	// After deactivation, Sam should be excluded from cycle scores even though
+	// the ranking record still exists in the database.
+	scoresAfterDeactivation, err := scoreStore.CycleScores(engineerStore, cycle.ID)
+	if err != nil {
+		t.Fatalf("cycle scores after deactivation failed: %v", err)
+	}
+	if len(scoresAfterDeactivation) != 1 {
+		t.Fatalf("expected 1 engineer after deactivation (Sam excluded), got %d", len(scoresAfterDeactivation))
+	}
+
+	// Verify the remaining engineer is Alex (not Sam).
+	if scoresAfterDeactivation[0].Engineer.ID != e1.ID || scoresAfterDeactivation[0].Engineer.Name != "Alex" {
+		t.Fatalf("expected only Alex in cycle scores after Sam's deactivation, got %+v", scoresAfterDeactivation[0].Engineer)
+	}
+}
