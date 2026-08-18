@@ -24,6 +24,8 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 	subAttributeHandler := handlers.NewSubAttributeHandler(subAttributeStore, mainAttributeStore)
 	cycleHandler := handlers.NewCycleHandler(cycleStore)
 	rankingHandler := handlers.NewRankingHandler(rankingStore, cycleStore, subAttributeStore)
+	scoreStore := store.NewScoreStore(db)
+	engineerCardHandler := handlers.NewEngineerCardHandler(scoreStore, engineerStore)
 
 	r := gin.Default()
 
@@ -58,6 +60,9 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 
 		api.PUT("/cycles/:id/sub-attributes/:subId/ranking", rankingHandler.Submit)
 		api.GET("/cycles/:id/sub-attributes/:subId/ranking", rankingHandler.Get)
+
+		api.GET("/engineers/:id/card", engineerCardHandler.Card)
+		api.GET("/engineers/:id/trend", engineerCardHandler.Trend)
 	}
 
 	return r

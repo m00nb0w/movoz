@@ -470,3 +470,237 @@ func TestScoreStoreOverallScoreExcludesMainAttributeWithNullCreatedAt(t *testing
 		t.Fatalf("expected overall 100 (NULL created_at main attribute excluded), got %v", overall)
 	}
 }
+
+// TestScoreStoreEngineerCard tests the engineer card endpoint (F10): returns
+// the engineer's Overall + main-attribute scores for one cycle, hand-computed
+// with exact expected values.
+func TestScoreStoreEngineerCard(t *testing.T) {
+	db := setupTestDB(t)
+	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
+		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
+			t.Fatalf("failed to truncate %s: %v", table, err)
+		}
+	}
+
+	engineerStore := NewEngineerStore(db)
+	mainStore := NewMainAttributeStore(db)
+	subStore := NewSubAttributeStore(db)
+	cycleStore := NewCycleStore(db)
+	rankingStore := NewRankingStore(db, engineerStore)
+	scoreStore := NewScoreStore(db)
+
+	e1, _ := engineerStore.Create("Alex", nil, nil, nil, time.Now())
+	e2, _ := engineerStore.Create("Sam", nil, nil, nil, time.Now())
+	main, _ := mainStore.Create("test_main_card", "Test Main Card")
+	sub1, _ := subStore.Create(main.ID, "Ownership", nil)
+	sub2, _ := subStore.Create(main.ID, "Documentation", nil)
+	cycle, _ := cycleStore.Create(time.Now(), time.Now().AddDate(0, 0, 14))
+
+	// Alex ranks 1st on both sub-attributes -> both score 100 -> main attribute avg 100 -> overall 100.
+	if _, err := rankingStore.SubmitRanking(cycle.ID, sub1.ID, []scoring.RankEntry{{EngineerID: e1.ID, Rank: 1}, {EngineerID: e2.ID, Rank: 2}}); err != nil {
+		t.Fatalf("submit sub1 ranking failed: %v", err)
+	}
+	if _, err := rankingStore.SubmitRanking(cycle.ID, sub2.ID, []scoring.RankEntry{{EngineerID: e1.ID, Rank: 1}, {EngineerID: e2.ID, Rank: 2}}); err != nil {
+		t.Fatalf("submit sub2 ranking failed: %v", err)
+	}
+
+	card, err := scoreStore.EngineerCard(engineerStore, e1.ID, cycle.ID)
+	if err != nil {
+		t.Fatalf("engineer card failed: %v", err)
+	}
+	if card == nil {
+		t.Fatalf("expected non-nil card for existing engineer")
+	}
+	if card.Engineer.ID != e1.ID || card.Engineer.Name != "Alex" {
+		t.Fatalf("unexpected engineer in card: %+v", card.Engineer)
+	}
+	if card.CycleID != cycle.ID {
+		t.Fatalf("unexpected cycle ID in card: %d", card.CycleID)
+	}
+	if card.Overall == nil || *card.Overall != 100 {
+		t.Fatalf("expected overall score 100 for e1, got %v", card.Overall)
+	}
+	if len(card.MainAttributes) != 1 {
+		t.Fatalf("expected 1 main attribute score, got %d", len(card.MainAttributes))
+	}
+	if card.MainAttributes[0].MainAttributeID != main.ID || card.MainAttributes[0].Score != 100 {
+		t.Fatalf("expected main attribute %d with score 100, got %+v", main.ID, card.MainAttributes[0])
+	}
+
+	// Sam ranks 2nd on both sub-attributes -> both score 50 -> main attribute avg 50 -> overall 50.
+	card2, err := scoreStore.EngineerCard(engineerStore, e2.ID, cycle.ID)
+	if err != nil {
+		t.Fatalf("engineer card for e2 failed: %v", err)
+	}
+	if card2.Overall == nil || *card2.Overall != 50 {
+		t.Fatalf("expected overall score 50 for e2, got %v", card2.Overall)
+	}
+}
+
+// TestScoreStoreEngineerCardNotFound tests the not-found case: an engineer
+// that doesn't exist should return nil, not an error.
+func TestScoreStoreEngineerCardNotFound(t *testing.T) {
+	db := setupTestDB(t)
+	for _, table := range []string{"rating_cycles", "engineers"} {
+		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
+			t.Fatalf("failed to truncate %s: %v", table, err)
+		}
+	}
+
+	engineerStore := NewEngineerStore(db)
+	cycleStore := NewCycleStore(db)
+	scoreStore := NewScoreStore(db)
+
+	cycle, _ := cycleStore.Create(time.Now(), time.Now().AddDate(0, 0, 14))
+
+	card, err := scoreStore.EngineerCard(engineerStore, 9999, cycle.ID)
+	if err != nil {
+		t.Fatalf("engineer card with non-existent engineer should not error: %v", err)
+	}
+	if card != nil {
+		t.Fatalf("expected nil card for non-existent engineer, got %+v", card)
+	}
+}
+
+// TestScoreStoreEngineerCardNoData tests the no-data case: an engineer with
+// no rankings in a cycle gets a card with nil Overall and empty MainAttributes.
+func TestScoreStoreEngineerCardNoData(t *testing.T) {
+	db := setupTestDB(t)
+	for _, table := range []string{"rating_cycles", "engineers"} {
+		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
+			t.Fatalf("failed to truncate %s: %v", table, err)
+		}
+	}
+
+	engineerStore := NewEngineerStore(db)
+	cycleStore := NewCycleStore(db)
+	scoreStore := NewScoreStore(db)
+
+	e1, _ := engineerStore.Create("NoData", nil, nil, nil, time.Now())
+	cycle, _ := cycleStore.Create(time.Now(), time.Now().AddDate(0, 0, 14))
+
+	card, err := scoreStore.EngineerCard(engineerStore, e1.ID, cycle.ID)
+	if err != nil {
+		t.Fatalf("engineer card with no rankings should not error: %v", err)
+	}
+	if card == nil {
+		t.Fatalf("expected non-nil card for existing engineer with no rankings")
+	}
+	if card.Overall != nil {
+		t.Fatalf("expected nil overall for engineer with no rankings, got %v", *card.Overall)
+	}
+	// MainAttributeScores returns an empty slice when there are no rankings.
+	if card.MainAttributes == nil {
+		t.Fatalf("expected empty main attributes slice, got nil")
+	}
+	if len(card.MainAttributes) != 0 {
+		t.Fatalf("expected no main attributes for engineer with no rankings, got %d", len(card.MainAttributes))
+	}
+}
+
+// TestScoreStoreEngineerTrend tests the trend endpoint (F10): returns scores
+// across all past cycles an engineer has rankings in, oldest first.
+func TestScoreStoreEngineerTrend(t *testing.T) {
+	db := setupTestDB(t)
+	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
+		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
+			t.Fatalf("failed to truncate %s: %v", table, err)
+		}
+	}
+
+	engineerStore := NewEngineerStore(db)
+	mainStore := NewMainAttributeStore(db)
+	subStore := NewSubAttributeStore(db)
+	cycleStore := NewCycleStore(db)
+	rankingStore := NewRankingStore(db, engineerStore)
+	scoreStore := NewScoreStore(db)
+
+	e1, _ := engineerStore.Create("Alex", nil, nil, nil, time.Now())
+	e2, _ := engineerStore.Create("Sam", nil, nil, nil, time.Now())
+	main, _ := mainStore.Create("test_main_trend", "Test Main Trend")
+	sub, _ := subStore.Create(main.ID, "Testing", nil)
+
+	// Create three cycles and submit rankings in non-chronological order.
+	base := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
+	cycle3Start := base.Add(2 * 24 * time.Hour)
+	cycle2Start := base.Add(1 * 24 * time.Hour)
+	cycle1Start := base
+
+	cycle3, _ := cycleStore.Create(cycle3Start, cycle3Start.AddDate(0, 0, 14))
+	cycle2, _ := cycleStore.Create(cycle2Start, cycle2Start.AddDate(0, 0, 14))
+	cycle1, _ := cycleStore.Create(cycle1Start, cycle1Start.AddDate(0, 0, 14))
+
+	// Submit rankings in non-chronological order (cycle3, cycle1, cycle2).
+	// Alex ranks 1st in cycle3 (100), 1st in cycle1 (100), 2nd in cycle2 (50).
+	if _, err := rankingStore.SubmitRanking(cycle3.ID, sub.ID, []scoring.RankEntry{{EngineerID: e1.ID, Rank: 1}, {EngineerID: e2.ID, Rank: 2}}); err != nil {
+		t.Fatalf("submit cycle3 ranking failed: %v", err)
+	}
+	if _, err := rankingStore.SubmitRanking(cycle1.ID, sub.ID, []scoring.RankEntry{{EngineerID: e1.ID, Rank: 1}, {EngineerID: e2.ID, Rank: 2}}); err != nil {
+		t.Fatalf("submit cycle1 ranking failed: %v", err)
+	}
+	if _, err := rankingStore.SubmitRanking(cycle2.ID, sub.ID, []scoring.RankEntry{{EngineerID: e1.ID, Rank: 2}, {EngineerID: e2.ID, Rank: 1}}); err != nil {
+		t.Fatalf("submit cycle2 ranking failed: %v", err)
+	}
+
+	trend, err := scoreStore.EngineerTrend(engineerStore, e1.ID)
+	if err != nil {
+		t.Fatalf("engineer trend failed: %v", err)
+	}
+	if len(trend) != 3 {
+		t.Fatalf("expected 3 trend points (one per cycle), got %d", len(trend))
+	}
+
+	// Verify chronological ordering: cycle1, cycle2, cycle3 (period_start order).
+	if trend[0].CycleID != cycle1.ID {
+		t.Fatalf("expected first trend point to be cycle1 (ID %d), got cycle ID %d", cycle1.ID, trend[0].CycleID)
+	}
+	if trend[1].CycleID != cycle2.ID {
+		t.Fatalf("expected second trend point to be cycle2 (ID %d), got cycle ID %d", cycle2.ID, trend[1].CycleID)
+	}
+	if trend[2].CycleID != cycle3.ID {
+		t.Fatalf("expected third trend point to be cycle3 (ID %d), got cycle ID %d", cycle3.ID, trend[2].CycleID)
+	}
+
+	// Verify scores: Alex was rank 1 in cycles 1 and 3 (100), rank 2 in cycle 2 (50).
+	if trend[0].Overall == nil || *trend[0].Overall != 100 {
+		t.Fatalf("expected cycle1 overall 100, got %v", trend[0].Overall)
+	}
+	if trend[1].Overall == nil || *trend[1].Overall != 50 {
+		t.Fatalf("expected cycle2 overall 50, got %v", trend[1].Overall)
+	}
+	if trend[2].Overall == nil || *trend[2].Overall != 100 {
+		t.Fatalf("expected cycle3 overall 100, got %v", trend[2].Overall)
+	}
+
+	// Verify period bounds are populated (compare Unix time to avoid timezone issues).
+	if trend[0].PeriodStart.Unix() != cycle1Start.Unix() || trend[0].PeriodEnd.Unix() != cycle1Start.AddDate(0, 0, 14).Unix() {
+		t.Fatalf("expected cycle1 period bounds to match, got start=%v end=%v", trend[0].PeriodStart.Unix(), trend[0].PeriodEnd.Unix())
+	}
+}
+
+// TestScoreStoreEngineerTrendNoHistory tests the no-history case: an engineer
+// with no rankings in any cycle should get an empty slice, not an error.
+func TestScoreStoreEngineerTrendNoHistory(t *testing.T) {
+	db := setupTestDB(t)
+	for _, table := range []string{"rating_cycles", "engineers"} {
+		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
+			t.Fatalf("failed to truncate %s: %v", table, err)
+		}
+	}
+
+	engineerStore := NewEngineerStore(db)
+	scoreStore := NewScoreStore(db)
+
+	e1, _ := engineerStore.Create("NoHistory", nil, nil, nil, time.Now())
+
+	trend, err := scoreStore.EngineerTrend(engineerStore, e1.ID)
+	if err != nil {
+		t.Fatalf("engineer trend with no history should not error: %v", err)
+	}
+	if trend == nil {
+		t.Fatalf("expected empty slice for engineer with no trend history, got nil")
+	}
+	if len(trend) != 0 {
+		t.Fatalf("expected empty trend for engineer with no rankings, got %d points", len(trend))
+	}
+}

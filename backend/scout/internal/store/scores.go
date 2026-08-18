@@ -2,6 +2,7 @@ package store
 
 import (
 	"database/sql"
+	"time"
 
 	"scout/internal/models"
 )
@@ -84,4 +85,86 @@ func (s *ScoreStore) OverallScore(engineerID, cycleID int) (*float64, error) {
 		return nil, nil
 	}
 	return &overall.Float64, nil
+}
+
+// EngineerCard returns the engineer's Overall + main-attribute scores for
+// one cycle (F10).
+func (s *ScoreStore) EngineerCard(engineerStore *EngineerStore, engineerID, cycleID int) (*models.EngineerCard, error) {
+	engineer, err := engineerStore.GetByID(engineerID)
+	if err != nil {
+		return nil, err
+	}
+	if engineer == nil {
+		return nil, nil
+	}
+
+	mainScores, err := s.MainAttributeScores(engineerID, cycleID)
+	if err != nil {
+		return nil, err
+	}
+	overall, err := s.OverallScore(engineerID, cycleID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.EngineerCard{
+		Engineer:       *engineer,
+		CycleID:        cycleID,
+		Overall:        overall,
+		MainAttributes: mainScores,
+	}, nil
+}
+
+// EngineerTrend returns the engineer's scores across every past cycle they
+// have at least one ranking in, oldest first (F10).
+func (s *ScoreStore) EngineerTrend(engineerStore *EngineerStore, engineerID int) ([]models.TrendPoint, error) {
+	rows, err := s.db.Query(
+		`SELECT DISTINCT rc.id, rc.period_start, rc.period_end
+		 FROM rating_cycles rc
+		 JOIN sub_attribute_rankings sar ON sar.cycle_id = rc.id
+		 WHERE sar.engineer_id = $1
+		 ORDER BY rc.period_start`,
+		engineerID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	type cycleRow struct {
+		id          int
+		periodStart time.Time
+		periodEnd   time.Time
+	}
+	cycles := []cycleRow{}
+	for rows.Next() {
+		var cr cycleRow
+		if err := rows.Scan(&cr.id, &cr.periodStart, &cr.periodEnd); err != nil {
+			return nil, err
+		}
+		cycles = append(cycles, cr)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	trend := make([]models.TrendPoint, 0, len(cycles))
+	for _, cr := range cycles {
+		mainScores, err := s.MainAttributeScores(engineerID, cr.id)
+		if err != nil {
+			return nil, err
+		}
+		overall, err := s.OverallScore(engineerID, cr.id)
+		if err != nil {
+			return nil, err
+		}
+		trend = append(trend, models.TrendPoint{
+			CycleID:        cr.id,
+			PeriodStart:    cr.periodStart,
+			PeriodEnd:      cr.periodEnd,
+			Overall:        overall,
+			MainAttributes: mainScores,
+		})
+	}
+	return trend, nil
 }
