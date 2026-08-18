@@ -12,12 +12,17 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
+	"scout/internal/auth"
 	"scout/internal/config"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 )
+
+const routerTestSessionSecret = "test-secret"
+const routerTestSessionCookieName = "scout_session"
 
 func setupRouterIntegrationTest(t *testing.T) (*httptest.Server, *http.Client) {
 	t.Helper()
@@ -37,7 +42,7 @@ func setupRouterIntegrationTest(t *testing.T) (*httptest.Server, *http.Client) {
 	}
 
 	gin.SetMode(gin.TestMode)
-	cfg := &config.Config{AdminPassword: "test-password", SessionSecret: "test-secret"}
+	cfg := &config.Config{AdminPassword: "test-password", SessionSecret: routerTestSessionSecret}
 	router := buildRouter(db, cfg)
 	server := httptest.NewServer(router)
 
@@ -178,5 +183,57 @@ func TestEveryApplicationRouteRequiresAuth(t *testing.T) {
 				t.Fatalf("expected route to be reachable with a valid session, got 401")
 			}
 		})
+	}
+}
+
+// TestInvalidSessionCookiesRejectedAcrossRouteGroups proves the
+// tampered-cookie and expired-session rejection paths exercised in isolation
+// by internal/handlers/auth_test.go (against a synthetic /api/whoami route)
+// also hold against the real route table — one representative GET route from
+// each of the three route groups (engineers, main-attributes,
+// sub-attributes).
+func TestInvalidSessionCookiesRejectedAcrossRouteGroups(t *testing.T) {
+	server, _ := setupRouterIntegrationTest(t)
+
+	expiredToken := auth.NewSessionToken(routerTestSessionSecret, time.Now().Add(-2*auth.SessionDuration))
+
+	representativeRoutes := []string{
+		"/api/engineers",
+		"/api/main-attributes",
+		"/api/sub-attributes",
+	}
+
+	badCookies := []struct {
+		name  string
+		value string
+	}{
+		{"tampered cookie", "garbage-not-a-real-token"},
+		{"expired session", expiredToken},
+	}
+
+	// Deliberately no cookie jar here — each request sets its cookie value
+	// explicitly rather than relying on one previously issued by /login.
+	client := &http.Client{}
+
+	for _, path := range representativeRoutes {
+		for _, bad := range badCookies {
+			t.Run(fmt.Sprintf("%s rejected on %s", bad.name, path), func(t *testing.T) {
+				req, err := http.NewRequest(http.MethodGet, server.URL+path, nil)
+				if err != nil {
+					t.Fatalf("failed to build request: %v", err)
+				}
+				req.AddCookie(&http.Cookie{Name: routerTestSessionCookieName, Value: bad.value})
+
+				resp, err := client.Do(req)
+				if err != nil {
+					t.Fatalf("request failed: %v", err)
+				}
+				resp.Body.Close()
+
+				if resp.StatusCode != http.StatusUnauthorized {
+					t.Fatalf("expected 401 for %s against %s, got %d", bad.name, path, resp.StatusCode)
+				}
+			})
+		}
 	}
 }
