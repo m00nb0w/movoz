@@ -400,6 +400,40 @@ func TestRankingHandlerSubmitInvalidCycleID(t *testing.T) {
 	}
 }
 
+// TestRankingHandlerSubmitInvalidSubAttributeID exercises the second,
+// independent int-parsing branch in parseCycleAndSubAttribute — a valid
+// numeric cycle id paired with a non-numeric subId — which
+// TestRankingHandlerSubmitInvalidCycleID does not reach.
+func TestRankingHandlerSubmitInvalidSubAttributeID(t *testing.T) {
+	db := setupTestDBForHandlers(t)
+	engineerStore := store.NewEngineerStore(db)
+	subStore := store.NewSubAttributeStore(db)
+	cycleStore := store.NewCycleStore(db)
+	rankingStore := store.NewRankingStore(db, engineerStore)
+
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	h := NewRankingHandler(rankingStore, cycleStore, subStore)
+	r.PUT("/api/cycles/:id/sub-attributes/:subId/ranking", h.Submit)
+
+	body, _ := json.Marshal(map[string]interface{}{"rankings": []map[string]int{}})
+	req := httptest.NewRequest(http.MethodPut, "/api/cycles/1/sub-attributes/not-a-number/ranking", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for non-numeric sub attribute id, got %d: %s", w.Code, w.Body.String())
+	}
+	var resp map[string]string
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("failed to unmarshal response: %v", err)
+	}
+	if resp["error"] != "invalid sub attribute id" {
+		t.Fatalf("expected the sub-attribute-id-specific error message, got %q", resp["error"])
+	}
+}
+
 func TestRankingHandlerSubmitMissingRankings(t *testing.T) {
 	db := setupTestDBForHandlers(t)
 	// Only truncate tables this test owns outright: engineers (so

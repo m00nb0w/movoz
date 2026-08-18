@@ -260,6 +260,87 @@ func TestRankingStoreSubmitRankingReplacesOnResubmit(t *testing.T) {
 	}
 }
 
+// TestRankingStoreSubmitRankingIsolatedBySubAttribute proves SubmitRanking's
+// DELETE is scoped by both cycle_id AND sub_attribute_id, not just cycle_id:
+// two sub-attributes under the same cycle each get a ranking, then only one
+// is resubmitted, and the other sub-attribute's rankings must be untouched.
+func TestRankingStoreSubmitRankingIsolatedBySubAttribute(t *testing.T) {
+	db := setupTestDB(t)
+	for _, table := range []string{"sub_attribute_rankings", "engineers"} {
+		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
+			t.Fatalf("failed to truncate %s: %v", table, err)
+		}
+	}
+
+	engineerStore := NewEngineerStore(db)
+	mainStore := NewMainAttributeStore(db)
+	subStore := NewSubAttributeStore(db)
+	cycleStore := NewCycleStore(db)
+	rankingStore := NewRankingStore(db, engineerStore)
+
+	e1, _ := engineerStore.Create("Alex", nil, nil, nil, time.Now())
+	e2, _ := engineerStore.Create("Sam", nil, nil, nil, time.Now())
+	main, _ := mainStore.Create(uniqueKey("test_main_isolation"), "Test Main Isolation")
+	subA, _ := subStore.Create(main.ID, "Code Quality", nil)
+	subB, _ := subStore.Create(main.ID, "Ownership", nil)
+	cycle, _ := cycleStore.Create(time.Now(), time.Now().AddDate(0, 0, 14))
+
+	if _, err := rankingStore.SubmitRanking(cycle.ID, subA.ID, []scoring.RankEntry{
+		{EngineerID: e1.ID, Rank: 1},
+		{EngineerID: e2.ID, Rank: 2},
+	}); err != nil {
+		t.Fatalf("submit for subA failed: %v", err)
+	}
+	if _, err := rankingStore.SubmitRanking(cycle.ID, subB.ID, []scoring.RankEntry{
+		{EngineerID: e1.ID, Rank: 2},
+		{EngineerID: e2.ID, Rank: 1},
+	}); err != nil {
+		t.Fatalf("submit for subB failed: %v", err)
+	}
+
+	// Resubmit only subA, with ranks flipped.
+	if _, err := rankingStore.SubmitRanking(cycle.ID, subA.ID, []scoring.RankEntry{
+		{EngineerID: e1.ID, Rank: 2},
+		{EngineerID: e2.ID, Rank: 1},
+	}); err != nil {
+		t.Fatalf("resubmit for subA failed: %v", err)
+	}
+
+	// subA reflects the resubmit.
+	gotA, err := rankingStore.GetByCycleAndSubAttribute(cycle.ID, subA.ID)
+	if err != nil {
+		t.Fatalf("get subA failed: %v", err)
+	}
+	if len(gotA) != 2 {
+		t.Fatalf("expected 2 rows for subA, got %d", len(gotA))
+	}
+	for _, r := range gotA {
+		if r.EngineerID == e1.ID && r.Rank != 2 {
+			t.Fatalf("expected e1 to be rank 2 in subA after resubmit, got rank=%d", r.Rank)
+		}
+		if r.EngineerID == e2.ID && r.Rank != 1 {
+			t.Fatalf("expected e2 to be rank 1 in subA after resubmit, got rank=%d", r.Rank)
+		}
+	}
+
+	// subB must be completely unaffected by subA's resubmit.
+	gotB, err := rankingStore.GetByCycleAndSubAttribute(cycle.ID, subB.ID)
+	if err != nil {
+		t.Fatalf("get subB failed: %v", err)
+	}
+	if len(gotB) != 2 {
+		t.Fatalf("expected subB to still have 2 rows (untouched by subA's resubmit), got %d", len(gotB))
+	}
+	for _, r := range gotB {
+		if r.EngineerID == e1.ID && r.Rank != 2 {
+			t.Fatalf("expected e1 to remain rank 2 in subB, got rank=%d", r.Rank)
+		}
+		if r.EngineerID == e2.ID && r.Rank != 1 {
+			t.Fatalf("expected e2 to remain rank 1 in subB, got rank=%d", r.Rank)
+		}
+	}
+}
+
 func TestRankingStoreGetByCycleAndSubAttributeEmpty(t *testing.T) {
 	db := setupTestDB(t)
 	for _, table := range []string{"sub_attribute_rankings", "engineers"} {

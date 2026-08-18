@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -84,7 +85,16 @@ func (h *RankingHandler) Submit(c *gin.Context) {
 
 	rankings, err := h.store.SubmitRanking(cycleID, subAttributeID, entries)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		// A rejected permutation (bad request body) is a 400; anything else
+		// from the store — failing to reach the DB, a broken transaction,
+		// etc. — is a server-side failure and must not be reported as if the
+		// caller's input were at fault. Mirrors the 400-vs-500 split used in
+		// cycles.go/sub_attributes.go for pre-store-vs-store failures.
+		if errors.Is(err, store.ErrInvalidRanking) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to submit ranking"})
 		return
 	}
 	c.JSON(http.StatusOK, rankings)

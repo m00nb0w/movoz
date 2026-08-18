@@ -2,6 +2,8 @@ package store
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 
 	"scout/internal/models"
 	"scout/internal/scoring"
@@ -16,6 +18,14 @@ func NewRankingStore(db *sql.DB, engineerStore *EngineerStore) *RankingStore {
 	return &RankingStore{db: db, engineerStore: engineerStore}
 }
 
+// ErrInvalidRanking wraps a scoring.ValidatePermutation rejection — a client
+// error (bad request body) as opposed to any other error SubmitRanking can
+// return (failure to reach the DB, a broken transaction, etc.), which are
+// infra/server errors. Callers should use errors.Is(err, ErrInvalidRanking)
+// to tell the two apart, mirroring the 400-vs-500 split already used in
+// cycles.go/sub_attributes.go for pre-store-vs-store failures.
+var ErrInvalidRanking = errors.New("invalid ranking submission")
+
 // SubmitRanking validates entries as a strict 1..N permutation of the active
 // roster (F6), converts each rank to a score via linear interpolation (F7),
 // and replaces all rows for this cycle+sub-attribute in a single transaction
@@ -27,7 +37,7 @@ func (s *RankingStore) SubmitRanking(cycleID, subAttributeID int, entries []scor
 		return nil, err
 	}
 	if err := scoring.ValidatePermutation(entries, activeIDs); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %v", ErrInvalidRanking, err)
 	}
 
 	tx, err := s.db.Begin()
