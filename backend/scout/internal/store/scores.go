@@ -202,3 +202,48 @@ func (s *ScoreStore) CycleScores(engineerStore *EngineerStore, cycleID int) ([]m
 	}
 	return results, nil
 }
+
+// RosterDashboard returns every active engineer with their latest Overall
+// score and the most recent cycle they were ranked in (F11). Active engineers
+// with no rating history appear with nil LatestOverall and nil LastCycleDate.
+// Deactivated engineers are excluded even if they have historical rankings.
+func (s *ScoreStore) RosterDashboard(engineerStore *EngineerStore) ([]models.RosterEntry, error) {
+	engineers, err := engineerStore.List(true)
+	if err != nil {
+		return nil, err
+	}
+
+	entries := make([]models.RosterEntry, 0, len(engineers))
+	for _, engineer := range engineers {
+		var latestCycleID int
+		var periodEnd time.Time
+		err := s.db.QueryRow(
+			`SELECT rc.id, rc.period_end
+			 FROM rating_cycles rc
+			 JOIN sub_attribute_rankings sar ON sar.cycle_id = rc.id
+			 WHERE sar.engineer_id = $1
+			 ORDER BY rc.period_start DESC
+			 LIMIT 1`,
+			engineer.ID,
+		).Scan(&latestCycleID, &periodEnd)
+
+		if err == sql.ErrNoRows {
+			entries = append(entries, models.RosterEntry{Engineer: engineer})
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		overall, err := s.OverallScore(engineer.ID, latestCycleID)
+		if err != nil {
+			return nil, err
+		}
+		entries = append(entries, models.RosterEntry{
+			Engineer:      engineer,
+			LatestOverall: overall,
+			LastCycleDate: &periodEnd,
+		})
+	}
+	return entries, nil
+}

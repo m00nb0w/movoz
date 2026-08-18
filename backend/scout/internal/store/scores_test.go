@@ -897,3 +897,206 @@ func TestScoreStoreCycleScoresExcludesDeactivatedEngineer(t *testing.T) {
 		t.Fatalf("expected only Alex in cycle scores after Sam's deactivation, got %+v", scoresAfterDeactivation[0].Engineer)
 	}
 }
+
+// TestScoreStoreRosterDashboard tests the roster dashboard endpoint (F11):
+// returns all active engineers with their latest Overall score and most recent
+// cycle date. Tests hand-computed expected values, multiple engineers, and
+// correct ordering of cycles.
+func TestScoreStoreRosterDashboard(t *testing.T) {
+	db := setupTestDB(t)
+	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
+		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
+			t.Fatalf("failed to truncate %s: %v", table, err)
+		}
+	}
+
+	engineerStore := NewEngineerStore(db)
+	mainStore := NewMainAttributeStore(db)
+	subStore := NewSubAttributeStore(db)
+	cycleStore := NewCycleStore(db)
+	rankingStore := NewRankingStore(db, engineerStore)
+	scoreStore := NewScoreStore(db)
+
+	// Create 2 engineers.
+	e1, _ := engineerStore.Create("Alex", nil, nil, nil, time.Now())
+	e2, _ := engineerStore.Create("Sam", nil, nil, nil, time.Now())
+
+	main, _ := mainStore.Create("test_main_dashboard", "Test Main Dashboard")
+	sub, _ := subStore.Create(main.ID, "Ownership", nil)
+
+	// Create one cycle and submit rankings.
+	cycle, _ := cycleStore.Create(time.Now(), time.Now().AddDate(0, 0, 14))
+
+	// Submit rankings: Alex rank 1 (100), Sam rank 2 (50).
+	if _, err := rankingStore.SubmitRanking(cycle.ID, sub.ID, []scoring.RankEntry{
+		{EngineerID: e1.ID, Rank: 1},
+		{EngineerID: e2.ID, Rank: 2},
+	}); err != nil {
+		t.Fatalf("submit ranking failed: %v", err)
+	}
+
+	// Query dashboard: should include both engineers with their scores.
+	dashboard, err := scoreStore.RosterDashboard(engineerStore)
+	if err != nil {
+		t.Fatalf("roster dashboard failed: %v", err)
+	}
+	if len(dashboard) != 2 {
+		t.Fatalf("expected 2 active engineers on the dashboard, got %d", len(dashboard))
+	}
+
+	// Index by engineer name for easy verification.
+	byName := make(map[string]*models.RosterEntry)
+	for i := range dashboard {
+		byName[dashboard[i].Engineer.Name] = &dashboard[i]
+	}
+
+	// Verify Alex: rank 1 -> score 100.
+	alexEntry := byName["Alex"]
+	if alexEntry == nil {
+		t.Fatalf("expected Alex in dashboard")
+	}
+	if alexEntry.LatestOverall == nil {
+		t.Fatalf("expected Alex latest overall to be non-nil, got nil")
+	}
+	if *alexEntry.LatestOverall != 100 {
+		t.Fatalf("expected Alex latest overall 100 (rank 1 of 2), got %f", *alexEntry.LatestOverall)
+	}
+	if alexEntry.LastCycleDate == nil {
+		t.Fatalf("expected Alex last cycle date to be set")
+	}
+
+	// Verify Sam: rank 2 -> score 50.
+	samEntry := byName["Sam"]
+	if samEntry == nil {
+		t.Fatalf("expected Sam in dashboard")
+	}
+	if samEntry.LatestOverall == nil {
+		t.Fatalf("expected Sam latest overall to be non-nil, got nil")
+	}
+	if *samEntry.LatestOverall != 50 {
+		t.Fatalf("expected Sam latest overall 50 (rank 2 of 2), got %f", *samEntry.LatestOverall)
+	}
+
+	// Deactivate Sam and re-query dashboard.
+	engineerStore.Deactivate(e2.ID)
+
+	dashboardAfterDeactivation, err := scoreStore.RosterDashboard(engineerStore)
+	if err != nil {
+		t.Fatalf("roster dashboard after deactivation failed: %v", err)
+	}
+	// Should now have only Alex (Sam deactivated).
+	if len(dashboardAfterDeactivation) != 1 {
+		t.Fatalf("expected 1 active engineer after deactivation (Sam excluded), got %d", len(dashboardAfterDeactivation))
+	}
+
+	// Verify the remaining engineer is Alex.
+	if dashboardAfterDeactivation[0].Engineer.ID != e1.ID {
+		t.Fatalf("expected only Alex in dashboard after deactivation, got %+v", dashboardAfterDeactivation[0].Engineer)
+	}
+}
+
+// TestScoreStoreRosterDashboardMostRecentCycleNonChronologicalCreation verifies
+// that the "most recent cycle" is determined by cycle period_start ordering, not
+// by creation order. This is critical because cycles might be created out of
+// order (e.g., a late submission for a past period). The test creates cycles
+// in reverse chronological order (cycle3, cycle2, cycle1) to ensure that the
+// dashboard correctly identifies the *most recent* period, not the most recently
+// created cycle.
+func TestScoreStoreRosterDashboardMostRecentCycleNonChronologicalCreation(t *testing.T) {
+	db := setupTestDB(t)
+	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
+		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
+			t.Fatalf("failed to truncate %s: %v", table, err)
+		}
+	}
+
+	engineerStore := NewEngineerStore(db)
+	mainStore := NewMainAttributeStore(db)
+	subStore := NewSubAttributeStore(db)
+	cycleStore := NewCycleStore(db)
+	rankingStore := NewRankingStore(db, engineerStore)
+	scoreStore := NewScoreStore(db)
+
+	base := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
+	// Create engineers first, before cycles (so ValidatePermutation works correctly)
+	e1, _ := engineerStore.Create("Alex", nil, nil, nil, time.Now())
+	e2, _ := engineerStore.Create("Dummy", nil, nil, nil, time.Now())
+
+	main, _ := mainStore.Create("test_main_nonchron", "Test Main Non-Chronological")
+	sub, _ := subStore.Create(main.ID, "Ownership", nil)
+
+	// Create cycles in reverse chronological order: cycle3 (latest), then cycle2, then cycle1 (earliest).
+	cycle1Start := base
+	cycle2Start := base.Add(15 * 24 * time.Hour)
+	cycle3Start := base.Add(30 * 24 * time.Hour)
+
+	// Create in reverse order: cycle3, cycle2, cycle1.
+	cycle3, _ := cycleStore.Create(cycle3Start, cycle3Start.AddDate(0, 0, 14))
+	cycle2, _ := cycleStore.Create(cycle2Start, cycle2Start.AddDate(0, 0, 14))
+	cycle1, _ := cycleStore.Create(cycle1Start, cycle1Start.AddDate(0, 0, 14))
+
+	// Pin created_at timestamps to ensure they're in reverse order of period_start and
+	// the F8 cutover rule is satisfied (main must be created before cycles).
+	mustSetCreatedAt(t, db, "main_attributes", main.ID, base.Add(-24*time.Hour))
+	mustSetCreatedAt(t, db, "rating_cycles", cycle3.ID, base.Add(2*24*time.Hour))
+	mustSetCreatedAt(t, db, "rating_cycles", cycle2.ID, base.Add(1*24*time.Hour))
+	mustSetCreatedAt(t, db, "rating_cycles", cycle1.ID, base)
+
+	// Submit rankings to all three cycles with both active engineers.
+	// The key test: Alex gets different scores in each cycle so we can verify which one is selected.
+	// cycle1: Alex rank 1 -> score 100, Dummy rank 2 -> score 50
+	if _, err := rankingStore.SubmitRanking(cycle1.ID, sub.ID, []scoring.RankEntry{
+		{EngineerID: e1.ID, Rank: 1},
+		{EngineerID: e2.ID, Rank: 2},
+	}); err != nil {
+		t.Fatalf("submit cycle1 ranking failed: %v", err)
+	}
+	// cycle2: Alex rank 2 -> score 50, Dummy rank 1 -> score 100
+	if _, err := rankingStore.SubmitRanking(cycle2.ID, sub.ID, []scoring.RankEntry{
+		{EngineerID: e1.ID, Rank: 2},
+		{EngineerID: e2.ID, Rank: 1},
+	}); err != nil {
+		t.Fatalf("submit cycle2 ranking failed: %v", err)
+	}
+	// cycle3: Alex rank 1 -> score 100, Dummy rank 2 -> score 50
+	// This is the most recent cycle, so dashboard should return this score for Alex (100).
+	if _, err := rankingStore.SubmitRanking(cycle3.ID, sub.ID, []scoring.RankEntry{
+		{EngineerID: e1.ID, Rank: 1},
+		{EngineerID: e2.ID, Rank: 2},
+	}); err != nil {
+		t.Fatalf("submit cycle3 ranking failed: %v", err)
+	}
+
+	dashboard, err := scoreStore.RosterDashboard(engineerStore)
+	if err != nil {
+		t.Fatalf("roster dashboard failed: %v", err)
+	}
+
+	// Find Alex's entry.
+	var alexEntry *models.RosterEntry
+	for i := range dashboard {
+		if dashboard[i].Engineer.ID == e1.ID {
+			alexEntry = &dashboard[i]
+			break
+		}
+	}
+	if alexEntry == nil {
+		t.Fatalf("expected to find Alex in dashboard")
+	}
+
+	// The dashboard should return Alex's latest score from cycle3 (the most recent period),
+	// which is 100 (rank 1). If it incorrectly used cycle2 (created second), it would be 50.
+	// If it incorrectly used cycle1 (created first), it would be 100 but the period would be wrong.
+	if alexEntry.LatestOverall == nil {
+		t.Fatalf("expected Alex latest overall to be non-nil from cycle3 (most recent period), got nil")
+	}
+	if *alexEntry.LatestOverall != 100 {
+		t.Fatalf("expected Alex latest overall 100 from cycle3 (most recent period), got %f", *alexEntry.LatestOverall)
+	}
+	if alexEntry.LastCycleDate == nil {
+		t.Fatalf("expected Alex last cycle date to be non-nil (cycle3 period end), got nil")
+	}
+	if alexEntry.LastCycleDate.Unix() != cycle3.PeriodEnd.Unix() {
+		t.Fatalf("expected Alex last cycle date %v (cycle3 period end), got %v", cycle3.PeriodEnd, alexEntry.LastCycleDate)
+	}
+}
