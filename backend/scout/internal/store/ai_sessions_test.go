@@ -30,6 +30,9 @@ func TestAISessionStoreCreateAndUpdateTranscript(t *testing.T) {
 	if string(session.Transcript) != "[]" {
 		t.Fatalf("expected new session to start with empty transcript array, got %s", session.Transcript)
 	}
+	if session.ProposedRanking != nil {
+		t.Fatalf("expected new session to have nil proposed_ranking, got %v", session.ProposedRanking)
+	}
 
 	transcript := json.RawMessage(`[{"role":"user","content":"who stood out this cycle?"}]`)
 	proposed := json.RawMessage(`{"ranking":[{"engineer_id":1,"rank":1}]}`)
@@ -167,10 +170,10 @@ func TestAISessionStoreJSONRoundTrip(t *testing.T) {
 			},
 		},
 		"metadata": map[string]interface{}{
-			"cycle_id":           cycle.ID,
-			"sub_attribute_id":   sub.ID,
-			"generated_at":       time.Now().Unix(),
-			"model":              "claude-3-sonnet",
+			"cycle_id":         cycle.ID,
+			"sub_attribute_id": sub.ID,
+			"generated_at":     time.Now().Unix(),
+			"model":            "claude-3-sonnet",
 		},
 	}
 	proposedBytes, err := json.Marshal(proposedData)
