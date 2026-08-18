@@ -54,6 +54,13 @@ func (s *ScoreStore) MainAttributeScores(engineerID, cycleID int) ([]models.Main
 // main attribute later never retroactively changes a past cycle's Overall.
 // Returns nil if the engineer has no rankings for the cycle at all (or
 // none from a main attribute that existed as of that cycle).
+//
+// created_at on main_attributes/rating_cycles is nullable at the schema
+// level (DEFAULT NOW(), no NOT NULL constraint). SQL's NULL <= x evaluates
+// to NULL/unknown (excluded from WHERE), so a NULL created_at would already
+// fail safe by being silently excluded — but that reliance on implicit
+// three-valued-logic semantics is fragile for future readers/writers, so
+// the NULL check is made explicit here rather than left implicit.
 func (s *ScoreStore) OverallScore(engineerID, cycleID int) (*float64, error) {
 	var overall sql.NullFloat64
 	err := s.db.QueryRow(
@@ -63,7 +70,9 @@ func (s *ScoreStore) OverallScore(engineerID, cycleID int) (*float64, error) {
 			JOIN sub_attributes sa ON sa.id = sar.sub_attribute_id
 			JOIN main_attributes ma ON ma.id = sa.main_attribute_id
 			JOIN rating_cycles rc ON rc.id = sar.cycle_id
-			WHERE sar.cycle_id = $1 AND sar.engineer_id = $2 AND ma.created_at <= rc.created_at
+			WHERE sar.cycle_id = $1 AND sar.engineer_id = $2
+			  AND ma.created_at IS NOT NULL AND rc.created_at IS NOT NULL
+			  AND ma.created_at <= rc.created_at
 			GROUP BY ma.id
 		 ) ma_scores`,
 		cycleID, engineerID,

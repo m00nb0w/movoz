@@ -375,3 +375,98 @@ func TestScoreStoreOverallScoreF8CutoverIncludesMainAttributeCreatedAtSameInstan
 		t.Fatalf("expected overall 75 (main attribute created at the same instant as the cycle must count), got %v", overall)
 	}
 }
+
+// TestScoreStoreOverallScoreExcludesMainAttributeWithNullCreatedAt guards
+// against a latent trap in the F8 cutover predicate: main_attributes.created_at
+// and rating_cycles.created_at are nullable columns (DEFAULT NOW(), no NOT
+// NULL constraint). No current write path ever leaves created_at NULL, but
+// if one ever did (a bulk-import path, a manual INSERT that skips the
+// default, etc.), that main attribute must fail safe by being excluded from
+// Overall — not silently included via undefined comparison behavior, and not
+// an error. This forces created_at to NULL via raw SQL (bypassing all store
+// methods, which never do this) to simulate that scenario directly.
+func TestScoreStoreOverallScoreExcludesMainAttributeWithNullCreatedAt(t *testing.T) {
+	db := setupTestDB(t)
+	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
+		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
+			t.Fatalf("failed to truncate %s: %v", table, err)
+		}
+	}
+
+	engineerStore := NewEngineerStore(db)
+	mainStore := NewMainAttributeStore(db)
+	subStore := NewSubAttributeStore(db)
+	cycleStore := NewCycleStore(db)
+	rankingStore := NewRankingStore(db, engineerStore)
+	scoreStore := NewScoreStore(db)
+
+	e1, _ := engineerStore.Create("Alex", nil, nil, nil, time.Now())
+	e2, _ := engineerStore.Create("Sam", nil, nil, nil, time.Now())
+
+	mainNormal, err := mainStore.Create("normal_main", "Normal Main")
+	if err != nil {
+		t.Fatalf("create mainNormal failed: %v", err)
+	}
+	subNormal, err := subStore.Create(mainNormal.ID, "Normal Sub", nil)
+	if err != nil {
+		t.Fatalf("create subNormal failed: %v", err)
+	}
+
+	mainNullCreatedAt, err := mainStore.Create("null_created_at_main", "Null CreatedAt Main")
+	if err != nil {
+		t.Fatalf("create mainNullCreatedAt failed: %v", err)
+	}
+	subNullCreatedAt, err := subStore.Create(mainNullCreatedAt.ID, "Null CreatedAt Sub", nil)
+	if err != nil {
+		t.Fatalf("create subNullCreatedAt failed: %v", err)
+	}
+
+	cycle, err := cycleStore.Create(time.Now(), time.Now().AddDate(0, 0, 14))
+	if err != nil {
+		t.Fatalf("create cycle failed: %v", err)
+	}
+
+	if _, err := db.Exec("UPDATE main_attributes SET created_at = NULL WHERE id = $1", mainNullCreatedAt.ID); err != nil {
+		t.Fatalf("failed to force created_at NULL: %v", err)
+	}
+	// This is a real, persistent Postgres database shared across test runs
+	// (not a per-test transaction rollback) — leaving a row with a NULL
+	// created_at behind would break any other test that scans
+	// main_attributes.created_at into a non-nullable time.Time (e.g.
+	// TestMainAttributeStoreSeedData's List() call), possibly in a later,
+	// unrelated `go test` invocation. Restore it once this test is done.
+	t.Cleanup(func() {
+		if _, err := db.Exec("UPDATE main_attributes SET created_at = NOW() WHERE id = $1", mainNullCreatedAt.ID); err != nil {
+			t.Logf("cleanup: failed to restore created_at on main attribute %d: %v", mainNullCreatedAt.ID, err)
+		}
+	})
+
+	// Different scores so an incorrectly-included NULL-created_at attribute
+	// is numerically distinguishable from the correct (excluded) result.
+	if _, err := rankingStore.SubmitRanking(cycle.ID, subNormal.ID, []scoring.RankEntry{{EngineerID: e1.ID, Rank: 1}, {EngineerID: e2.ID, Rank: 2}}); err != nil {
+		t.Fatalf("submit subNormal ranking failed: %v", err)
+	}
+	if _, err := rankingStore.SubmitRanking(cycle.ID, subNullCreatedAt.ID, []scoring.RankEntry{{EngineerID: e1.ID, Rank: 2}, {EngineerID: e2.ID, Rank: 1}}); err != nil {
+		t.Fatalf("submit subNullCreatedAt ranking failed: %v", err)
+	}
+
+	// MainAttributeScores is not cutover-gated, so it still reports both.
+	scores, err := scoreStore.MainAttributeScores(e1.ID, cycle.ID)
+	if err != nil {
+		t.Fatalf("main attribute scores failed: %v", err)
+	}
+	if len(scores) != 2 {
+		t.Fatalf("expected both main attributes in the per-attribute breakdown, got %+v", scores)
+	}
+
+	overall, err := scoreStore.OverallScore(e1.ID, cycle.ID)
+	if err != nil {
+		t.Fatalf("overall score failed: %v", err)
+	}
+	// Only mainNormal (100) should count; mainNullCreatedAt (50) must be
+	// excluded because its created_at is NULL. If it were wrongly included
+	// the result would be (100+50)/2 = 75.
+	if overall == nil || *overall != 100 {
+		t.Fatalf("expected overall 100 (NULL created_at main attribute excluded), got %v", overall)
+	}
+}
