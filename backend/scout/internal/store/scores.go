@@ -168,3 +168,56 @@ func (s *ScoreStore) EngineerTrend(engineerStore *EngineerStore, engineerID int)
 	}
 	return trend, nil
 }
+
+// CycleScores returns every engineer who has at least one ranking in this
+// cycle, each with their Overall + main-attribute scores as of that cycle
+// (F15) — so the team can be compared at a single point in time.
+func (s *ScoreStore) CycleScores(engineerStore *EngineerStore, cycleID int) ([]models.EngineerCycleScore, error) {
+	rows, err := s.db.Query(
+		`SELECT DISTINCT e.id, e.name
+		 FROM engineers e
+		 JOIN sub_attribute_rankings sar ON sar.engineer_id = e.id
+		 WHERE sar.cycle_id = $1
+		 ORDER BY e.name`,
+		cycleID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	engineerIDs := []int{}
+	for rows.Next() {
+		var id int
+		var name string
+		if err := rows.Scan(&id, &name); err != nil {
+			return nil, err
+		}
+		engineerIDs = append(engineerIDs, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	results := make([]models.EngineerCycleScore, 0, len(engineerIDs))
+	for _, id := range engineerIDs {
+		engineer, err := engineerStore.GetByID(id)
+		if err != nil {
+			return nil, err
+		}
+		mainScores, err := s.MainAttributeScores(id, cycleID)
+		if err != nil {
+			return nil, err
+		}
+		overall, err := s.OverallScore(id, cycleID)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, models.EngineerCycleScore{
+			Engineer:       *engineer,
+			Overall:        overall,
+			MainAttributes: mainScores,
+		})
+	}
+	return results, nil
+}

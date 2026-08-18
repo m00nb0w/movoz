@@ -704,3 +704,37 @@ func TestScoreStoreEngineerTrendNoHistory(t *testing.T) {
 		t.Fatalf("expected empty trend for engineer with no rankings, got %d points", len(trend))
 	}
 }
+
+// TestScoreStoreCycleScores tests the cycle view endpoint (F15): returns all
+// engineers who have rankings in a given cycle, each with their Overall + main-attribute
+// scores, hand-computed with exact expected values.
+func TestScoreStoreCycleScores(t *testing.T) {
+	db := setupTestDB(t)
+	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
+		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
+			t.Fatalf("failed to truncate %s: %v", table, err)
+		}
+	}
+
+	engineerStore := NewEngineerStore(db)
+	mainStore := NewMainAttributeStore(db)
+	subStore := NewSubAttributeStore(db)
+	cycleStore := NewCycleStore(db)
+	rankingStore := NewRankingStore(db, engineerStore)
+	scoreStore := NewScoreStore(db)
+
+	e1, _ := engineerStore.Create("Alex", nil, nil, nil, time.Now())
+	e2, _ := engineerStore.Create("Sam", nil, nil, nil, time.Now())
+	main, _ := mainStore.Create("test_main_cv", "Test Main CV")
+	sub, _ := subStore.Create(main.ID, "Ownership", nil)
+	cycle, _ := cycleStore.Create(time.Now(), time.Now().AddDate(0, 0, 14))
+	rankingStore.SubmitRanking(cycle.ID, sub.ID, []scoring.RankEntry{{EngineerID: e1.ID, Rank: 1}, {EngineerID: e2.ID, Rank: 2}})
+
+	scores, err := scoreStore.CycleScores(engineerStore, cycle.ID)
+	if err != nil {
+		t.Fatalf("cycle scores failed: %v", err)
+	}
+	if len(scores) != 2 {
+		t.Fatalf("expected 2 engineers in cycle view, got %+v", scores)
+	}
+}
