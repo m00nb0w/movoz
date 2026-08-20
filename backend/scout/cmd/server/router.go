@@ -38,6 +38,7 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 	aiSessionStore := store.NewAISessionStore(db)
 	aiChatHandler := handlers.NewAIChatHandler(aiClient, aiSessionStore, engineerStore, metricStore, highlightStore, subAttributeStore, cycleStore)
 	aiAcceptHandler := handlers.NewAIAcceptHandler(aiSessionStore, rankingStore, cycleStore)
+	duplicateCheckHandler := handlers.NewDuplicateCheckHandler(aiClient, highlightStore, engineerStore)
 
 	r := gin.Default()
 
@@ -59,6 +60,7 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 		api.POST("/engineers/:id/reactivate", engineerHandler.Reactivate)
 		api.GET("/engineers/:id/highlights", highlightHandler.List)
 		api.POST("/engineers/:id/highlights", highlightHandler.Create)
+		api.POST("/engineers/:id/highlights/check-duplicate", duplicateCheckHandler.Check)
 
 		api.GET("/main-attributes", mainAttributeHandler.List)
 		api.POST("/main-attributes", mainAttributeHandler.Create)
