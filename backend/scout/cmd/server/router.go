@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 
+	"scout/internal/aiclient"
 	"scout/internal/config"
 	"scout/internal/handlers"
 	"scout/internal/store"
@@ -32,6 +33,10 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 	metricsHandler := handlers.NewMetricsHandler(metricStore, engineerStore)
 	highlightStore := store.NewHighlightStore(db)
 	highlightHandler := handlers.NewHighlightHandler(highlightStore, engineerStore)
+
+	aiClient := aiclient.NewClient(cfg.AnthropicAPIKey)
+	aiSessionStore := store.NewAISessionStore(db)
+	aiChatHandler := handlers.NewAIChatHandler(aiClient, aiSessionStore, engineerStore, metricStore, highlightStore, subAttributeStore, cycleStore)
 
 	r := gin.Default()
 
@@ -74,6 +79,8 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 		api.GET("/engineers/:id/card", engineerCardHandler.Card)
 		api.GET("/engineers/:id/trend", engineerCardHandler.Trend)
 		api.GET("/engineers/:id/metrics", metricsHandler.Get)
+
+		api.POST("/cycles/:id/ai-sessions", aiChatHandler.Chat)
 	}
 
 	return r

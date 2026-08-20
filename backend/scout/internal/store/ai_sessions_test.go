@@ -69,6 +69,56 @@ func TestAISessionStoreCreateAndUpdateTranscript(t *testing.T) {
 	}
 }
 
+// TestAISessionStoreUpdateTranscriptWithNilProposedRanking covers a purely
+// conversational chat turn: the caller has nothing new to propose yet, so
+// it must be able to pass a nil json.RawMessage for proposedRanking without
+// the update failing. A nil-backed json.RawMessage is a []byte-based type,
+// and database/sql/driver encodes a nil []byte as an empty string rather
+// than SQL NULL — Postgres then rejects that empty string as invalid JSON
+// for the jsonb column unless the store normalizes nil to a real NULL first.
+func TestAISessionStoreUpdateTranscriptWithNilProposedRanking(t *testing.T) {
+	db := setupTestDB(t)
+	for _, table := range []string{"ai_ranking_sessions", "sub_attributes", "main_attributes", "rating_cycles"} {
+		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
+			t.Fatalf("failed to truncate %s: %v", table, err)
+		}
+	}
+
+	mainStore := NewMainAttributeStore(db)
+	subStore := NewSubAttributeStore(db)
+	cycleStore := NewCycleStore(db)
+	sessionStore := NewAISessionStore(db)
+
+	main, _ := mainStore.Create("test_main_ai_nil", "Test Main AI Nil")
+	sub, _ := subStore.Create(main.ID, "Ownership", nil)
+	cycle, _ := cycleStore.Create(time.Now(), time.Now().AddDate(0, 0, 14))
+
+	session, err := sessionStore.Create(cycle.ID, sub.ID)
+	if err != nil {
+		t.Fatalf("create failed: %v", err)
+	}
+
+	transcript := json.RawMessage(`[{"role":"user","content":"who stood out this cycle?"},{"role":"assistant","content":"Can you say more?"}]`)
+	if err := sessionStore.UpdateTranscript(session.ID, transcript, nil); err != nil {
+		t.Fatalf("expected update with a nil proposed_ranking to succeed, got: %v", err)
+	}
+
+	updated, err := sessionStore.GetByID(session.ID)
+	if err != nil {
+		t.Fatalf("get by id failed: %v", err)
+	}
+	if updated.ProposedRanking != nil {
+		t.Fatalf("expected proposed_ranking to remain nil/NULL, got %s", updated.ProposedRanking)
+	}
+	var actualTranscript []interface{}
+	if err := json.Unmarshal(updated.Transcript, &actualTranscript); err != nil {
+		t.Fatalf("unmarshal transcript failed: %v", err)
+	}
+	if len(actualTranscript) != 2 {
+		t.Fatalf("expected transcript to persist with 2 turns, got %d: %s", len(actualTranscript), updated.Transcript)
+	}
+}
+
 func TestAISessionStoreGetByIDNotFound(t *testing.T) {
 	db := setupTestDB(t)
 	for _, table := range []string{"ai_ranking_sessions"} {

@@ -57,10 +57,30 @@ func (s *AISessionStore) GetByID(id int) (*models.AIRankingSession, error) {
 // the proposed_ranking payload (F9). Persisting the ranking into
 // sub_attribute_rankings only happens later, via the explicit accept
 // endpoint (NF3) — this method never writes to sub_attribute_rankings.
+//
+// A nil json.RawMessage must be passed through as a genuine SQL NULL rather
+// than as the literal parameter value: database/sql/driver encodes a nil
+// []byte-backed value (which json.RawMessage is) as an empty byte string,
+// not NULL, and Postgres rejects an empty string as invalid JSON for a
+// jsonb column. Both args are normalized through nullableJSON below so
+// callers can freely pass nil (e.g. a conversational turn with no proposed
+// ranking yet) without tripping that mismatch.
 func (s *AISessionStore) UpdateTranscript(id int, transcript json.RawMessage, proposedRanking json.RawMessage) error {
 	_, err := s.db.Exec(
 		"UPDATE ai_ranking_sessions SET transcript = $1, proposed_ranking = $2 WHERE id = $3",
-		transcript, proposedRanking, id,
+		nullableJSON(transcript), nullableJSON(proposedRanking), id,
 	)
 	return err
+}
+
+// nullableJSON converts a nil json.RawMessage into an untyped nil
+// interface{} so the sql driver stores it as SQL NULL instead of an empty
+// string (see UpdateTranscript's doc comment). A non-nil value (including
+// an explicit empty-but-non-nil json.RawMessage("null") or similar) passes
+// through unchanged.
+func nullableJSON(raw json.RawMessage) interface{} {
+	if raw == nil {
+		return nil
+	}
+	return raw
 }
