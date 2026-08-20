@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import type { Engineer, MainAttribute, SubAttribute, SubAttributeRanking } from "@/lib/types";
@@ -78,12 +79,18 @@ export default function RankSubAttributePage() {
 
   return (
     <main className="mx-auto max-w-2xl p-8">
+      <Link
+        href={`/cycles/${cycleId}/sub-attributes/${subAttributeId}/chat`}
+        className="mb-4 inline-block text-sm text-accent-600 hover:underline"
+      >
+        Open AI ranking assistant →
+      </Link>
       <h1 className="mb-2 text-2xl font-semibold text-zen-text">
         Rank: {subAttributeName || `Sub-attribute #${subAttributeId}`}
       </h1>
       <p className="mb-6 text-sm text-zen-muted">
         Assign each active engineer a unique rank from 1 (best) to {engineers.length} (last) — no ties. Use the AI
-        chat assistant (below, once built) to get a starting proposal, then adjust here before saving.
+        chat assistant (above) to get a starting proposal, then adjust here before saving.
       </p>
 
       <ul className="mb-6 space-y-2">
