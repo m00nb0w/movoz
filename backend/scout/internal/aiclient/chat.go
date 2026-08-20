@@ -37,6 +37,7 @@ func (c *Client) StreamRankingChat(ctx context.Context, w io.Writer, systemPromp
 		System:    []anthropic.TextBlockParam{{Text: systemPrompt}},
 		Messages:  messages,
 	})
+	defer stream.Close()
 
 	var builder strings.Builder
 	for stream.Next() {
