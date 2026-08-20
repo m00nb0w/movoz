@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 
@@ -55,6 +55,16 @@ export default function AIRankingChatPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ session_id: sessionId, sub_attribute_id: subAttributeId, message: userMessage }),
       });
+      if (!res.ok) {
+        // Several backend validation paths (invalid/missing cycle or
+        // sub-attribute, missing message, session lookup failures) return a
+        // plain JSON error body with a non-2xx status *before* any SSE
+        // framing is written, so there is no "\n\n"-delimited frame to parse
+        // here — this must be handled the same way src/lib/api.ts handles
+        // every other non-2xx response, or the error silently vanishes.
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `Request failed with status ${res.status}`);
+      }
       if (!res.body) throw new Error("no response body");
 
       const reader = res.body.getReader();
@@ -107,8 +117,20 @@ export default function AIRankingChatPage() {
     setProposedRanking((prev) => (prev ?? []).map((entry) => (entry.engineer_id === engineerId ? { ...entry, rank } : entry)));
   }
 
+  // Mirrors the validation in sub-attributes/[subId]/page.tsx: ranks must be
+  // a strict 1..N permutation with no ties. The backend enforces this too
+  // (SubmitRanking rejects an invalid permutation), but disabling Accept
+  // client-side gives the manager immediate feedback instead of a round-trip
+  // error, matching the sibling ranking page's UX.
+  const proposedRanks = useMemo(() => (proposedRanking ?? []).map((entry) => entry.rank), [proposedRanking]);
+  const hasDuplicateRank = new Set(proposedRanks).size !== proposedRanks.length;
+  const hasOutOfRangeRank = proposedRanks.some(
+    (r) => !Number.isInteger(r) || r < 1 || r > (proposedRanking?.length ?? 0)
+  );
+  const proposedRankingInvalid = hasDuplicateRank || hasOutOfRangeRank;
+
   async function acceptRanking() {
-    if (!sessionId || !proposedRanking) return;
+    if (!sessionId || !proposedRanking || proposedRankingInvalid) return;
     setAccepting(true);
     setError(null);
     try {
@@ -157,11 +179,19 @@ export default function AIRankingChatPage() {
               </li>
             ))}
           </ul>
+          {hasDuplicateRank && (
+            <p className="mt-3 text-sm text-red-500">
+              Two engineers share the same rank — ranks must be unique 1..{proposedRanking.length}.
+            </p>
+          )}
+          {hasOutOfRangeRank && !hasDuplicateRank && (
+            <p className="mt-3 text-sm text-red-500">Ranks must be between 1 and {proposedRanking.length}.</p>
+          )}
           {/* NF3: the ranking is only persisted when the admin explicitly clicks
               this button — nothing here is auto-applied from the chat. */}
           <button
             onClick={acceptRanking}
-            disabled={accepting}
+            disabled={accepting || proposedRankingInvalid}
             className="mt-3 rounded bg-accent-600 px-4 py-2 text-white disabled:opacity-50"
           >
             {accepting ? "Saving..." : "Accept & save ranking"}
