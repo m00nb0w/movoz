@@ -37,6 +37,7 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 	aiClient := aiclient.NewClient(cfg.AnthropicAPIKey)
 	aiSessionStore := store.NewAISessionStore(db)
 	aiChatHandler := handlers.NewAIChatHandler(aiClient, aiSessionStore, engineerStore, metricStore, highlightStore, subAttributeStore, cycleStore)
+	aiAcceptHandler := handlers.NewAIAcceptHandler(aiSessionStore, rankingStore, cycleStore)
 
 	r := gin.Default()
 
@@ -81,6 +82,7 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 		api.GET("/engineers/:id/metrics", metricsHandler.Get)
 
 		api.POST("/cycles/:id/ai-sessions", aiChatHandler.Chat)
+		api.POST("/cycles/:id/ai-sessions/:sessionId/accept", aiAcceptHandler.Accept)
 	}
 
 	return r
