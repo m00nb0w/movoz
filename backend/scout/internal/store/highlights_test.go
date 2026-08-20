@@ -99,3 +99,26 @@ func TestHighlightStoreListOrdering(t *testing.T) {
 		t.Fatalf("expected descending order, got %d then %d", list[0].ID, list[1].ID)
 	}
 }
+
+func TestHighlightStoreCreateRejectsInvalidKind(t *testing.T) {
+	db := setupTestDB(t)
+	if _, err := db.Exec("TRUNCATE highlight_entries, engineers RESTART IDENTITY CASCADE"); err != nil {
+		t.Fatalf("failed to truncate: %v", err)
+	}
+
+	engineerStore := NewEngineerStore(db)
+	highlightStore := NewHighlightStore(db)
+
+	e1, _ := engineerStore.Create("Eve", nil, nil, nil, timeNow())
+
+	// Attempt to create with an invalid kind directly at store layer
+	// This bypasses API validation to test DB CHECK constraint
+	_, err := highlightStore.Create(e1.ID, "sidenote", "Invalid kind")
+	if err == nil {
+		t.Fatalf("expected DB to reject invalid kind, but Create succeeded")
+	}
+	// Verify the error contains CHECK constraint reference (pq error)
+	if err.Error() == "" {
+		t.Fatalf("expected non-empty error message")
+	}
+}

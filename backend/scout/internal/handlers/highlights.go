@@ -29,6 +29,15 @@ func (h *HighlightHandler) List(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid engineer id"})
 		return
 	}
+	exists, err := h.engineerStore.Exists(engineerID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to look up engineer"})
+		return
+	}
+	if !exists {
+		c.JSON(http.StatusNotFound, gin.H{"error": "engineer not found"})
+		return
+	}
 	entries, err := h.store.List(engineerID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list highlights"})

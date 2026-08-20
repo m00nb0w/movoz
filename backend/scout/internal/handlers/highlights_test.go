@@ -172,6 +172,26 @@ func TestHighlightHandlerListEmpty(t *testing.T) {
 	}
 }
 
+func TestHighlightHandlerListEngineerNotFound(t *testing.T) {
+	db := setupTestDBForHandlers(t)
+
+	engineerStore := store.NewEngineerStore(db)
+	highlightStore := store.NewHighlightStore(db)
+
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	h := NewHighlightHandler(highlightStore, engineerStore)
+	r.GET("/api/engineers/:id/highlights", h.List)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/engineers/99999/highlights", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", w.Code)
+	}
+}
+
 func TestHighlightHandlerCreateMissingKind(t *testing.T) {
 	db := setupTestDBForHandlers(t)
 	if _, err := db.Exec("TRUNCATE highlight_entries, engineers RESTART IDENTITY CASCADE"); err != nil {
