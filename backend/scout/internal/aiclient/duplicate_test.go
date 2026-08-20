@@ -213,3 +213,37 @@ func TestCheckDuplicateMalformedJSONInTextBlock(t *testing.T) {
 		t.Fatalf("expected a nil result on malformed JSON, got %+v", result)
 	}
 }
+
+// TestCheckDuplicateUnexpectedContentBlockType covers the API returning a
+// well-formed message whose first content block isn't a text block at all
+// (e.g. a thinking block, if extended thinking were ever enabled upstream).
+// The type assertion to anthropic.TextBlock must fail gracefully with an
+// error rather than panicking on a bad type assertion.
+func TestCheckDuplicateUnexpectedContentBlockType(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{
+			"id": "msg_thinking",
+			"type": "message",
+			"role": "assistant",
+			"model": "claude-opus-5",
+			"content": [{"type": "thinking", "thinking": "pondering...", "signature": "sig"}],
+			"stop_reason": "end_turn",
+			"stop_sequence": null,
+			"usage": {"input_tokens": 12, "output_tokens": 6}
+		}`)
+	}))
+	defer server.Close()
+
+	client := NewClient("test-key", option.WithBaseURL(server.URL))
+
+	result, err := client.CheckDuplicate(context.Background(), "Some new entry", []ExistingEntry{
+		{ID: 1, Kind: "highlight", Body: "Some existing entry"},
+	})
+	if err == nil {
+		t.Fatal("expected an error when the first content block isn't a text block")
+	}
+	if result != nil {
+		t.Fatalf("expected a nil result on unexpected content block type, got %+v", result)
+	}
+}
