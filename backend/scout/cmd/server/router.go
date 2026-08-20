@@ -30,6 +30,8 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 	dashboardHandler := handlers.NewDashboardHandler(scoreStore, engineerStore)
 	metricStore := store.NewMetricStore(db)
 	metricsHandler := handlers.NewMetricsHandler(metricStore, engineerStore)
+	highlightStore := store.NewHighlightStore(db)
+	highlightHandler := handlers.NewHighlightHandler(highlightStore, engineerStore)
 
 	r := gin.Default()
 
@@ -49,6 +51,8 @@ func buildRouter(db *sql.DB, cfg *config.Config) *gin.Engine {
 		api.PUT("/engineers/:id", engineerHandler.Update)
 		api.DELETE("/engineers/:id", engineerHandler.Deactivate)
 		api.POST("/engineers/:id/reactivate", engineerHandler.Reactivate)
+		api.GET("/engineers/:id/highlights", highlightHandler.List)
+		api.POST("/engineers/:id/highlights", highlightHandler.Create)
 
 		api.GET("/main-attributes", mainAttributeHandler.List)
 		api.POST("/main-attributes", mainAttributeHandler.Create)
