@@ -37,7 +37,7 @@ export default function DashboardPage() {
             </Link>
             <div className="text-right text-sm">
               <div className="text-zen-text">{entry.latest_overall != null ? entry.latest_overall.toFixed(1) : "—"}</div>
-              <div className="text-zen-muted">{entry.last_cycle_date ?? "no cycles yet"}</div>
+              <div className="text-zen-muted">{entry.last_cycle_date?.slice(0, 10) ?? "no cycles yet"}</div>
             </div>
           </li>
         ))}
