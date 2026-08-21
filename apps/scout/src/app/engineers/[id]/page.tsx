@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
-import type { Engineer, EngineerCard as EngineerCardData, MetricSnapshot, RatingCycle, TrendPoint } from "@/lib/types";
+import type {
+  Engineer,
+  EngineerCard as EngineerCardData,
+  HighlightEntry,
+  MetricSnapshot,
+  RatingCycle,
+  TrendPoint,
+} from "@/lib/types";
 
 export default function EngineerCardPage() {
   const params = useParams<{ id: string }>();
@@ -15,6 +22,11 @@ export default function EngineerCardPage() {
   const [card, setCard] = useState<EngineerCardData | null>(null);
   const [trend, setTrend] = useState<TrendPoint[]>([]);
   const [metrics, setMetrics] = useState<MetricSnapshot[]>([]);
+  const [highlights, setHighlights] = useState<HighlightEntry[]>([]);
+  const [newKind, setNewKind] = useState<"highlight" | "lowlight">("highlight");
+  const [newBody, setNewBody] = useState("");
+  const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
+  const [checkingDuplicate, setCheckingDuplicate] = useState(false);
 
   useEffect(() => {
     async function loadStatic() {
@@ -37,6 +49,48 @@ export default function EngineerCardPage() {
     if (selectedCycleId == null) return;
     api.get<EngineerCardData>(`/api/engineers/${engineerId}/card?cycleId=${selectedCycleId}`).then(setCard);
   }, [engineerId, selectedCycleId]);
+
+  useEffect(() => {
+    api.get<HighlightEntry[]>(`/api/engineers/${engineerId}/highlights`).then(setHighlights);
+  }, [engineerId]);
+
+  async function saveEntry() {
+    await api.post(`/api/engineers/${engineerId}/highlights`, { kind: newKind, body: newBody });
+    setNewBody("");
+    setDuplicateWarning(null);
+    const updated = await api.get<HighlightEntry[]>(`/api/engineers/${engineerId}/highlights`);
+    setHighlights(updated);
+  }
+
+  async function handleAddEntry(e: FormEvent) {
+    e.preventDefault();
+    if (!newBody.trim()) return;
+
+    setCheckingDuplicate(true);
+    setDuplicateWarning(null);
+
+    // F14/NF3: the duplicate flag must never block the save. The backend
+    // already degrades gracefully (200, is_duplicate=false) when the AI
+    // call itself fails, but a genuine client-side/network failure calling
+    // this endpoint would otherwise throw here — catch that too so the save
+    // still proceeds without a flag rather than getting stuck.
+    try {
+      const check = await api.post<{ is_duplicate: boolean; matched_entry_id: number | null; similarity_note: string }>(
+        `/api/engineers/${engineerId}/highlights/check-duplicate`,
+        { body: newBody }
+      );
+      setCheckingDuplicate(false);
+
+      if (check.is_duplicate) {
+        setDuplicateWarning(`Possible duplicate: ${check.similarity_note}`);
+        return;
+      }
+    } catch {
+      setCheckingDuplicate(false);
+    }
+
+    await saveEntry();
+  }
 
   if (!engineer) return null;
 
@@ -126,6 +180,52 @@ export default function EngineerCardPage() {
             </tbody>
           </table>
         )}
+      </section>
+
+      <section className="mt-8 rounded-lg border border-zen-border p-4">
+        <h2 className="mb-3 font-medium text-zen-text">Highlights &amp; lowlights</h2>
+
+        <form onSubmit={handleAddEntry} className="mb-4 space-y-2">
+          <div className="flex gap-2">
+            <select
+              value={newKind}
+              onChange={(e) => setNewKind(e.target.value as "highlight" | "lowlight")}
+              className="rounded border border-zen-border bg-transparent p-2 text-sm"
+            >
+              <option value="highlight">Highlight</option>
+              <option value="lowlight">Lowlight</option>
+            </select>
+            <input
+              className="flex-1 rounded border border-zen-border bg-transparent p-2 text-sm"
+              placeholder="What happened?"
+              value={newBody}
+              onChange={(e) => setNewBody(e.target.value)}
+            />
+            <button type="submit" disabled={checkingDuplicate} className="rounded bg-accent-600 px-3 py-2 text-sm text-white disabled:opacity-50">
+              {checkingDuplicate ? "Checking..." : "Add"}
+            </button>
+          </div>
+          {duplicateWarning && (
+            <div className="rounded border border-yellow-500 p-2 text-sm text-yellow-700">
+              <p>{duplicateWarning}</p>
+              <button type="button" onClick={saveEntry} className="mt-1 underline">
+                Save anyway
+              </button>
+            </div>
+          )}
+        </form>
+
+        <ul className="space-y-2">
+          {highlights.map((h) => (
+            <li key={h.id} className="text-sm">
+              <span className={h.kind === "highlight" ? "text-green-600" : "text-red-500"}>
+                {h.kind === "highlight" ? "★" : "▼"}
+              </span>{" "}
+              <span className="text-zen-muted">{h.created_at.slice(0, 10)}</span>{" "}
+              <span className="text-zen-text">{h.body}</span>
+            </li>
+          ))}
+        </ul>
       </section>
     </main>
   );
