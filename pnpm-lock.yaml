@@ -222,6 +222,55 @@ importers:
         specifier: 'catalog:'
         version: 5.9.3
 
+  apps/scout:
+    dependencies:
+      '@movoz/theme':
+        specifier: workspace:*
+        version: link:../../packages/theme
+      next:
+        specifier: 'catalog:'
+        version: 15.5.23(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      react:
+        specifier: 'catalog:'
+        version: 19.2.8
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@movoz/tailwind-config':
+        specifier: workspace:*
+        version: link:../../packages/tailwind-config
+      '@movoz/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.19.33
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.4(@types/react@19.2.18)
+      autoprefixer:
+        specifier: 'catalog:'
+        version: 10.4.24(postcss@8.5.6)
+      eslint:
+        specifier: 'catalog:'
+        version: 8.57.1
+      eslint-config-next:
+        specifier: 'catalog:'
+        version: 15.5.23(eslint@8.57.1)(typescript@5.9.3)
+      postcss:
+        specifier: 'catalog:'
+        version: 8.5.6
+      tailwindcss:
+        specifier: 'catalog:'
+        version: 3.4.19
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
   packages/tailwind-config:
     dependencies:
       '@movoz/tokens':
