@@ -185,7 +185,9 @@ export default function AIRankingChatPage() {
             </p>
           )}
           {hasOutOfRangeRank && !hasDuplicateRank && (
-            <p className="mt-3 text-sm text-red-500">Ranks must be between 1 and {proposedRanking.length}.</p>
+            <p className="mt-3 text-sm text-red-500">
+              Ranks must be whole numbers between 1 and {proposedRanking.length}.
+            </p>
           )}
           {/* NF3: the ranking is only persisted when the admin explicitly clicks
               this button — nothing here is auto-applied from the chat. */}

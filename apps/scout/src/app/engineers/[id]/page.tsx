@@ -117,7 +117,10 @@ export default function EngineerCardPage() {
         >
           {cycles.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.period_start} — {c.period_end}
+              {/* period_start/period_end are DATE columns serialised as RFC3339
+                  timestamps; slice to YYYY-MM-DD like cycles/page.tsx,
+                  engineers/page.tsx and page.tsx already do. */}
+              {c.period_start.slice(0, 10)} — {c.period_end.slice(0, 10)}
             </option>
           ))}
         </select>
@@ -169,7 +172,7 @@ export default function EngineerCardPage() {
               {metrics.map((m) => (
                 <tr key={m.id} className="border-b border-zen-border">
                   <td className="py-2 text-zen-text">
-                    {m.period_start} – {m.period_end}
+                    {m.period_start.slice(0, 10)} – {m.period_end.slice(0, 10)}
                   </td>
                   <td className="py-2 text-zen-muted">{m.prs_raised}</td>
                   <td className="py-2 text-zen-muted">{m.prs_reviewed}</td>

@@ -46,7 +46,11 @@ export default function RankSubAttributePage() {
 
   const usedRanks = useMemo(() => Object.values(ranks), [ranks]);
   const hasDuplicateRank = new Set(usedRanks).size !== usedRanks.length;
-  const hasOutOfRangeRank = usedRanks.some((r) => r < 1 || r > engineers.length);
+  // Number.isInteger matters as much as the range check: a number input still
+  // accepts "1.5", and a fractional rank would otherwise reach the Go backend
+  // and come back as a generic permutation error. Mirrors the same check on
+  // the sibling chat page (chat/page.tsx).
+  const hasOutOfRangeRank = usedRanks.some((r) => !Number.isInteger(r) || r < 1 || r > engineers.length);
   const allRanked = engineers.length > 0 && engineers.every((e) => ranks[e.id] != null);
 
   function setRank(engineerId: number, rawValue: string) {
@@ -116,7 +120,7 @@ export default function RankSubAttributePage() {
       )}
       {hasOutOfRangeRank && !hasDuplicateRank && (
         <p className="mb-4 text-sm text-red-500">
-          Ranks must be between 1 and {engineers.length}.
+          Ranks must be whole numbers between 1 and {engineers.length}.
         </p>
       )}
       {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
