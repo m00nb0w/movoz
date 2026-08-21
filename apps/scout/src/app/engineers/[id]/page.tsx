@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
-import type { Engineer, EngineerCard as EngineerCardData, RatingCycle, TrendPoint } from "@/lib/types";
+import type { Engineer, EngineerCard as EngineerCardData, MetricSnapshot, RatingCycle, TrendPoint } from "@/lib/types";
 
 export default function EngineerCardPage() {
   const params = useParams<{ id: string }>();
@@ -14,17 +14,20 @@ export default function EngineerCardPage() {
   const [selectedCycleId, setSelectedCycleId] = useState<number | null>(null);
   const [card, setCard] = useState<EngineerCardData | null>(null);
   const [trend, setTrend] = useState<TrendPoint[]>([]);
+  const [metrics, setMetrics] = useState<MetricSnapshot[]>([]);
 
   useEffect(() => {
     async function loadStatic() {
-      const [eng, cycleList, trendData] = await Promise.all([
+      const [eng, cycleList, trendData, metricSnapshots] = await Promise.all([
         api.get<Engineer>(`/api/engineers/${engineerId}`),
         api.get<RatingCycle[]>("/api/cycles"),
         api.get<TrendPoint[]>(`/api/engineers/${engineerId}/trend`),
+        api.get<MetricSnapshot[]>(`/api/engineers/${engineerId}/metrics`),
       ]);
       setEngineer(eng);
       setCycles(cycleList);
       setTrend(trendData);
+      setMetrics(metricSnapshots);
       if (cycleList.length > 0) setSelectedCycleId(cycleList[0].id);
     }
     loadStatic();
@@ -90,6 +93,38 @@ export default function EngineerCardPage() {
           </svg>
         ) : (
           <p className="text-sm text-zen-muted">No scored cycles yet.</p>
+        )}
+      </section>
+
+      <section className="mt-8 rounded-lg border border-zen-border p-4">
+        <h2 className="mb-3 font-medium text-zen-text">Synced metrics</h2>
+        {metrics.length === 0 ? (
+          <p className="text-sm text-zen-muted">No synced metrics yet.</p>
+        ) : (
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-zen-border text-zen-muted">
+                <th className="py-2">Period</th>
+                <th className="py-2">PRs raised</th>
+                <th className="py-2">PRs reviewed</th>
+                <th className="py-2">Tickets closed</th>
+                <th className="py-2">Complexity</th>
+              </tr>
+            </thead>
+            <tbody>
+              {metrics.map((m) => (
+                <tr key={m.id} className="border-b border-zen-border">
+                  <td className="py-2 text-zen-text">
+                    {m.period_start} – {m.period_end}
+                  </td>
+                  <td className="py-2 text-zen-muted">{m.prs_raised}</td>
+                  <td className="py-2 text-zen-muted">{m.prs_reviewed}</td>
+                  <td className="py-2 text-zen-muted">{m.tickets_closed}</td>
+                  <td className="py-2 text-zen-muted">{m.complexity_score.toFixed(1)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </section>
     </main>
