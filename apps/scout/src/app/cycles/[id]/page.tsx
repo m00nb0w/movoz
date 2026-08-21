@@ -4,16 +4,40 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import type { EngineerCycleScore } from "@/lib/types";
+import type { EngineerCycleScore, MainAttribute, SubAttribute } from "@/lib/types";
 
 export default function CycleViewPage() {
   const params = useParams<{ id: string }>();
   const cycleId = Number(params.id);
   const [scores, setScores] = useState<EngineerCycleScore[]>([]);
+  const [mainAttributes, setMainAttributes] = useState<MainAttribute[]>([]);
+  const [subAttributesByMain, setSubAttributesByMain] = useState<Record<number, SubAttribute[]>>({});
 
   useEffect(() => {
     api.get<EngineerCycleScore[]>(`/api/cycles/${cycleId}/scores`).then(setScores);
   }, [cycleId]);
+
+  // F6/F9 entry point: ranking a sub-attribute (and the AI assistant nested
+  // under it) is the product's primary workflow, so this cycle's
+  // sub-attributes have to be reachable from here — otherwise the only way in
+  // is hand-typing a URL containing both a cycle id and a sub-attribute id.
+  // Same grouping fetch as src/app/attributes/page.tsx: one call per main
+  // attribute, `active=all` so a cycle that was ranked on a now-deactivated
+  // sub-attribute still shows it.
+  useEffect(() => {
+    async function loadAttributes() {
+      const mains = await api.get<MainAttribute[]>("/api/main-attributes");
+      setMainAttributes(mains);
+      const entries = await Promise.all(
+        mains.map(
+          async (m) =>
+            [m.id, await api.get<SubAttribute[]>(`/api/sub-attributes?main_attribute_id=${m.id}&active=all`)] as const
+        )
+      );
+      setSubAttributesByMain(Object.fromEntries(entries));
+    }
+    loadAttributes();
+  }, []);
 
   // Different engineers can have different sets of main attributes scored
   // for the same cycle (e.g. an engineer added after an earlier ranking
@@ -69,6 +93,44 @@ export default function CycleViewPage() {
       </table>
 
       {scores.length === 0 && <p className="text-sm text-zen-muted">No rankings submitted for this cycle yet.</p>}
+
+      <section className="mt-10">
+        <h2 className="mb-1 text-lg font-medium text-zen-text">Rank sub-attributes</h2>
+        <p className="mb-4 text-sm text-zen-muted">
+          Pick a sub-attribute to rank every active engineer 1..N for this cycle — manually, or with the AI assistant
+          linked from that page.
+        </p>
+
+        {mainAttributes.length === 0 && <p className="text-sm text-zen-muted">No attributes defined yet.</p>}
+
+        <div className="space-y-4">
+          {mainAttributes.map((main) => {
+            const subs = subAttributesByMain[main.id] ?? [];
+            return (
+              <div key={main.id} className="rounded-lg border border-zen-border p-4">
+                <h3 className="mb-2 font-medium text-zen-text">{main.name}</h3>
+                {subs.length === 0 ? (
+                  <p className="text-sm text-zen-muted">No sub-attributes yet.</p>
+                ) : (
+                  <ul className="divide-y divide-zen-border">
+                    {subs.map((sub) => (
+                      <li key={sub.id} className="py-2">
+                        <Link
+                          href={`/cycles/${cycleId}/sub-attributes/${sub.id}`}
+                          className={`text-sm hover:underline ${sub.is_active ? "text-accent-600" : "text-zen-muted"}`}
+                        >
+                          {sub.name}
+                          {!sub.is_active && " (inactive)"}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
     </main>
   );
 }
