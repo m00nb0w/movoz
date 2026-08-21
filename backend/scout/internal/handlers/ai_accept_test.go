@@ -33,11 +33,7 @@ type aiAcceptTestFixture struct {
 func newAIAcceptFixture(t *testing.T) *aiAcceptTestFixture {
 	t.Helper()
 	db := setupTestDBForHandlers(t)
-	for _, table := range []string{"ai_ranking_sessions", "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "ai_ranking_sessions", "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := store.NewEngineerStore(db)
 	mainStore := store.NewMainAttributeStore(db)
@@ -100,11 +96,7 @@ func (f *aiAcceptTestFixture) accept(t *testing.T, sessionID int, rankings []map
 
 func TestAIAcceptHandlerPersistsEditedRanking(t *testing.T) {
 	db := setupTestDBForHandlers(t)
-	for _, table := range []string{"ai_ranking_sessions", "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "ai_ranking_sessions", "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := store.NewEngineerStore(db)
 	mainStore := store.NewMainAttributeStore(db)

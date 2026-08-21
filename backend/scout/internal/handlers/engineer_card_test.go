@@ -39,11 +39,7 @@ func setupEngineerCardTestRouter(t *testing.T) (*gin.Engine, *store.EngineerStor
 func TestEngineerCardHandlerValid(t *testing.T) {
 	r, engineerStore, mainStore, subStore, cycleStore, rankingStore, _ := setupEngineerCardTestRouter(t)
 	db := setupTestDBForHandlers(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	e1, _ := engineerStore.Create("Alice", nil, nil, nil, time.Now())
 	e2, _ := engineerStore.Create("Bob", nil, nil, nil, time.Now())
@@ -172,11 +168,7 @@ func TestEngineerCardHandlerInvalidCycleId(t *testing.T) {
 func TestEngineerTrendHandlerValid(t *testing.T) {
 	r, engineerStore, mainStore, subStore, cycleStore, rankingStore, _ := setupEngineerCardTestRouter(t)
 	db := setupTestDBForHandlers(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	e1, _ := engineerStore.Create("Emma", nil, nil, nil, time.Now())
 	e2, _ := engineerStore.Create("Frank", nil, nil, nil, time.Now())

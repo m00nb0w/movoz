@@ -74,11 +74,7 @@ type aiChatTestFixture struct {
 func newAIChatFixture(t *testing.T, aiServerURL string) *aiChatTestFixture {
 	t.Helper()
 	db := setupTestDBForHandlers(t)
-	for _, table := range []string{"ai_ranking_sessions", "sub_attribute_rankings", "highlight_entries", "metric_snapshots", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "ai_ranking_sessions", "sub_attribute_rankings", "highlight_entries", "metric_snapshots", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := store.NewEngineerStore(db)
 	mainStore := store.NewMainAttributeStore(db)

@@ -174,25 +174,29 @@ go run ./cmd/server -version
 
 Tests require a running Postgres and a dedicated test database — without one, `go test ./...` reports `ok` for every package because each test gracefully skips (intentional, mirroring `oncarinho`'s convention — a green `go test ./...` does NOT by itself prove the tests ran).
 
+The test database needs the schema **and** migration-seeded data (migration `000002` seeds the initial 6 `main_attributes`, which `TestMainAttributeStoreSeedData` asserts on), so create it and run the migrations against it once before the first test run:
+
 ```bash
 createdb scout_test
-go test ./...
+DATABASE_URL="postgres://localhost/scout_test?sslmode=disable" go run ./cmd/server -migrate=up
+go test -p 1 ./...
 ```
+
+(`-migrate=up` runs before the `ADMIN_PASSWORD`/`SESSION_SECRET` check in `main.go`, so no other env vars are needed for this step. Re-run it after adding a migration.)
 
 To point at a non-default test database:
 ```bash
-TEST_DATABASE_URL="postgres://localhost/scout_test?sslmode=disable" go test ./...
+TEST_DATABASE_URL="postgres://localhost/scout_test?sslmode=disable" go test -p 1 ./...
 ```
 
 To confirm tests are actually running (not skipping):
 ```bash
-go test ./... -v 2>&1 | grep -c '^--- SKIP'   # should print 0
+go test -p 1 ./... -v 2>&1 | grep -c '^--- SKIP'   # should print 0
 ```
 
-**Run with `-p 1` for full reliability.** Unlike `oncarinho`'s tables, `main_attributes` is migration-seeded (the initial 6). Several store/handler tests `TRUNCATE` it (and dependent tables) to seed their own fixtures, and Go runs different packages' test binaries concurrently by default — a truncate in one package can race a seed-dependent assertion in another (e.g. `TestMainAttributeStoreSeedData`). Force serial package execution to eliminate that race:
-```bash
-go test -p 1 ./...
-```
+**`-p 1` is required, not just recommended.** Every package's tests share the *same* `scout_test` database, and most of them `TRUNCATE ... RESTART IDENTITY CASCADE` the tables they own to build fixtures. Go runs different packages' test binaries concurrently by default, so without `-p 1` a truncate in one package wipes rows another package's test is mid-way through asserting on (e.g. `internal/store`'s scores/ai-session tests vs. `internal/handlers`'s cycle-view/AI-chat tests). This is a cross-package data-sharing problem, not something the test code can fix on its own — short of giving every package its own database.
+
+*Intra*-package ordering is handled in code: `truncateTables` (in each package's `testutil_test.go`) restores `main_attributes`' 6 seed rows on test cleanup whenever a test truncates that table, so seed-dependent tests such as `TestMainAttributeStoreSeedData` pass regardless of the order tests run in within a package (verified with `go test -shuffle=on`). Always truncate through that helper rather than issuing raw `TRUNCATE main_attributes` SQL in a test.
 
 ## Architecture
 

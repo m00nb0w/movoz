@@ -24,11 +24,7 @@ func mustSetCreatedAt(t *testing.T, db *sql.DB, table string, id int, at time.Ti
 // interpolation for n=2 gives rank 1 -> 100, rank 2 -> 50).
 func TestScoreStoreMainAttributeScoresAndOverall(t *testing.T) {
 	db := setupTestDB(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := NewEngineerStore(db)
 	mainStore := NewMainAttributeStore(db)
@@ -110,11 +106,7 @@ func TestScoreStoreOverallScoreNilWhenNoData(t *testing.T) {
 // score of 0), and must not drag OverallScore down toward 0 either.
 func TestScoreStoreMainAttributeWithZeroRankingsExcludedNotZero(t *testing.T) {
 	db := setupTestDB(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := NewEngineerStore(db)
 	mainStore := NewMainAttributeStore(db)
@@ -188,11 +180,7 @@ func TestScoreStoreMainAttributeWithZeroRankingsExcludedNotZero(t *testing.T) {
 // whether extra (identical) data was folded in.
 func TestScoreStoreOverallScoreF8CutoverExcludesMainAttributeCreatedAfterCycle(t *testing.T) {
 	db := setupTestDB(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := NewEngineerStore(db)
 	mainStore := NewMainAttributeStore(db)
@@ -315,11 +303,7 @@ func TestScoreStoreOverallScoreF8CutoverExcludesMainAttributeCreatedAfterCycle(t
 // exclude it here.
 func TestScoreStoreOverallScoreF8CutoverIncludesMainAttributeCreatedAtSameInstantAsCycle(t *testing.T) {
 	db := setupTestDB(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := NewEngineerStore(db)
 	mainStore := NewMainAttributeStore(db)
@@ -388,11 +372,7 @@ func TestScoreStoreOverallScoreF8CutoverIncludesMainAttributeCreatedAtSameInstan
 // methods, which never do this) to simulate that scenario directly.
 func TestScoreStoreOverallScoreExcludesMainAttributeWithNullCreatedAt(t *testing.T) {
 	db := setupTestDB(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := NewEngineerStore(db)
 	mainStore := NewMainAttributeStore(db)
@@ -477,11 +457,7 @@ func TestScoreStoreOverallScoreExcludesMainAttributeWithNullCreatedAt(t *testing
 // with exact expected values.
 func TestScoreStoreEngineerCard(t *testing.T) {
 	db := setupTestDB(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := NewEngineerStore(db)
 	mainStore := NewMainAttributeStore(db)
@@ -603,11 +579,7 @@ func TestScoreStoreEngineerCardNoData(t *testing.T) {
 // across all past cycles an engineer has rankings in, oldest first.
 func TestScoreStoreEngineerTrend(t *testing.T) {
 	db := setupTestDB(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := NewEngineerStore(db)
 	mainStore := NewMainAttributeStore(db)
@@ -712,11 +684,7 @@ func TestScoreStoreEngineerTrendNoHistory(t *testing.T) {
 // rank 2 scores 50 per RankToScore (linear interpolation).
 func TestScoreStoreCycleScores(t *testing.T) {
 	db := setupTestDB(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := NewEngineerStore(db)
 	mainStore := NewMainAttributeStore(db)
@@ -778,11 +746,7 @@ func TestScoreStoreCycleScores(t *testing.T) {
 // engineers be ranked at submission time).
 func TestScoreStoreCycleScoresActiveEngineerWithNoRankings(t *testing.T) {
 	db := setupTestDB(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := NewEngineerStore(db)
 	mainStore := NewMainAttributeStore(db)
@@ -847,11 +811,7 @@ func TestScoreStoreCycleScoresActiveEngineerWithNoRankings(t *testing.T) {
 // engineers even when they have historical rankings.
 func TestScoreStoreCycleScoresExcludesDeactivatedEngineer(t *testing.T) {
 	db := setupTestDB(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := NewEngineerStore(db)
 	mainStore := NewMainAttributeStore(db)
@@ -904,11 +864,7 @@ func TestScoreStoreCycleScoresExcludesDeactivatedEngineer(t *testing.T) {
 // correct ordering of cycles.
 func TestScoreStoreRosterDashboard(t *testing.T) {
 	db := setupTestDB(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := NewEngineerStore(db)
 	mainStore := NewMainAttributeStore(db)
@@ -1004,11 +960,7 @@ func TestScoreStoreRosterDashboard(t *testing.T) {
 // created cycle.
 func TestScoreStoreRosterDashboardMostRecentCycleNonChronologicalCreation(t *testing.T) {
 	db := setupTestDB(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := NewEngineerStore(db)
 	mainStore := NewMainAttributeStore(db)

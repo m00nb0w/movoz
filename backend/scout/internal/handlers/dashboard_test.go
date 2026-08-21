@@ -19,11 +19,7 @@ import (
 // cycle date, hand-computed with exact expected values.
 func TestDashboardHandlerGet(t *testing.T) {
 	db := setupTestDBForHandlers(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := store.NewEngineerStore(db)
 	mainStore := store.NewMainAttributeStore(db)
@@ -140,11 +136,7 @@ func TestDashboardHandlerEmptyDashboard(t *testing.T) {
 // nil LatestOverall and nil LastCycleDate, rather than being silently dropped.
 func TestDashboardHandlerIncludesActiveEngineerWithNoRankings(t *testing.T) {
 	db := setupTestDBForHandlers(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := store.NewEngineerStore(db)
 	mainStore := store.NewMainAttributeStore(db)
@@ -221,11 +213,7 @@ func TestDashboardHandlerIncludesActiveEngineerWithNoRankings(t *testing.T) {
 // ranking data.
 func TestDashboardHandlerExcludesDeactivatedEngineer(t *testing.T) {
 	db := setupTestDBForHandlers(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := store.NewEngineerStore(db)
 	mainStore := store.NewMainAttributeStore(db)
@@ -306,11 +294,7 @@ func TestDashboardHandlerExcludesDeactivatedEngineer(t *testing.T) {
 // with multiple active engineers and displays their latest cycle information.
 func TestDashboardHandlerComplexCycles(t *testing.T) {
 	db := setupTestDBForHandlers(t)
-	for _, table := range []string{"sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "sub_attribute_rankings", "sub_attributes", "main_attributes", "rating_cycles", "engineers")
 
 	engineerStore := store.NewEngineerStore(db)
 	mainStore := store.NewMainAttributeStore(db)

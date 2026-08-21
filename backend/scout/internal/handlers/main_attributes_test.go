@@ -17,9 +17,7 @@ import (
 func setupMainAttributeTestRouter(t *testing.T) *gin.Engine {
 	t.Helper()
 	db := setupTestDBForHandlers(t)
-	if _, err := db.Exec("TRUNCATE main_attributes RESTART IDENTITY CASCADE"); err != nil {
-		t.Fatalf("failed to truncate: %v", err)
-	}
+	truncateTables(t, db, "main_attributes")
 
 	mainAttributeStore := store.NewMainAttributeStore(db)
 	gin.SetMode(gin.TestMode)

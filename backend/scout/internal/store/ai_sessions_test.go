@@ -8,11 +8,7 @@ import (
 
 func TestAISessionStoreCreateAndUpdateTranscript(t *testing.T) {
 	db := setupTestDB(t)
-	for _, table := range []string{"ai_ranking_sessions", "sub_attributes", "main_attributes", "rating_cycles"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "ai_ranking_sessions", "sub_attributes", "main_attributes", "rating_cycles")
 
 	mainStore := NewMainAttributeStore(db)
 	subStore := NewSubAttributeStore(db)
@@ -78,11 +74,7 @@ func TestAISessionStoreCreateAndUpdateTranscript(t *testing.T) {
 // for the jsonb column unless the store normalizes nil to a real NULL first.
 func TestAISessionStoreUpdateTranscriptWithNilProposedRanking(t *testing.T) {
 	db := setupTestDB(t)
-	for _, table := range []string{"ai_ranking_sessions", "sub_attributes", "main_attributes", "rating_cycles"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "ai_ranking_sessions", "sub_attributes", "main_attributes", "rating_cycles")
 
 	mainStore := NewMainAttributeStore(db)
 	subStore := NewSubAttributeStore(db)
@@ -140,11 +132,7 @@ func TestAISessionStoreGetByIDNotFound(t *testing.T) {
 
 func TestAISessionStoreJSONRoundTrip(t *testing.T) {
 	db := setupTestDB(t)
-	for _, table := range []string{"ai_ranking_sessions", "sub_attributes", "main_attributes", "rating_cycles"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "ai_ranking_sessions", "sub_attributes", "main_attributes", "rating_cycles")
 
 	mainStore := NewMainAttributeStore(db)
 	subStore := NewSubAttributeStore(db)
@@ -314,11 +302,7 @@ func TestAISessionStoreJSONRoundTrip(t *testing.T) {
 
 func TestAISessionStoreCreateMultipleSessions(t *testing.T) {
 	db := setupTestDB(t)
-	for _, table := range []string{"ai_ranking_sessions", "sub_attributes", "main_attributes", "rating_cycles"} {
-		if _, err := db.Exec("TRUNCATE " + table + " RESTART IDENTITY CASCADE"); err != nil {
-			t.Fatalf("failed to truncate %s: %v", table, err)
-		}
-	}
+	truncateTables(t, db, "ai_ranking_sessions", "sub_attributes", "main_attributes", "rating_cycles")
 
 	mainStore := NewMainAttributeStore(db)
 	subStore := NewSubAttributeStore(db)
