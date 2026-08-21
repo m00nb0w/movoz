@@ -15,7 +15,8 @@ import (
 // githubBoundaryOffset compensates for GitHubClient.FetchPRStats's inclusive
 // date range (see its doc comment in internal/integrations/github.go): a
 // sync period's periodEnd is shared with the *next* cycle's periodStart
-// (RunSyncCycle computes a trailing, back-to-back window), so calling
+// whenever the admin opens rating cycles back-to-back (RunSyncCycle syncs the
+// current rating cycle's own window — see its doc comment), so calling
 // GitHub with an inclusive until == periodEnd would double-count PRs
 // created on that boundary day in both this cycle's and the next cycle's
 // snapshot. Shifting only GitHub's until back by one day removes the

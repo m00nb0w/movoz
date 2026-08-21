@@ -76,11 +76,14 @@ func main() {
 	jiraClient := integrations.NewJiraClient(cfg.JiraBaseURL, cfg.JiraEmail, cfg.JiraAPIToken, nil)
 	engineerStoreForSync := store.NewEngineerStore(db)
 	metricStoreForSync := store.NewMetricStore(db)
+	cycleStoreForSync := store.NewCycleStore(db)
 	syncWorker := syncer.NewSyncer(engineerStoreForSync, metricStoreForSync, githubClient, jiraClient, cfg.GitHubRepos, cfg.JiraProjects)
 
 	syncCtx, cancelSync := context.WithCancel(context.Background())
 	defer cancelSync()
-	syncer.StartScheduler(syncCtx, syncWorker, cfg.SyncInterval)
+	// The sync window is the current rating cycle's period, so the scheduler
+	// needs to read rating_cycles on every run (see syncer.RunSyncCycle).
+	syncer.StartScheduler(syncCtx, syncWorker, cycleStoreForSync, cfg.SyncInterval)
 
 	r := buildRouter(db, cfg)
 

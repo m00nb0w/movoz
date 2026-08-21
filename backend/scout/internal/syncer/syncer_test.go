@@ -201,7 +201,8 @@ func TestSyncerRunOnceOffsetsGitHubUntilByOneDayForInclusiveBoundary(t *testing.
 
 	// Directly confirm the fix's purpose: the github until this cycle used
 	// must fall strictly before the since the *next* cycle would use (which
-	// is this cycle's periodEnd, per RunSyncCycle's trailing-window math),
+	// is this cycle's periodEnd when the admin opens rating cycles
+	// back-to-back — the window RunSyncCycle syncs),
 	// so the two cycles' inclusive GitHub ranges never overlap on a shared
 	// day.
 	nextCycleGithubSince := end
