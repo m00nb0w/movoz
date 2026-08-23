@@ -20,7 +20,7 @@ export function Navigation() {
         {/* Logo */}
         <a
           href="#"
-          className="text-zen-text hover:opacity-80 transition-opacity"
+          className="text-ink hover:opacity-80 transition-opacity"
         >
           <span className="text-xl font-semibold">To Ngoc Long</span>
         </a>
@@ -31,7 +31,7 @@ export function Navigation() {
             <a
               key={link.href}
               href={link.href}
-              className="px-5 py-2 text-lg font-medium text-zen-text hover:bg-zen-subtle rounded-lg transition-colors duration-200"
+              className="px-5 py-2 text-lg font-medium text-ink hover:bg-paper-sunken rounded-lg transition-colors duration-200"
             >
               {link.label}
             </a>
@@ -49,9 +49,9 @@ export function Navigation() {
           <IconButton
             icon={
               isOpen ? (
-                <X className="w-5 h-5 text-zen-text" />
+                <X className="w-5 h-5 text-ink" />
               ) : (
-                <Menu className="w-5 h-5 text-zen-text" />
+                <Menu className="w-5 h-5 text-ink" />
               )
             }
             label="Toggle menu"
@@ -62,14 +62,14 @@ export function Navigation() {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-zen-bg border-t border-zen-border">
+        <div className="md:hidden bg-paper border-t border-line">
           <Stack gap={1} className="px-4 py-3">
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
                 onClick={() => setIsOpen(false)}
-                className="block px-4 py-2.5 text-sm text-zen-text hover:bg-zen-subtle rounded-lg transition-colors duration-200"
+                className="block px-4 py-2.5 text-sm text-ink hover:bg-paper-sunken rounded-lg transition-colors duration-200"
               >
                 {link.label}
               </a>

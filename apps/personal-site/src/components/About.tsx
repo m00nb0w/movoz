@@ -10,7 +10,7 @@ export function About() {
         <div className="grid lg:grid-cols-[1fr,1.1fr] gap-12 lg:gap-20 items-start">
           {/* Left - Image */}
           <div className="relative order-2 lg:order-1">
-            <div className="aspect-[3/4] max-h-[500px] rounded-2xl overflow-hidden bg-zen-subtle shadow-lg">
+            <div className="aspect-[3/4] max-h-[500px] rounded-2xl overflow-hidden bg-paper-sunken shadow-lg">
               <img
                 src="/images/profile.jpg"
                 alt="To Ngoc Long"
@@ -18,7 +18,7 @@ export function About() {
                 onError={(e) => {
                   e.currentTarget.style.display = "none";
                   e.currentTarget.parentElement!.innerHTML =
-                    '<div class="w-full h-full flex items-center justify-center text-zen-muted"><span class="text-lg">Your photo here</span></div>';
+                    '<div class="w-full h-full flex items-center justify-center text-ink-soft"><span class="text-lg">Your photo here</span></div>';
                 }}
               />
             </div>
@@ -30,7 +30,7 @@ export function About() {
             <div className="mb-8">
               <Text
                 as="h2"
-                font="serif"
+                font="marker"
                 weight="bold"
                 className="text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] mb-4 leading-[1.05] tracking-[-0.02em]"
               >

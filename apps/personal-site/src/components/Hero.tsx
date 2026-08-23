@@ -9,14 +9,14 @@ export function Hero() {
       <Container maxWidth="xl" className="text-center">
         <Text
           as="h1"
-          font="serif"
+          font="marker"
           className="text-[2.5rem] md:text-[4rem] lg:text-[5.5rem] mb-8 leading-[1.1] tracking-[-0.01em]"
         >
-          <span className="text-zen-text">welcome to</span>
+          <span className="text-ink">welcome to</span>
           <br />
-          <span className="text-zen-text">a </span>
+          <span className="text-ink">a </span>
           <span className="italic text-accent">calmer</span>
-          <span className="text-zen-text"> internet</span>
+          <span className="text-ink"> internet</span>
         </Text>
 
         <Text className="md:text-[1.1rem] leading-[1.6] max-w-2xl mx-auto mb-10">
@@ -31,7 +31,7 @@ export function Hero() {
             className={cn(
               "inline-flex items-center justify-center font-medium transition-all duration-200",
               "px-6 py-3.5 text-base rounded-xl gap-2",
-              "bg-zen-text text-zen-bg hover:opacity-90"
+              "bg-ink text-paper hover:opacity-90"
             )}
           >
             Beta is now available!
@@ -42,7 +42,7 @@ export function Hero() {
             className={cn(
               "inline-flex items-center justify-center font-medium transition-all duration-200",
               "px-6 py-3.5 text-base rounded-xl gap-2",
-              "bg-zen-subtle text-zen-text border border-zen-border hover:bg-zen-border"
+              "bg-paper-sunken text-ink border border-line hover:bg-line"
             )}
           >
             Support Us

@@ -56,7 +56,7 @@ export function Projects() {
         <div className="mb-10 max-w-2xl">
           <Text
             as="h2"
-            font="serif"
+            font="marker"
             weight="bold"
             className="text-[2rem] md:text-[3rem] lg:text-[4rem] mb-4 leading-[1.05] tracking-[-0.02em] whitespace-nowrap"
           >
@@ -81,8 +81,8 @@ export function Projects() {
                 onClick={() => setActiveProject(project)}
                 className={`w-full text-left px-5 py-4 rounded-lg transition-all duration-200 border-l-[3px] ${
                   activeProject.id === project.id
-                    ? "bg-zen-subtle border-l-zen-text"
-                    : "border-l-transparent hover:bg-zen-subtle/50"
+                    ? "bg-paper-sunken border-l-ink"
+                    : "border-l-transparent hover:bg-paper-sunken/50"
                 }`}
               >
                 <Text

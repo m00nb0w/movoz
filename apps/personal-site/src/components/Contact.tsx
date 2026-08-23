@@ -24,7 +24,7 @@ export function Contact() {
         <div className="mb-12 max-w-2xl">
           <Text
             as="h2"
-            font="serif"
+            font="marker"
             weight="bold"
             className="text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] leading-[1.05] tracking-[-0.02em] mb-4"
           >
@@ -47,16 +47,16 @@ export function Contact() {
               </Text>
               <Stack gap={4}>
                 <div className="flex items-center gap-4">
-                  <Mail className="w-5 h-5 text-zen-text" strokeWidth={1.5} />
+                  <Mail className="w-5 h-5 text-ink" strokeWidth={1.5} />
                   <a
                     href="mailto:hello@example.com"
-                    className="text-zen-text text-base hover:text-accent transition-colors"
+                    className="text-ink text-base hover:text-accent transition-colors"
                   >
                     hello@example.com
                   </a>
                 </div>
                 <div className="flex items-center gap-4">
-                  <MapPin className="w-5 h-5 text-zen-text" strokeWidth={1.5} />
+                  <MapPin className="w-5 h-5 text-ink" strokeWidth={1.5} />
                   <Text as="span">San Francisco, CA</Text>
                 </div>
               </Stack>
@@ -102,7 +102,7 @@ export function Contact() {
                 <div className="w-full">
                   <label
                     htmlFor="message"
-                    className="block font-semibold text-zen-text text-base mb-2"
+                    className="block font-semibold text-ink text-base mb-2"
                   >
                     Message
                   </label>
@@ -110,7 +110,7 @@ export function Contact() {
                     id="message"
                     name="message"
                     rows={5}
-                    className="w-full px-4 py-3 bg-zen-subtle border border-zen-border rounded-lg focus:outline-none focus:ring-2 focus:ring-zen-text/20 focus:border-zen-text text-zen-text placeholder-zen-muted resize-none text-base transition-all"
+                    className="w-full px-4 py-3 bg-paper-sunken border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink text-ink placeholder-ink-soft resize-none text-base transition-all"
                     placeholder="Your message..."
                   />
                 </div>
