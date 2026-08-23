@@ -11,9 +11,10 @@ export interface CardProps extends ComponentPropsWithoutRef<"div"> {
 }
 
 const variantStyles = {
-  elevated: "bg-paper shadow-[0_1px_3px_rgba(0,0,0,0.05),0_4px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.2),0_4px_12px_rgba(0,0,0,0.15)]",
-  outlined: "bg-paper border border-zen-border",
-  filled: "bg-zen-subtle",
+  elevated:
+    "bg-paper-raised border border-line shadow-[0_1px_3px_rgba(37,35,30,0.05),0_4px_12px_rgba(37,35,30,0.04)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.2),0_4px_12px_rgba(0,0,0,0.15)]",
+  outlined: "bg-paper-raised border border-line",
+  filled: "bg-paper-sunken",
 };
 
 const paddingStyles = {
@@ -40,7 +41,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          "rounded-2xl overflow-hidden",
+          "rounded-[var(--radius-md)] overflow-hidden",
           variantStyles[variant],
           !header && !footer && paddingStyles[padding],
           className
@@ -48,7 +49,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         {...props}
       >
         {header && (
-          <div className={cn("border-b border-zen-border", paddingStyles[padding])}>
+          <div className={cn("border-b border-line", paddingStyles[padding])}>
             {header}
           </div>
         )}
@@ -58,7 +59,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
           children
         )}
         {footer && (
-          <div className={cn("border-t border-zen-border", paddingStyles[padding])}>
+          <div className={cn("border-t border-line", paddingStyles[padding])}>
             {footer}
           </div>
         )}
