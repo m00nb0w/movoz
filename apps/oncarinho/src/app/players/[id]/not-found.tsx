@@ -6,8 +6,8 @@ export default async function PlayerNotFound() {
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-24 text-center">
-      <p className="text-zen-muted">{t("notFound")}</p>
-      <Link href="/leaderboard" className="mt-4 inline-block text-zen-text hover:underline">
+      <p className="text-ink-soft">{t("notFound")}</p>
+      <Link href="/leaderboard" className="mt-4 inline-block text-ink hover:underline">
         {t("back")}
       </Link>
     </main>

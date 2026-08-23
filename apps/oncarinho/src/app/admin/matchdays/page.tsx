@@ -44,7 +44,7 @@ export default function AdminMatchdaysPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="mb-6 font-serif text-3xl font-bold text-zen-text">{t("title")}</h1>
+      <h1 className="mb-6 font-marker text-3xl font-bold text-ink">{t("title")}</h1>
 
       <Card padding="md" className="mb-8">
         <form onSubmit={handleCreate} className="flex flex-wrap items-end gap-4">
@@ -64,7 +64,7 @@ export default function AdminMatchdaysPage() {
 
       <ul>
         {matchdays.map((matchday) => (
-          <li key={matchday.id} className="border-b border-zen-border py-3">
+          <li key={matchday.id} className="border-b border-line py-3">
             <Link href={`/admin/matchdays/${matchday.id}`} className="hover:underline">
               {dateFormatter.format(new Date(matchday.played_on))}
             </Link>

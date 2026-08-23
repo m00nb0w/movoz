@@ -33,7 +33,7 @@ export default function AdminLoginPage() {
   return (
     <main className="mx-auto flex max-w-sm flex-col px-4 py-24">
       <Card padding="lg">
-        <h1 className="mb-4 font-serif text-2xl font-bold text-zen-text">{t("title")}</h1>
+        <h1 className="mb-4 font-marker text-2xl font-bold text-ink">{t("title")}</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Input
             type="password"

@@ -22,7 +22,7 @@ export function StatTypeTabs({ selected, basePath, extraParams = {} }: StatTypeT
   }
 
   return (
-    <div role="radiogroup" className="flex flex-wrap gap-1 border border-zen-border p-1">
+    <div role="radiogroup" className="flex flex-wrap gap-1 border border-line p-1">
       {STATS.map((stat) => (
         <button
           key={stat}
@@ -31,8 +31,8 @@ export function StatTypeTabs({ selected, basePath, extraParams = {} }: StatTypeT
           onClick={() => select(stat)}
           className={
             stat === selected
-              ? "bg-zen-text px-3 py-1 text-sm text-zen-bg"
-              : "px-3 py-1 text-sm text-zen-muted hover:text-zen-text"
+              ? "bg-ink px-3 py-1 text-sm text-paper"
+              : "px-3 py-1 text-sm text-ink-soft hover:text-ink"
           }
         >
           {t(stat)}

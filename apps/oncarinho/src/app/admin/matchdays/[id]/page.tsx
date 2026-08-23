@@ -107,17 +107,17 @@ export default function AdminMatchdayStatsPage() {
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-12">
-      <h1 className="mb-6 font-serif text-3xl font-bold text-zen-text">
+      <h1 className="mb-6 font-marker text-3xl font-bold text-ink">
         {matchdayDate
           ? t("statsTitleForDate", { date: dateFormatter.format(new Date(matchdayDate)) })
           : t("statsTitle")}
       </h1>
       {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
-      {saved && <p className="mb-4 text-sm text-zen-text">{t("saved")}</p>}
+      {saved && <p className="mb-4 text-sm text-ink">{t("saved")}</p>}
 
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b-2 border-zen-border text-left text-zen-muted">
+          <tr className="border-b-2 border-line text-left text-ink-soft">
             <th className="py-2">{t("player")}</th>
             <th className="py-2 text-right">{t("goals")}</th>
             <th className="py-2 text-right">{t("assists")}</th>
@@ -129,7 +129,7 @@ export default function AdminMatchdayStatsPage() {
           {rows.map((row) => {
             const player = players.find((p) => p.id === row.playerId);
             return (
-              <tr key={row.playerId} className="border-b border-zen-border">
+              <tr key={row.playerId} className="border-b border-line">
                 <td className="py-2">{player?.name}</td>
                 {FIELDS.map((field) => (
                   <td key={field} className="py-2 text-right">
@@ -138,7 +138,7 @@ export default function AdminMatchdayStatsPage() {
                       min={0}
                       value={row[field]}
                       onChange={(e) => updateRow(row.playerId, field, Number(e.target.value))}
-                      className="w-16 border border-zen-border bg-zen-bg px-2 py-1 text-right text-zen-text"
+                      className="w-16 border border-line bg-paper px-2 py-1 text-right text-ink"
                     />
                   </td>
                 ))}

@@ -23,8 +23,8 @@ export function LanguageToggle() {
           aria-pressed={option === locale}
           className={
             option === locale
-              ? "px-2 py-1 font-medium text-zen-text"
-              : "px-2 py-1 text-zen-muted hover:text-zen-text"
+              ? "px-2 py-1 font-medium text-ink"
+              : "px-2 py-1 text-ink-soft hover:text-ink"
           }
         >
           {option.toUpperCase()}

@@ -30,7 +30,7 @@ export default async function DashboardPage({
     console.error("dashboard: failed to load data", err);
     return (
       <main className="mx-auto max-w-5xl px-4 py-12 text-center">
-        <p className="text-zen-muted">{t("loadError")}</p>
+        <p className="text-ink-soft">{t("loadError")}</p>
       </main>
     );
   }
@@ -41,7 +41,7 @@ export default async function DashboardPage({
   return (
     <main className="mx-auto max-w-5xl px-4 py-12">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-serif text-3xl font-bold text-zen-text">{t("title")}</h1>
+        <h1 className="font-marker text-3xl font-bold text-ink">{t("title")}</h1>
         <SeasonSelector years={years} selected={year} basePath="/" />
       </div>
 
@@ -51,19 +51,19 @@ export default async function DashboardPage({
         <StatTile label={t("rosterSize")} value={summary.roster_size} />
       </div>
 
-      <hr className="border-t-2 border-zen-border" />
+      <hr className="border-t-2 border-line" />
 
       <div className="mt-8 grid grid-cols-1 gap-12 md:grid-cols-[1.2fr_1fr]">
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-zen-text">
+          <h2 className="mb-4 text-xl font-semibold text-ink">
             {t("topScorers", { year })}
           </h2>
           {topScorers.length === 0 ? (
-            <p className="text-zen-muted">{t("noGoals", { year })}</p>
+            <p className="text-ink-soft">{t("noGoals", { year })}</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zen-border text-left text-zen-muted">
+                <tr className="border-b border-line text-left text-ink-soft">
                   <th className="py-2">#</th>
                   <th className="py-2">{t("player")}</th>
                   <th className="py-2 text-right">{t("goals")}</th>
@@ -71,7 +71,7 @@ export default async function DashboardPage({
               </thead>
               <tbody>
                 {topScorers.map((entry, i) => (
-                  <tr key={entry.player_id} className="border-b border-zen-border">
+                  <tr key={entry.player_id} className="border-b border-line">
                     <td className="py-2">{i + 1}</td>
                     <td className="py-2">
                       <Link href={`/players/${entry.player_id}`} className="hover:underline">
@@ -92,12 +92,12 @@ export default async function DashboardPage({
         </section>
 
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-zen-text">{t("roster")}</h2>
+          <h2 className="mb-4 text-xl font-semibold text-ink">{t("roster")}</h2>
           <ul>
             {players.map((player) => (
               <li
                 key={player.id}
-                className="flex items-center justify-between border-b border-zen-border py-2"
+                className="flex items-center justify-between border-b border-line py-2"
               >
                 <Link href={`/players/${player.id}`} className="hover:underline">
                   {player.name}

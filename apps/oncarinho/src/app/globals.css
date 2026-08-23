@@ -4,6 +4,6 @@
 @tailwind utilities;
 
 body {
-  background-color: var(--zen-bg);
-  color: var(--zen-text);
+  background-color: var(--paper);
+  color: var(--ink);
 }

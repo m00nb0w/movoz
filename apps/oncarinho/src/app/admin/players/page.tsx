@@ -83,7 +83,7 @@ export default function AdminPlayersPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="mb-6 font-serif text-3xl font-bold text-zen-text">{t("title")}</h1>
+      <h1 className="mb-6 font-marker text-3xl font-bold text-ink">{t("title")}</h1>
       {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
 
       <form onSubmit={handleSubmit} className="mb-8 flex flex-wrap items-end gap-4">
@@ -103,7 +103,7 @@ export default function AdminPlayersPage() {
         )}
       </form>
 
-      <label className="mb-4 flex items-center gap-2 text-sm text-zen-muted">
+      <label className="mb-4 flex items-center gap-2 text-sm text-ink-soft">
         <input
           type="checkbox"
           checked={showInactive}
@@ -114,7 +114,7 @@ export default function AdminPlayersPage() {
 
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b-2 border-zen-border text-left text-zen-muted">
+          <tr className="border-b-2 border-line text-left text-ink-soft">
             <th className="py-2">{t("name")}</th>
             <th className="py-2">{t("position")}</th>
             <th className="py-2">{t("status")}</th>
@@ -123,7 +123,7 @@ export default function AdminPlayersPage() {
         </thead>
         <tbody>
           {players.map((player) => (
-            <tr key={player.id} className="border-b border-zen-border">
+            <tr key={player.id} className="border-b border-line">
               <td className="py-2">{player.name}</td>
               <td className="py-2">{player.position ? tp(player.position) : "—"}</td>
               <td className="py-2">

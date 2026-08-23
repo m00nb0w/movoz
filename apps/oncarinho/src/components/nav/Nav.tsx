@@ -17,9 +17,9 @@ export function Nav() {
   ];
 
   return (
-    <nav className="border-b border-zen-border">
+    <nav className="border-b border-line">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4">
-        <Link href="/" className="font-serif text-lg font-bold text-zen-text">
+        <Link href="/" className="font-marker text-lg font-bold text-ink">
           {tc("appName")}
         </Link>
         <div className="flex flex-wrap items-center gap-4">
@@ -30,8 +30,8 @@ export function Nav() {
               aria-current={pathname === link.href ? "page" : undefined}
               className={
                 pathname === link.href
-                  ? "text-sm font-medium text-zen-text"
-                  : "text-sm text-zen-muted hover:text-zen-text"
+                  ? "text-sm font-medium text-ink"
+                  : "text-sm text-ink-soft hover:text-ink"
               }
             >
               {link.label}
@@ -39,7 +39,7 @@ export function Nav() {
           ))}
           <LanguageToggle />
           <ThemeToggle />
-          <Link href="/admin" className="text-xs text-zen-muted hover:text-zen-text">
+          <Link href="/admin" className="text-xs text-ink-soft hover:text-ink">
             {t("admin")}
           </Link>
         </div>
