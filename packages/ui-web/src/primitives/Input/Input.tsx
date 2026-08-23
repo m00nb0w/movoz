@@ -39,14 +39,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block font-semibold text-zen-text text-base mb-2"
+            className="block font-semibold text-ink text-base mb-2"
           >
             {label}
           </label>
         )}
         <div className="relative">
           {icon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zen-muted">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft">
               {icon}
             </div>
           )}
@@ -54,12 +54,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              "w-full bg-zen-subtle border rounded-lg transition-all",
-              "focus:outline-none focus:ring-2 focus:ring-zen-text/20 focus:border-zen-text",
-              "text-zen-text placeholder-zen-muted",
+              "w-full bg-paper-raised border-[length:var(--border-width)] rounded-[var(--radius-md)] transition-all",
+              "focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink",
+              "text-ink placeholder-ink-soft",
               error
                 ? "border-red-500 focus:ring-red-500/20 focus:border-red-500"
-                : "border-zen-border",
+                : "border-line",
               sizeStyles[size],
               icon && "pl-10",
               className
@@ -71,7 +71,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <p className="mt-1.5 text-sm text-red-500">{error}</p>
         )}
         {helperText && !error && (
-          <p className="mt-1.5 text-sm text-zen-muted">{helperText}</p>
+          <p className="mt-1.5 text-sm text-ink-soft">{helperText}</p>
         )}
       </div>
     );
