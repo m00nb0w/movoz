@@ -29,6 +29,9 @@ export type { SkeletonProps } from "./primitives/Skeleton";
 export { Pill } from "./primitives/Pill";
 export type { PillProps } from "./primitives/Pill";
 
+export { Tabs } from "./primitives/Tabs";
+export type { TabsProps, TabItem } from "./primitives/Tabs";
+
 // Layout
 export { Stack } from "./layout/Stack";
 export type { StackProps } from "./layout/Stack/Stack";
