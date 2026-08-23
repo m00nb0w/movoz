@@ -32,6 +32,9 @@ export type { PillProps } from "./primitives/Pill";
 export { Tabs } from "./primitives/Tabs";
 export type { TabsProps, TabItem } from "./primitives/Tabs";
 
+export { PlaceholderBox } from "./primitives/PlaceholderBox";
+export type { PlaceholderBoxProps } from "./primitives/PlaceholderBox";
+
 // Layout
 export { Stack } from "./layout/Stack";
 export type { StackProps } from "./layout/Stack/Stack";
