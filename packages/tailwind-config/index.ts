@@ -1,25 +1,30 @@
 import type { Config } from "tailwindcss";
-import { palette, fontFamilies, keyframes, animations } from "@movoz/tokens";
+import { fontFamilies, keyframes, animations } from "@movoz/tokens";
 
 const config: Partial<Config> = {
   darkMode: "class",
   theme: {
     extend: {
       fontFamily: {
-        sans: [...fontFamilies.sans],
-        serif: [...fontFamilies.serif],
-        ui: [...fontFamilies.ui],
+        marker: [...fontFamilies.marker],
+        body: [...fontFamilies.body],
       },
       colors: {
-        accent: { ...palette.accent },
-        paper: "var(--zen-paper)",
-        zen: {
-          subtle: "var(--zen-subtle)",
-          bg: "var(--zen-bg)",
-          text: "var(--zen-text)",
-          muted: "var(--zen-muted)",
-          border: "var(--zen-border)",
+        accent: {
+          DEFAULT: "var(--terracotta)",
+          light: "var(--terracotta-light)",
+          dark: "var(--terracotta-ink)",
         },
+        paper: "var(--paper)",
+        "paper-raised": "var(--paper-raised)",
+        "paper-sunken": "var(--paper-sunken)",
+        ink: "var(--ink)",
+        "ink-soft": "var(--ink-soft)",
+        line: "var(--line)",
+        pencil: "var(--pencil)",
+        "pencil-light": "var(--pencil-light)",
+        dock: "var(--dock)",
+        "dock-line": "var(--dock-line)",
       },
       animation: { ...animations },
       keyframes: { ...keyframes },
