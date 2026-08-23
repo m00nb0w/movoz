@@ -67,18 +67,18 @@ export function Modal({
         aria-modal="true"
         aria-label={title}
         className={cn(
-          "relative w-full bg-paper rounded-2xl shadow-xl",
+          "relative w-full bg-paper-raised rounded-2xl shadow-xl",
           "animate-fade-in",
           sizeStyles[size],
           className
         )}
       >
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-zen-border">
-            <h2 className="text-lg font-semibold text-zen-text">{title}</h2>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-line">
+            <h2 className="text-lg font-semibold text-ink">{title}</h2>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-zen-muted hover:bg-zen-subtle hover:text-zen-text transition-colors"
+              className="p-1.5 rounded-lg text-ink-soft hover:bg-paper-sunken hover:text-ink transition-colors"
               aria-label="Close"
             >
               <svg

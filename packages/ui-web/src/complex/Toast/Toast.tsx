@@ -23,7 +23,7 @@ const variantStyles = {
   warning:
     "bg-amber-500 text-white",
   info:
-    "bg-zen-text text-zen-bg",
+    "bg-ink text-paper",
 };
 
 const icons: Record<string, ReactNode> = {

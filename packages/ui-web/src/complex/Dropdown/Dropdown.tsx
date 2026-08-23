@@ -67,7 +67,7 @@ export function Dropdown({
           role="menu"
           className={cn(
             "absolute z-50 mt-1.5 min-w-[180px] py-1",
-            "bg-paper border border-zen-border rounded-xl shadow-lg",
+            "bg-paper-raised border border-line rounded-xl shadow-lg",
             "animate-fade-in",
             align === "end" ? "right-0" : "left-0"
           )}
@@ -86,7 +86,7 @@ export function Dropdown({
                 "disabled:opacity-50 disabled:pointer-events-none",
                 item.destructive
                   ? "text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  : "text-zen-text hover:bg-zen-subtle"
+                  : "text-ink hover:bg-paper-sunken"
               )}
             >
               {item.icon}

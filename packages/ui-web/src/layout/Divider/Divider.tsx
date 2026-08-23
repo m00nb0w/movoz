@@ -18,7 +18,7 @@ export const Divider = forwardRef<HTMLHRElement, DividerProps>(
     },
     ref
   ) => {
-    const colorStyle = color === "subtle" ? "border-zen-subtle" : "border-zen-border";
+    const colorStyle = color === "subtle" ? "border-paper-sunken" : "border-line";
 
     if (orientation === "vertical") {
       return (
