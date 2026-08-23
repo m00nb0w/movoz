@@ -1,7 +1,6 @@
 export const fontFamilies = {
-  sans: ["Rubik", "system-ui", "sans-serif"],
-  serif: ["Libre Baskerville", "Georgia", "serif"],
-  ui: ["Inter", "system-ui", "sans-serif"],
+  marker: ["Shantell Sans", "Comic Sans MS", "cursive"],
+  body: ["Space Grotesk", "ui-sans-serif", "system-ui", "sans-serif"],
 } as const;
 
 export const fontSizes = {

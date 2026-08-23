@@ -1,27 +1,27 @@
 export const palette = {
   accent: {
-    DEFAULT: "#d4775c",
-    light: "#e08a70",
-    dark: "#c46448",
+    DEFAULT: "#C25A36",
+    light: "#E07A50",
+    dark: "#A1462A",
   },
 } as const;
 
 export const semantic = {
   light: {
-    bg: "#fdf6e3",
-    text: "#3d3520",
-    muted: "#857a5c",
-    subtle: "#f5edd8",
-    border: "#e8dfc5",
-    paper: "#fffaed",
+    paper: "#EFE9DC",
+    paperRaised: "#FAF5EA",
+    paperSunken: "#E6DECE",
+    ink: "#25231E",
+    inkSoft: "#6B675F",
+    line: "#D4D0C6",
   },
   dark: {
-    bg: "#1a1a1a",
-    text: "#e8e4dc",
-    muted: "#a09080",
-    subtle: "#252525",
-    border: "#3a3a3a",
-    paper: "#222222",
+    paper: "#21201B",
+    paperRaised: "#2B2A24",
+    paperSunken: "#1A1916",
+    ink: "#F2EEE4",
+    inkSoft: "#AFA99B",
+    line: "#3B382F",
   },
 } as const;
 
