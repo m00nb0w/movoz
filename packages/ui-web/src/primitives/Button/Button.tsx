@@ -13,19 +13,19 @@ export interface ButtonProps extends ComponentPropsWithoutRef<"button"> {
 
 const variantStyles = {
   primary:
-    "bg-zen-text text-zen-bg hover:opacity-90",
+    "bg-ink text-paper-raised border border-ink hover:opacity-90 shadow-[var(--shadow-sketch)] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none",
   secondary:
-    "bg-zen-subtle text-zen-text border border-zen-border hover:bg-zen-border",
+    "bg-paper-raised text-ink border border-ink hover:bg-paper-sunken",
   ghost:
-    "bg-transparent text-zen-text hover:bg-zen-subtle",
+    "bg-transparent text-ink border border-transparent hover:bg-paper-sunken",
   danger:
-    "bg-red-500 text-white hover:bg-red-600",
+    "bg-red-500 text-white border border-red-500 hover:bg-red-600",
 };
 
 const sizeStyles = {
-  sm: "px-3 py-1.5 text-sm rounded-lg gap-1.5",
-  md: "px-5 py-2.5 text-base rounded-xl gap-2",
-  lg: "px-6 py-3.5 text-base rounded-xl gap-2",
+  sm: "px-3 py-1.5 text-sm rounded-[var(--radius-sm)] gap-1.5",
+  md: "px-5 py-2.5 text-base rounded-[var(--radius-md)] gap-2",
+  lg: "px-6 py-3.5 text-base rounded-[var(--radius-md)] gap-2",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -48,8 +48,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || loading}
         className={cn(
-          "inline-flex items-center justify-center font-medium transition-all duration-200",
-          "disabled:opacity-50 disabled:pointer-events-none",
+          "inline-flex items-center justify-center font-marker font-semibold transition-all duration-200",
+          "disabled:opacity-45 disabled:pointer-events-none",
           variantStyles[variant],
           sizeStyles[size],
           className
