@@ -26,6 +26,9 @@ export type { IconButtonProps } from "./primitives/IconButton/IconButton";
 export { Skeleton } from "./primitives/Skeleton";
 export type { SkeletonProps } from "./primitives/Skeleton";
 
+export { Pill } from "./primitives/Pill";
+export type { PillProps } from "./primitives/Pill";
+
 // Layout
 export { Stack } from "./layout/Stack";
 export type { StackProps } from "./layout/Stack/Stack";
