@@ -1,0 +1,40 @@
+/* Movoz — Dark theme
+   Same warm/terracotta system, inverted: charcoal "night paper" surfaces,
+   cream ink. Activate with data-theme="dark" on <html> or <body>. */
+
+[data-theme="dark"] {
+  --paper:          #21201B;
+  --paper-sunken:   #1A1916;
+  --paper-raised:   #2B2A24;
+  --paper-white:    #2B2A24;
+
+  --ink:            #F2EEE4;
+  --ink-2:          #D8D3C6;
+  --ink-soft:       #AFA99B;
+  --ink-faint:      #7D786C;
+
+  --pencil:         #4B473D;
+  --pencil-light:   #38362F;
+  --line:           #3B382F;
+  --line-strong:    #55503F;
+  --grid:           #2E2C25;
+
+  --terracotta:        #E07A50;
+  --terracotta-ink:    #F2946C;
+  --terracotta-soft:   #4A3226;
+  --terracotta-faint:  #332720;
+
+  --success:        #8FAE83;
+  --success-soft:   #2E3527;
+  --warning:        #DDAE5F;
+  --warning-soft:   #3A311F;
+  --danger:         #E08268;
+  --danger-soft:    #3B2620;
+  --info:           #8FB2C9;
+  --info-soft:      #24323A;
+
+  --dock:           #F2EEE4;
+  --dock-line:      #D8D3C6;
+
+  color-scheme: dark;
+}

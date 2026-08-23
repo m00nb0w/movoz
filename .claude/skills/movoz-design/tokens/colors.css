@@ -1,0 +1,63 @@
+/* Movoz — Color tokens
+   A warm, paper-and-ink wireframe palette. Cream surfaces, graphite ink,
+   pencil-gray placeholders, and a single terracotta annotation accent. */
+
+:root {
+  /* ---- Base palette ---- */
+  --paper:          #EFE9DC; /* primary canvas — deeper kraft cream */
+  --paper-sunken:   #E6DECE; /* recessed bands (hero, footer) */
+  --paper-raised:   #FAF5EA; /* cards, sheets, popovers — lifts off paper */
+  --paper-white:    #FFFFFF;
+
+  --ink:            #25231E; /* near-black, warm graphite */
+  --ink-2:          #4A463E; /* secondary text */
+  --ink-soft:       #6B675F; /* tertiary / meta text */
+  --ink-faint:      #949086; /* labels, captions, disabled */
+
+  --pencil:         #C7C3B9; /* skeleton bars, placeholder X */
+  --pencil-light:   #DEDAD0; /* lighter fills, hover wells */
+  --line:           #D4D0C6; /* hairline borders */
+  --line-strong:    #BBB6AB; /* emphasized borders */
+  --grid:           #DFD7C6; /* blueprint grid lines */
+
+  /* ---- Terracotta accent (the only chromatic color) ---- */
+  --terracotta:        #C25A36; /* annotations, primary marks */
+  --terracotta-ink:    #A1462A; /* pressed / text-on-light */
+  --terracotta-soft:   #EFDBD0; /* tinted fill */
+  --terracotta-faint:  #F6EAE2; /* faint wash */
+
+  /* ---- Semantic status (kept muted, hand-drawn) ---- */
+  --success:        #5C7A52;
+  --success-soft:   #E2E8D9;
+  --warning:        #C68A33;
+  --warning-soft:   #F1E6CE;
+  --danger:         #B24B3A;
+  --danger-soft:    #F0DAD4;
+  --info:           #4E6E86;
+  --info-soft:      #DCE6EC;
+
+  /* ---- Semantic aliases ---- */
+  --bg:             var(--paper);
+  --bg-sunken:      var(--paper-sunken);
+  --surface:        var(--paper-raised);
+  --surface-white:  var(--paper-white);
+
+  --text:           var(--ink);
+  --text-muted:     var(--ink-soft);
+  --text-faint:     var(--ink-faint);
+  --text-accent:    var(--terracotta-ink);
+
+  --border:         var(--line);
+  --border-strong:  var(--line-strong);
+
+  --accent:         var(--terracotta);
+  --accent-hover:   var(--terracotta-ink);
+  --accent-bg:      var(--terracotta-soft);
+
+  --skeleton:       var(--pencil);
+  --placeholder:    var(--pencil);
+
+  /* dark "tool dock" surface seen at the bottom of the wireframe */
+  --dock:           #2A2823;
+  --dock-line:      #45413a;
+}

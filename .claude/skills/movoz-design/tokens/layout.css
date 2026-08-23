@@ -1,0 +1,61 @@
+/* Movoz — Spacing, radius, borders, shadow, layout */
+
+:root {
+  /* ---- Spacing scale (4px base) ---- */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* ---- Radii — soft, slightly irregular hand-drawn feel ---- */
+  --radius-xs:   4px;
+  --radius-sm:   7px;
+  --radius-md:   11px;
+  --radius-lg:   16px;
+  --radius-xl:   22px;
+  --radius-pill: 999px;
+  /* asymmetric radius for a sketched, "drawn by hand" card edge */
+  --radius-sketch: 14px 11px 13px 12px;
+
+  /* ---- Borders ---- */
+  --border-width:    1.5px; /* the felt-tip hairline */
+  --border-width-2:  2.5px; /* emphasized / pressed */
+  --border-hair:     1px;
+
+  /* ---- Shadows — low, warm, paper-on-paper ---- */
+  --shadow-none: none;
+  --shadow-sm:   0 1px 2px rgba(37, 35, 30, 0.06);
+  --shadow-md:   0 2px 8px rgba(37, 35, 30, 0.08);
+  --shadow-lg:   0 8px 24px rgba(37, 35, 30, 0.10);
+  /* sketch "lift": a hard offset like a marker drop-shadow */
+  --shadow-sketch: 3px 3px 0 var(--ink);
+  --shadow-sketch-accent: 3px 3px 0 var(--terracotta);
+
+  /* ---- Blueprint grid background (paper texture) ---- */
+  --grid-size: 24px;
+  --grid-bg: var(--paper);
+  --bg-grid:
+    linear-gradient(var(--grid) var(--border-hair), transparent var(--border-hair)),
+    linear-gradient(90deg, var(--grid) var(--border-hair), transparent var(--border-hair));
+
+  /* ---- Layout ---- */
+  --container:    1200px;
+  --container-sm: 760px;
+  --gutter:       24px;
+
+  /* ---- Motion ---- */
+  --ease-out:   cubic-bezier(0.22, 0.61, 0.36, 1); /* @kind other */
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1); /* @kind other */
+  --dur-fast:   120ms; /* @kind other */
+  --dur-base:   200ms; /* @kind other */
+  --dur-slow:   320ms; /* @kind other */
+}

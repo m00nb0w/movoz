@@ -1,0 +1,47 @@
+/* Movoz — Typography tokens */
+
+:root {
+  /* ---- Families ---- */
+  --font-marker: 'Shantell Sans', 'Comic Sans MS', cursive; /* brand display / handwriting */
+  --font-sans:   'Space Grotesk', ui-sans-serif, system-ui, sans-serif; /* body + labels */
+  --font-mono:   'Space Grotesk', ui-monospace, 'SFMono-Regular', monospace;
+
+  /* Aliases by role */
+  --font-display: var(--font-marker);
+  --font-heading: var(--font-marker);
+  --font-body:    var(--font-sans);
+  --font-label:   var(--font-sans);
+
+  /* ---- Type scale (px) ---- */
+  --text-3xs: 11px;
+  --text-2xs: 12px;
+  --text-xs:  13px;
+  --text-sm:  14px;
+  --text-md:  16px;
+  --text-lg:  18px;
+  --text-xl:  22px;
+  --text-2xl: 28px;
+  --text-3xl: 36px;
+  --text-4xl: 48px;
+  --text-5xl: 64px;
+  --text-6xl: 80px;
+
+  /* ---- Weights ---- */
+  --fw-light:    300; /* @kind font */
+  --fw-regular:  400; /* @kind font */
+  --fw-medium:   500; /* @kind font */
+  --fw-semibold: 600; /* @kind font */
+  --fw-bold:     700; /* @kind font */
+
+  /* ---- Line heights ---- */
+  --lh-tight:   1.05; /* @kind font */
+  --lh-snug:    1.2;  /* @kind font */
+  --lh-normal:  1.45; /* @kind font */
+  --lh-relaxed: 1.6;  /* @kind font */
+
+  /* ---- Letter spacing ---- */
+  --ls-tight:   -0.01em; /* @kind font */
+  --ls-normal:  0;       /* @kind font */
+  --ls-wide:    0.04em;  /* @kind font */
+  --ls-label:   0.16em;  /* @kind font */ /* spaced caps for FEATURED / CATEGORY labels */
+}

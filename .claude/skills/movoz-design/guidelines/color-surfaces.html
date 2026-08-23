@@ -1,0 +1,21 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Surfaces" subtitle="Warm paper canvas, recessed bands, raised sheets" -->
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/>
+<link rel="stylesheet" href="../styles.css"/>
+<style>
+  body{margin:0;padding:18px;background:var(--paper);font-family:var(--font-sans);}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .sw{border:var(--border-width) solid var(--line);border-radius:var(--radius-md);overflow:hidden;}
+  .chip{height:66px;}
+  .meta{padding:8px 10px;}
+  .name{font-size:12px;font-weight:600;color:var(--ink);}
+  .val{font-size:11px;color:var(--ink-faint);font-family:var(--font-mono);}
+</style></head>
+<body>
+<div class="grid">
+  <div class="sw"><div class="chip" style="background:var(--paper)"></div><div class="meta"><div class="name">paper</div><div class="val">#EFE9DC</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--paper-sunken)"></div><div class="meta"><div class="name">paper-sunken</div><div class="val">#E6DECE</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--paper-raised)"></div><div class="meta"><div class="name">paper-raised</div><div class="val">#FAF5EA</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--paper-white)"></div><div class="meta"><div class="name">paper-white</div><div class="val">#FFFFFF</div></div></div>
+</div>
+</body></html>

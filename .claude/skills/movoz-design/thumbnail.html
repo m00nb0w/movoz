@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/>
+<link rel="stylesheet" href="styles.css"/>
+<style>
+  *{box-sizing:border-box;margin:0;}
+  body{width:1280px;height:854px;display:flex;font-family:var(--font-marker);}
+  .main{flex:1;background:var(--terracotta);display:flex;align-items:center;justify-content:center;}
+  .word{font-style:italic;font-weight:700;font-size:210px;color:var(--paper);letter-spacing:-0.01em;}
+  .strip{width:170px;display:flex;flex-direction:column;}
+  .strip div{flex:1;}
+</style></head>
+<body>
+  <div class="main"><span class="word">Movoz</span></div>
+  <div class="strip">
+    <div style="background:var(--terracotta-soft)"></div>
+    <div style="background:var(--terracotta)"></div>
+    <div style="background:var(--terracotta-ink)"></div>
+    <div style="background:var(--ink)"></div>
+  </div>
+</body></html>

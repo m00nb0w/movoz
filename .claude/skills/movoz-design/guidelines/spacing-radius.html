@@ -1,0 +1,22 @@
+<!-- @dsCard group="Spacing" viewport="700x150" name="Radius" subtitle="Soft, slightly hand-drawn corners" -->
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/>
+<link rel="stylesheet" href="../styles.css"/>
+<style>
+  body{margin:0;padding:20px;background:var(--paper);font-family:var(--font-sans);}
+  .grid{display:flex;gap:16px;flex-wrap:wrap;}
+  .item{text-align:center;}
+  .box{width:74px;height:56px;background:var(--paper-raised);border:var(--border-width) solid var(--ink);}
+  .nm{font-size:11px;color:var(--ink-soft);margin-top:7px;font-family:var(--font-mono);}
+</style></head>
+<body>
+<div class="grid">
+  <div class="item"><div class="box" style="border-radius:var(--radius-xs)"></div><div class="nm">xs · 4</div></div>
+  <div class="item"><div class="box" style="border-radius:var(--radius-sm)"></div><div class="nm">sm · 7</div></div>
+  <div class="item"><div class="box" style="border-radius:var(--radius-md)"></div><div class="nm">md · 11</div></div>
+  <div class="item"><div class="box" style="border-radius:var(--radius-lg)"></div><div class="nm">lg · 16</div></div>
+  <div class="item"><div class="box" style="border-radius:var(--radius-xl)"></div><div class="nm">xl · 22</div></div>
+  <div class="item"><div class="box" style="border-radius:var(--radius-sketch)"></div><div class="nm">sketch</div></div>
+  <div class="item"><div class="box" style="border-radius:var(--radius-pill)"></div><div class="nm">pill</div></div>
+</div>
+</body></html>

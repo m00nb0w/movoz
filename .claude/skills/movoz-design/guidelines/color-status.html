@@ -1,0 +1,22 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Status" subtitle="Muted, hand-drawn semantic tones" -->
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/>
+<link rel="stylesheet" href="../styles.css"/>
+<style>
+  body{margin:0;padding:18px;background:var(--paper);font-family:var(--font-sans);}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .sw{border:var(--border-width) solid var(--line);border-radius:var(--radius-md);overflow:hidden;display:flex;}
+  .chip{height:66px;flex:1;}
+  .meta{padding:8px 10px;background:var(--paper-raised);}
+  .name{font-size:12px;font-weight:600;color:var(--ink);}
+  .val{font-size:11px;color:var(--ink-faint);font-family:var(--font-mono);}
+  .pair{display:flex;flex-direction:column;}
+</style></head>
+<body>
+<div class="grid">
+  <div class="sw pair"><div style="display:flex"><div class="chip" style="background:var(--success)"></div><div class="chip" style="background:var(--success-soft)"></div></div><div class="meta"><div class="name">success</div><div class="val">#5C7A52</div></div></div>
+  <div class="sw pair"><div style="display:flex"><div class="chip" style="background:var(--warning)"></div><div class="chip" style="background:var(--warning-soft)"></div></div><div class="meta"><div class="name">warning</div><div class="val">#C68A33</div></div></div>
+  <div class="sw pair"><div style="display:flex"><div class="chip" style="background:var(--danger)"></div><div class="chip" style="background:var(--danger-soft)"></div></div><div class="meta"><div class="name">danger</div><div class="val">#B24B3A</div></div></div>
+  <div class="sw pair"><div style="display:flex"><div class="chip" style="background:var(--info)"></div><div class="chip" style="background:var(--info-soft)"></div></div><div class="meta"><div class="name">info</div><div class="val">#4E6E86</div></div></div>
+</div>
+</body></html>

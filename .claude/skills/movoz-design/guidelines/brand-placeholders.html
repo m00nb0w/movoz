@@ -1,0 +1,26 @@
+<!-- @dsCard group="Brand" viewport="700x240" name="Placeholders & paper" subtitle="Crossed media frames, skeleton bars, blueprint grid" -->
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/>
+<link rel="stylesheet" href="../styles.css"/>
+<style>
+  body{margin:0;padding:20px;}
+  .wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;}
+  .ph{position:relative;height:150px;background:var(--paper-raised);border:var(--border-width) solid var(--line-strong);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-family:var(--font-marker);font-style:italic;color:var(--ink-faint);}
+  .ph svg{position:absolute;inset:0;color:var(--pencil);}
+  .ph span{position:relative;background:var(--paper-raised);padding:0 8px;}
+  .bars{display:flex;flex-direction:column;gap:12px;justify-content:center;padding:16px;}
+  .bar{height:14px;background:var(--pencil);border-radius:999px;}
+</style></head>
+<body class="movoz-grid-bg">
+<div class="wrap">
+  <div class="ph">
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none"><line x1="0" y1="0" x2="100" y2="100" stroke="currentColor" stroke-width="0.5" vector-effect="non-scaling-stroke"/><line x1="100" y1="0" x2="0" y2="100" stroke="currentColor" stroke-width="0.5" vector-effect="non-scaling-stroke"/></svg>
+    <span>cover image</span>
+  </div>
+  <div class="ph bars" style="border-style:solid">
+    <div class="bar" style="width:90%"></div>
+    <div class="bar" style="width:100%"></div>
+    <div class="bar" style="width:62%"></div>
+  </div>
+</div>
+</body></html>

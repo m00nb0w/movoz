@@ -1,0 +1,96 @@
+<!-- @dsCard group="Movoz Blog" viewport="1280x760" name="Blog — home & article" subtitle="Marketing/engineering blog with hero, filters, grid, reader" -->
+<!-- @startingPoint section="Movoz Blog" subtitle="Lo-fi engineering blog (home + article)" viewport="1280x900" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Movoz — Articles</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  body { margin: 0; }
+  .no-grid .movoz-grid-bg { background-image: none !important; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" src="NavBar.jsx"></script>
+<script type="text/babel" src="HomeScreen.jsx"></script>
+<script type="text/babel" src="ArticleScreen.jsx"></script>
+<script type="text/babel">
+const { Tabs } = window.MovozDesignSystem_c2bc1d;
+
+function App() {
+  const [screen, setScreen] = React.useState('Home'); // Home | Article
+  const [filter, setFilter] = React.useState('All');
+  const [annotate, setAnnotate] = React.useState(true);
+  const [grid, setGrid] = React.useState(true);
+  const [dark, setDark] = React.useState(false);
+
+  React.useEffect(() => {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  }, [dark]);
+
+  const dockItems = [
+    { value: 'Home', label: 'Home' },
+    { value: 'Article', label: 'Article' },
+    { value: 'Annotations', label: 'Annotations', accent: true },
+    { value: 'Grid', label: 'Grid', accent: true },
+    { value: 'Dark', label: 'Dark', accent: true },
+  ];
+  const dockValue = [screen, annotate && 'Annotations', grid && 'Grid', dark && 'Dark'].filter(Boolean);
+
+  const onDock = (v) => {
+    if (v === 'Home' || v === 'Article') setScreen(v);
+    else if (v === 'Annotations') setAnnotate(a => !a);
+    else if (v === 'Grid') setGrid(g => !g);
+    else if (v === 'Dark') setDark(d => !d);
+  };
+
+  return (
+    <div className={grid ? '' : 'no-grid'}>
+      <window.NavBar onNav={(l) => setScreen(l === 'Home' || l === 'Articles' ? 'Home' : 'Home')} active="Articles" />
+      {screen === 'Home'
+        ? <window.HomeScreen filter={filter} setFilter={setFilter} annotate={annotate} onOpen={() => setScreen('Article')} />
+        : <window.ArticleScreen annotate={annotate} onBack={() => setScreen('Home')} />}
+
+      {/* Floating tool dock */}
+      <div style={{ position: 'fixed', bottom: 22, left: '50%', transform: 'translateX(-50%)', zIndex: 50 }}>
+        <DockBar items={dockItems} selected={dockValue} onPick={onDock} />
+      </div>
+    </div>
+  );
+}
+
+// A multi-select variant of the dock (Home/Article are exclusive; Annotations/Grid toggle)
+function DockBar({ items, selected, onPick }) {
+  return (
+    <div style={{
+      display: 'inline-flex', gap: 6, padding: 6,
+      borderRadius: 'var(--radius-lg)', background: 'var(--dock)',
+      border: 'var(--border-width) solid var(--dock-line)', boxShadow: 'var(--shadow-lg)',
+    }}>
+      {items.map(it => {
+        const active = selected.includes(it.value);
+        return (
+          <button key={it.value} onClick={() => onPick(it.value)} style={{
+            fontFamily: 'var(--font-marker)', fontWeight: 600, fontSize: 16, lineHeight: 1,
+            padding: '8px 16px', borderRadius: 'var(--radius-md)', cursor: 'pointer',
+            border: it.accent ? '1.5px solid var(--terracotta)' : '1.5px solid transparent',
+            background: active ? (it.accent ? 'var(--terracotta)' : 'var(--paper)') : 'transparent',
+            color: active ? (it.accent ? '#fff' : 'var(--ink)') : (it.accent ? 'var(--terracotta)' : 'var(--pencil)'),
+          }}>{it.label}</button>
+        );
+      })}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

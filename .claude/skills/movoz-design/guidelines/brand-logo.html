@@ -1,0 +1,18 @@
+<!-- @dsCard group="Brand" viewport="700x200" name="Logo lockup" subtitle="Boxed marker initial + italic wordmark" -->
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/>
+<link rel="stylesheet" href="../styles.css"/>
+<style>
+  body{margin:0;padding:24px;background:var(--paper);display:flex;gap:32px;align-items:center;flex-wrap:wrap;}
+  .lock{display:inline-flex;align-items:center;gap:12px;}
+  .box{width:44px;height:44px;border:var(--border-width-2) solid var(--ink);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-family:var(--font-marker);font-style:italic;font-weight:700;font-size:24px;color:var(--ink);}
+  .word{font-family:var(--font-marker);font-style:italic;font-weight:700;font-size:28px;color:var(--ink);line-height:1;}
+  .sub{font-family:var(--font-sans);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);margin-top:5px;}
+  .dock{background:var(--dock);border-radius:var(--radius-md);padding:14px 18px;}
+  .dock .box{border-color:var(--paper);color:var(--paper);}
+  .dock .word{color:var(--paper);}
+</style></head>
+<body>
+  <div class="lock"><span class="box">M</span><div><div class="word">Movoz</div><div class="sub">logo + wordmark</div></div></div>
+  <div class="lock dock"><span class="box">M</span><div class="word">Movoz</div></div>
+</body></html>

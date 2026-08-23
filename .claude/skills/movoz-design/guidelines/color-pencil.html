@@ -1,0 +1,22 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Pencil & Lines" subtitle="Skeletons, placeholders, hairlines, blueprint grid" -->
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/>
+<link rel="stylesheet" href="../styles.css"/>
+<style>
+  body{margin:0;padding:18px;background:var(--paper);font-family:var(--font-sans);}
+  .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+  .sw{border:var(--border-width) solid var(--line);border-radius:var(--radius-md);overflow:hidden;}
+  .chip{height:60px;}
+  .meta{padding:8px 10px;background:var(--paper-raised);}
+  .name{font-size:11px;font-weight:600;color:var(--ink);}
+  .val{font-size:10px;color:var(--ink-faint);font-family:var(--font-mono);}
+</style></head>
+<body>
+<div class="grid">
+  <div class="sw"><div class="chip" style="background:var(--pencil)"></div><div class="meta"><div class="name">pencil</div><div class="val">#C7C3B9</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--pencil-light)"></div><div class="meta"><div class="name">pencil-light</div><div class="val">#DEDAD0</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--line)"></div><div class="meta"><div class="name">line</div><div class="val">#D4D0C6</div></div></div>
+  <div class="sw"><div class="chip" style="background:var(--line-strong)"></div><div class="meta"><div class="name">line-strong</div><div class="val">#BBB6AB</div></div></div>
+  <div class="sw"><div class="chip movoz-grid-bg" style="background-color:var(--paper)"></div><div class="meta"><div class="name">grid</div><div class="val">#DFD7C6</div></div></div>
+</div>
+</body></html>

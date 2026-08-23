@@ -1,0 +1,9 @@
+/* Movoz — Webfonts
+   Marker handwriting (Shantell Sans) is the brand voice; Space Grotesk is the
+   neutral grotesque used for body copy and the small-caps meta labels.
+
+   NOTE: Shantell Sans is a Google Fonts substitute for the marker font in the
+   reference wireframe. Swap the @import below if the brand ships a licensed
+   marker face. */
+
+@import url('https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,300..800;1,300..700&family=Space+Grotesk:wght@400;500;600;700&display=swap');

@@ -1,0 +1,21 @@
+<!-- @dsCard group="Brand" viewport="700x180" name="Elevation" subtitle="Soft paper shadows + the hard sketch lift" -->
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/>
+<link rel="stylesheet" href="../styles.css"/>
+<style>
+  body{margin:0;padding:28px 24px;background:var(--paper);font-family:var(--font-sans);}
+  .grid{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;}
+  .item{text-align:center;}
+  .box{width:120px;height:74px;background:var(--paper-raised);border:var(--border-width) solid var(--line);border-radius:var(--radius-md);}
+  .nm{font-size:11px;color:var(--ink-soft);margin-top:14px;font-family:var(--font-mono);}
+  .ink{border-color:var(--ink);}
+</style></head>
+<body>
+<div class="grid">
+  <div class="item"><div class="box" style="box-shadow:var(--shadow-sm)"></div><div class="nm">shadow-sm</div></div>
+  <div class="item"><div class="box" style="box-shadow:var(--shadow-md)"></div><div class="nm">shadow-md</div></div>
+  <div class="item"><div class="box" style="box-shadow:var(--shadow-lg)"></div><div class="nm">shadow-lg</div></div>
+  <div class="item"><div class="box ink" style="box-shadow:var(--shadow-sketch)"></div><div class="nm">sketch (ink)</div></div>
+  <div class="item"><div class="box" style="border-color:var(--terracotta);box-shadow:var(--shadow-sketch-accent)"></div><div class="nm">sketch-accent</div></div>
+</div>
+</body></html>
