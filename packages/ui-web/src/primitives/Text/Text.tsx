@@ -8,7 +8,7 @@ export interface TextProps<E extends ElementType = "p"> {
   size?: "xs" | "sm" | "base" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl";
   weight?: "light" | "normal" | "medium" | "semibold" | "bold";
   color?: "default" | "muted" | "accent";
-  font?: "sans" | "serif" | "ui";
+  font?: "marker" | "body";
   truncate?: boolean;
   align?: "left" | "center" | "right";
   className?: string;
@@ -36,15 +36,14 @@ const weightStyles = {
 };
 
 const colorStyles = {
-  default: "text-zen-text",
-  muted: "text-zen-muted",
+  default: "text-ink",
+  muted: "text-ink-soft",
   accent: "text-accent",
 };
 
 const fontStyles = {
-  sans: "font-sans",
-  serif: "font-serif",
-  ui: "font-ui",
+  marker: "font-marker",
+  body: "font-body",
 };
 
 const alignStyles = {
