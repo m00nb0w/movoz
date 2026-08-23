@@ -12,16 +12,16 @@ export interface IconButtonProps
 }
 
 const variantStyles = {
-  primary: "bg-zen-text text-zen-bg hover:opacity-90",
-  secondary: "bg-zen-subtle text-zen-text hover:bg-zen-border",
-  ghost: "bg-transparent text-zen-text hover:bg-zen-subtle",
+  primary: "bg-ink text-paper-raised hover:opacity-90",
+  secondary: "bg-paper-sunken text-ink hover:bg-line",
+  ghost: "bg-transparent text-ink hover:bg-paper-sunken",
   danger: "bg-red-500 text-white hover:bg-red-600",
 };
 
 const sizeStyles = {
-  sm: "p-1.5 rounded-lg",
-  md: "p-2.5 rounded-lg",
-  lg: "p-3 rounded-xl",
+  sm: "p-1.5 rounded-[var(--radius-sm)]",
+  md: "p-2.5 rounded-[var(--radius-sm)]",
+  lg: "p-3 rounded-[var(--radius-md)]",
 };
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
@@ -44,7 +44,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         disabled={disabled}
         className={cn(
           "inline-flex items-center justify-center transition-all duration-200",
-          "disabled:opacity-50 disabled:pointer-events-none",
+          "disabled:opacity-45 disabled:pointer-events-none",
           variantStyles[variant],
           sizeStyles[size],
           className
