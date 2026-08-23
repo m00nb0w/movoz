@@ -20,7 +20,7 @@ const sizeStyles = {
 
 const shapeStyles = {
   circle: "rounded-full",
-  square: "rounded-xl",
+  square: "rounded-[var(--radius-md)]",
 };
 
 export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
@@ -51,7 +51,7 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
         ref={ref}
         className={cn(
           "relative inline-flex items-center justify-center overflow-hidden",
-          "bg-zen-subtle text-zen-muted font-medium",
+          "bg-paper-raised text-ink-soft font-marker font-semibold border border-line",
           sizeStyles[size],
           shapeStyles[shape],
           className
