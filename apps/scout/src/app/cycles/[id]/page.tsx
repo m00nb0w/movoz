@@ -53,11 +53,11 @@ export default function CycleViewPage() {
 
   return (
     <main className="mx-auto max-w-3xl p-8">
-      <h1 className="mb-6 text-2xl font-semibold text-zen-text">Cycle #{cycleId} — Team Scores</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-ink">Cycle #{cycleId} — Team Scores</h1>
 
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-zen-border text-zen-muted">
+          <tr className="border-b border-line text-ink-soft">
             <th className="py-2">Engineer</th>
             <th className="py-2">Overall</th>
             {mainAttributeColumns.map(([id, name]) => (
@@ -71,17 +71,17 @@ export default function CycleViewPage() {
           {scores.map((row) => {
             const scoresByAttributeId = new Map(row.main_attributes.map((m) => [m.main_attribute_id, m.score]));
             return (
-              <tr key={row.engineer.id} className="border-b border-zen-border">
+              <tr key={row.engineer.id} className="border-b border-line">
                 <td className="py-2">
-                  <Link href={`/engineers/${row.engineer.id}`} className="text-zen-text hover:underline">
+                  <Link href={`/engineers/${row.engineer.id}`} className="text-ink hover:underline">
                     {row.engineer.name}
                   </Link>
                 </td>
-                <td className="py-2 text-zen-text">{row.overall != null ? row.overall.toFixed(1) : "—"}</td>
+                <td className="py-2 text-ink">{row.overall != null ? row.overall.toFixed(1) : "—"}</td>
                 {mainAttributeColumns.map(([id]) => {
                   const score = scoresByAttributeId.get(id);
                   return (
-                    <td key={id} className="py-2 text-zen-muted">
+                    <td key={id} className="py-2 text-ink-soft">
                       {score != null ? score.toFixed(1) : "—"}
                     </td>
                   );
@@ -92,32 +92,32 @@ export default function CycleViewPage() {
         </tbody>
       </table>
 
-      {scores.length === 0 && <p className="text-sm text-zen-muted">No rankings submitted for this cycle yet.</p>}
+      {scores.length === 0 && <p className="text-sm text-ink-soft">No rankings submitted for this cycle yet.</p>}
 
       <section className="mt-10">
-        <h2 className="mb-1 text-lg font-medium text-zen-text">Rank sub-attributes</h2>
-        <p className="mb-4 text-sm text-zen-muted">
+        <h2 className="mb-1 text-lg font-medium text-ink">Rank sub-attributes</h2>
+        <p className="mb-4 text-sm text-ink-soft">
           Pick a sub-attribute to rank every active engineer 1..N for this cycle — manually, or with the AI assistant
           linked from that page.
         </p>
 
-        {mainAttributes.length === 0 && <p className="text-sm text-zen-muted">No attributes defined yet.</p>}
+        {mainAttributes.length === 0 && <p className="text-sm text-ink-soft">No attributes defined yet.</p>}
 
         <div className="space-y-4">
           {mainAttributes.map((main) => {
             const subs = subAttributesByMain[main.id] ?? [];
             return (
-              <div key={main.id} className="rounded-lg border border-zen-border p-4">
-                <h3 className="mb-2 font-medium text-zen-text">{main.name}</h3>
+              <div key={main.id} className="rounded-lg border border-line p-4">
+                <h3 className="mb-2 font-medium text-ink">{main.name}</h3>
                 {subs.length === 0 ? (
-                  <p className="text-sm text-zen-muted">No sub-attributes yet.</p>
+                  <p className="text-sm text-ink-soft">No sub-attributes yet.</p>
                 ) : (
-                  <ul className="divide-y divide-zen-border">
+                  <ul className="divide-y divide-line">
                     {subs.map((sub) => (
                       <li key={sub.id} className="py-2">
                         <Link
                           href={`/cycles/${cycleId}/sub-attributes/${sub.id}`}
-                          className={`text-sm hover:underline ${sub.is_active ? "text-accent-600" : "text-zen-muted"}`}
+                          className={`text-sm hover:underline ${sub.is_active ? "text-accent-600" : "text-ink-soft"}`}
                         >
                           {sub.name}
                           {!sub.is_active && " (inactive)"}

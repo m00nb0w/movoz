@@ -34,19 +34,19 @@ export default function CyclesPage() {
 
   return (
     <main className="mx-auto max-w-3xl p-8">
-      <h1 className="mb-6 text-2xl font-semibold text-zen-text">Rating Cycles</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-ink">Rating Cycles</h1>
 
-      <form onSubmit={handleCreate} className="mb-8 flex gap-3 rounded-lg border border-zen-border p-4">
-        <input className="rounded border border-zen-border bg-transparent p-2" type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} required />
-        <input className="rounded border border-zen-border bg-transparent p-2" type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} required />
+      <form onSubmit={handleCreate} className="mb-8 flex gap-3 rounded-lg border border-line p-4">
+        <input className="rounded border border-line bg-transparent p-2" type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} required />
+        <input className="rounded border border-line bg-transparent p-2" type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} required />
         <button type="submit" className="rounded bg-accent-600 px-3 py-2 text-white">Open cycle</button>
       </form>
       {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
 
-      <ul className="divide-y divide-zen-border">
+      <ul className="divide-y divide-line">
         {cycles.map((cycle) => (
           <li key={cycle.id} className="flex items-center justify-between py-3">
-            <span className="text-zen-text">
+            <span className="text-ink">
               {cycle.period_start.slice(0, 10)} — {cycle.period_end.slice(0, 10)}
             </span>
             <Link href={`/cycles/${cycle.id}`} className="text-sm text-accent-600 hover:underline">

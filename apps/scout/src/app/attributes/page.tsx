@@ -50,24 +50,24 @@ export default function AttributesPage() {
 
   return (
     <main className="mx-auto max-w-3xl p-8">
-      <h1 className="mb-6 text-2xl font-semibold text-zen-text">Attributes</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-ink">Attributes</h1>
 
-      <form onSubmit={handleCreateMain} className="mb-8 flex gap-3 rounded-lg border border-zen-border p-4">
-        <input className="flex-1 rounded border border-zen-border bg-transparent p-2" placeholder="key (e.g. delivery_speed)" value={newMainKey} onChange={(e) => setNewMainKey(e.target.value)} required />
-        <input className="flex-1 rounded border border-zen-border bg-transparent p-2" placeholder="Name (e.g. Delivery Speed)" value={newMainName} onChange={(e) => setNewMainName(e.target.value)} required />
+      <form onSubmit={handleCreateMain} className="mb-8 flex gap-3 rounded-lg border border-line p-4">
+        <input className="flex-1 rounded border border-line bg-transparent p-2" placeholder="key (e.g. delivery_speed)" value={newMainKey} onChange={(e) => setNewMainKey(e.target.value)} required />
+        <input className="flex-1 rounded border border-line bg-transparent p-2" placeholder="Name (e.g. Delivery Speed)" value={newMainName} onChange={(e) => setNewMainName(e.target.value)} required />
         <button type="submit" className="rounded bg-accent-600 px-3 py-2 text-white">Add main attribute</button>
       </form>
 
       <div className="space-y-6">
         {mainAttributes.map((main) => (
-          <section key={main.id} className="rounded-lg border border-zen-border p-4">
-            <h2 className="mb-3 text-lg font-medium text-zen-text">{main.name}</h2>
-            <ul className="mb-3 divide-y divide-zen-border">
+          <section key={main.id} className="rounded-lg border border-line p-4">
+            <h2 className="mb-3 text-lg font-medium text-ink">{main.name}</h2>
+            <ul className="mb-3 divide-y divide-line">
               {(subAttributesByMain[main.id] ?? []).map((sub) => (
                 <li key={sub.id} className="flex items-center justify-between py-2">
-                  <span className={sub.is_active ? "text-zen-text" : "text-zen-muted line-through"}>{sub.name}</span>
+                  <span className={sub.is_active ? "text-ink" : "text-ink-soft line-through"}>{sub.name}</span>
                   {sub.is_active && (
-                    <button onClick={() => toggleSubActive(sub)} className="text-sm text-zen-muted hover:text-zen-text">
+                    <button onClick={() => toggleSubActive(sub)} className="text-sm text-ink-soft hover:text-ink">
                       Deactivate
                     </button>
                   )}
@@ -76,7 +76,7 @@ export default function AttributesPage() {
             </ul>
             <form onSubmit={(e) => handleCreateSub(main.id, e)} className="flex gap-2">
               <input
-                className="flex-1 rounded border border-zen-border bg-transparent p-2 text-sm"
+                className="flex-1 rounded border border-line bg-transparent p-2 text-sm"
                 placeholder="New sub-attribute name"
                 value={newSubName[main.id] ?? ""}
                 onChange={(e) => setNewSubName((prev) => ({ ...prev, [main.id]: e.target.value }))}

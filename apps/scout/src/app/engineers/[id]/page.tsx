@@ -105,15 +105,15 @@ export default function EngineerCardPage() {
 
   return (
     <main className="mx-auto max-w-3xl p-8">
-      <h1 className="mb-1 text-2xl font-semibold text-zen-text">{engineer.name}</h1>
-      <p className="mb-6 text-sm text-zen-muted">{engineer.role}</p>
+      <h1 className="mb-1 text-2xl font-semibold text-ink">{engineer.name}</h1>
+      <p className="mb-6 text-sm text-ink-soft">{engineer.role}</p>
 
       <div className="mb-6 flex items-center gap-3">
-        <label className="text-sm text-zen-muted">Cycle:</label>
+        <label className="text-sm text-ink-soft">Cycle:</label>
         <select
           value={selectedCycleId ?? ""}
           onChange={(e) => setSelectedCycleId(Number(e.target.value))}
-          className="rounded border border-zen-border bg-transparent p-2"
+          className="rounded border border-line bg-transparent p-2"
         >
           {cycles.map((c) => (
             <option key={c.id} value={c.id}>
@@ -127,40 +127,40 @@ export default function EngineerCardPage() {
       </div>
 
       {card && (
-        <section className="mb-8 rounded-lg border border-zen-border p-4">
-          <p className="mb-3 text-lg text-zen-text">
+        <section className="mb-8 rounded-lg border border-line p-4">
+          <p className="mb-3 text-lg text-ink">
             Overall: <strong>{card.overall != null ? card.overall.toFixed(1) : "—"}</strong>
           </p>
           <ul className="space-y-1">
             {card.main_attributes.map((m) => (
               <li key={m.main_attribute_id} className="flex justify-between text-sm">
-                <span className="text-zen-text">{m.name}</span>
-                <span className="text-zen-muted">{m.score.toFixed(1)}</span>
+                <span className="text-ink">{m.name}</span>
+                <span className="text-ink-soft">{m.score.toFixed(1)}</span>
               </li>
             ))}
           </ul>
         </section>
       )}
 
-      <section className="rounded-lg border border-zen-border p-4">
-        <h2 className="mb-3 font-medium text-zen-text">Overall trend</h2>
+      <section className="rounded-lg border border-line p-4">
+        <h2 className="mb-3 font-medium text-ink">Overall trend</h2>
         {points ? (
           <svg viewBox="0 0 300 100" className="h-32 w-full">
             <polyline points={points} fill="none" stroke="currentColor" strokeWidth={2} className="text-accent-600" />
           </svg>
         ) : (
-          <p className="text-sm text-zen-muted">No scored cycles yet.</p>
+          <p className="text-sm text-ink-soft">No scored cycles yet.</p>
         )}
       </section>
 
-      <section className="mt-8 rounded-lg border border-zen-border p-4">
-        <h2 className="mb-3 font-medium text-zen-text">Synced metrics</h2>
+      <section className="mt-8 rounded-lg border border-line p-4">
+        <h2 className="mb-3 font-medium text-ink">Synced metrics</h2>
         {metrics.length === 0 ? (
-          <p className="text-sm text-zen-muted">No synced metrics yet.</p>
+          <p className="text-sm text-ink-soft">No synced metrics yet.</p>
         ) : (
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-zen-border text-zen-muted">
+              <tr className="border-b border-line text-ink-soft">
                 <th className="py-2">Period</th>
                 <th className="py-2">PRs raised</th>
                 <th className="py-2">PRs reviewed</th>
@@ -170,14 +170,14 @@ export default function EngineerCardPage() {
             </thead>
             <tbody>
               {metrics.map((m) => (
-                <tr key={m.id} className="border-b border-zen-border">
-                  <td className="py-2 text-zen-text">
+                <tr key={m.id} className="border-b border-line">
+                  <td className="py-2 text-ink">
                     {m.period_start.slice(0, 10)} – {m.period_end.slice(0, 10)}
                   </td>
-                  <td className="py-2 text-zen-muted">{m.prs_raised}</td>
-                  <td className="py-2 text-zen-muted">{m.prs_reviewed}</td>
-                  <td className="py-2 text-zen-muted">{m.tickets_closed}</td>
-                  <td className="py-2 text-zen-muted">{m.complexity_score.toFixed(1)}</td>
+                  <td className="py-2 text-ink-soft">{m.prs_raised}</td>
+                  <td className="py-2 text-ink-soft">{m.prs_reviewed}</td>
+                  <td className="py-2 text-ink-soft">{m.tickets_closed}</td>
+                  <td className="py-2 text-ink-soft">{m.complexity_score.toFixed(1)}</td>
                 </tr>
               ))}
             </tbody>
@@ -185,21 +185,21 @@ export default function EngineerCardPage() {
         )}
       </section>
 
-      <section className="mt-8 rounded-lg border border-zen-border p-4">
-        <h2 className="mb-3 font-medium text-zen-text">Highlights &amp; lowlights</h2>
+      <section className="mt-8 rounded-lg border border-line p-4">
+        <h2 className="mb-3 font-medium text-ink">Highlights &amp; lowlights</h2>
 
         <form onSubmit={handleAddEntry} className="mb-4 space-y-2">
           <div className="flex gap-2">
             <select
               value={newKind}
               onChange={(e) => setNewKind(e.target.value as "highlight" | "lowlight")}
-              className="rounded border border-zen-border bg-transparent p-2 text-sm"
+              className="rounded border border-line bg-transparent p-2 text-sm"
             >
               <option value="highlight">Highlight</option>
               <option value="lowlight">Lowlight</option>
             </select>
             <input
-              className="flex-1 rounded border border-zen-border bg-transparent p-2 text-sm"
+              className="flex-1 rounded border border-line bg-transparent p-2 text-sm"
               placeholder="What happened?"
               value={newBody}
               onChange={(e) => setNewBody(e.target.value)}
@@ -224,8 +224,8 @@ export default function EngineerCardPage() {
               <span className={h.kind === "highlight" ? "text-green-600" : "text-red-500"}>
                 {h.kind === "highlight" ? "★" : "▼"}
               </span>{" "}
-              <span className="text-zen-muted">{h.created_at.slice(0, 10)}</span>{" "}
-              <span className="text-zen-text">{h.body}</span>
+              <span className="text-ink-soft">{h.created_at.slice(0, 10)}</span>{" "}
+              <span className="text-ink">{h.body}</span>
             </li>
           ))}
         </ul>

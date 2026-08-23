@@ -145,17 +145,17 @@ export default function AIRankingChatPage() {
 
   return (
     <main className="mx-auto max-w-2xl p-8">
-      <h1 className="mb-6 text-2xl font-semibold text-zen-text">AI Ranking Assistant</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-ink">AI Ranking Assistant</h1>
 
-      <div className="mb-4 max-h-96 space-y-3 overflow-y-auto rounded-lg border border-zen-border p-4">
+      <div className="mb-4 max-h-96 space-y-3 overflow-y-auto rounded-lg border border-line p-4">
         {turns.length === 0 && (
-          <p className="text-sm text-zen-muted">
+          <p className="text-sm text-ink-soft">
             Describe what you observed this cycle — who stood out, who struggled — and the assistant will propose a
             ranking with rationale.
           </p>
         )}
         {turns.map((turn, i) => (
-          <p key={i} className={turn.role === "user" ? "text-zen-text" : "text-zen-muted"}>
+          <p key={i} className={turn.role === "user" ? "text-ink" : "text-ink-soft"}>
             <strong>{turn.role === "user" ? "You" : "Assistant"}:</strong> {turn.content}
           </p>
         ))}
@@ -163,18 +163,18 @@ export default function AIRankingChatPage() {
 
       {proposedRanking && (
         <div className="mb-4 rounded-lg border border-accent-600 p-4">
-          <h2 className="mb-2 font-medium text-zen-text">Proposed ranking (edit before accepting)</h2>
+          <h2 className="mb-2 font-medium text-ink">Proposed ranking (edit before accepting)</h2>
           <ul className="space-y-2">
             {proposedRanking.map((entry) => (
               <li key={entry.engineer_id} className="flex items-center justify-between">
-                <span className="text-zen-text">Engineer #{entry.engineer_id}</span>
+                <span className="text-ink">Engineer #{entry.engineer_id}</span>
                 <input
                   type="number"
                   min={1}
                   max={proposedRanking.length}
                   value={entry.rank}
                   onChange={(e) => updateProposedRank(entry.engineer_id, Number(e.target.value))}
-                  className="w-16 rounded border border-zen-border bg-transparent p-1 text-center"
+                  className="w-16 rounded border border-line bg-transparent p-1 text-center"
                 />
               </li>
             ))}
@@ -205,7 +205,7 @@ export default function AIRankingChatPage() {
 
       <div className="flex gap-2">
         <input
-          className="flex-1 rounded border border-zen-border bg-transparent p-2"
+          className="flex-1 rounded border border-line bg-transparent p-2"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}

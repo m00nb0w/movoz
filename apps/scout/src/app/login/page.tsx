@@ -26,15 +26,15 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-zen-bg">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 rounded-lg border border-zen-border bg-paper p-8">
-        <h1 className="text-xl font-semibold text-zen-text">Scout</h1>
-        <p className="text-sm text-zen-muted">Enter the shared password to continue.</p>
+    <main className="flex min-h-screen items-center justify-center bg-paper">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 rounded-lg border border-line bg-paper-raised p-8">
+        <h1 className="text-xl font-semibold text-ink">Scout</h1>
+        <p className="text-sm text-ink-soft">Enter the shared password to continue.</p>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded border border-zen-border bg-transparent px-3 py-2 text-zen-text"
+          className="w-full rounded border border-line bg-transparent px-3 py-2 text-ink"
           placeholder="Password"
           autoFocus
         />

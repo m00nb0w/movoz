@@ -89,25 +89,25 @@ export default function RankSubAttributePage() {
       >
         Open AI ranking assistant →
       </Link>
-      <h1 className="mb-2 text-2xl font-semibold text-zen-text">
+      <h1 className="mb-2 text-2xl font-semibold text-ink">
         Rank: {subAttributeName || `Sub-attribute #${subAttributeId}`}
       </h1>
-      <p className="mb-6 text-sm text-zen-muted">
+      <p className="mb-6 text-sm text-ink-soft">
         Assign each active engineer a unique rank from 1 (best) to {engineers.length} (last) — no ties. Use the AI
         chat assistant (above) to get a starting proposal, then adjust here before saving.
       </p>
 
       <ul className="mb-6 space-y-2">
         {engineers.map((engineer) => (
-          <li key={engineer.id} className="flex items-center justify-between rounded border border-zen-border p-3">
-            <span className="text-zen-text">{engineer.name}</span>
+          <li key={engineer.id} className="flex items-center justify-between rounded border border-line p-3">
+            <span className="text-ink">{engineer.name}</span>
             <input
               type="number"
               min={1}
               max={engineers.length}
               value={ranks[engineer.id] ?? ""}
               onChange={(e) => setRank(engineer.id, e.target.value)}
-              className="w-16 rounded border border-zen-border bg-transparent p-1 text-center"
+              className="w-16 rounded border border-line bg-transparent p-1 text-center"
             />
           </li>
         ))}

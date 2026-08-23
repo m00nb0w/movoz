@@ -98,36 +98,36 @@ export default function EngineersPage() {
 
   return (
     <main className="mx-auto max-w-3xl p-8">
-      <h1 className="mb-6 text-2xl font-semibold text-zen-text">Roster</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-ink">Roster</h1>
 
-      <form onSubmit={handleCreate} className="mb-8 grid grid-cols-2 gap-3 rounded-lg border border-zen-border p-4">
-        <input className="rounded border border-zen-border bg-transparent p-2" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
-        <input className="rounded border border-zen-border bg-transparent p-2" placeholder="Role" value={role} onChange={(e) => setRole(e.target.value)} />
-        <input className="rounded border border-zen-border bg-transparent p-2" placeholder="GitHub username" value={githubUsername} onChange={(e) => setGithubUsername(e.target.value)} />
-        <input className="rounded border border-zen-border bg-transparent p-2" placeholder="Jira account ID" value={jiraAccountId} onChange={(e) => setJiraAccountId(e.target.value)} />
-        <input className="rounded border border-zen-border bg-transparent p-2" type="date" value={startedAt} onChange={(e) => setStartedAt(e.target.value)} required />
+      <form onSubmit={handleCreate} className="mb-8 grid grid-cols-2 gap-3 rounded-lg border border-line p-4">
+        <input className="rounded border border-line bg-transparent p-2" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+        <input className="rounded border border-line bg-transparent p-2" placeholder="Role" value={role} onChange={(e) => setRole(e.target.value)} />
+        <input className="rounded border border-line bg-transparent p-2" placeholder="GitHub username" value={githubUsername} onChange={(e) => setGithubUsername(e.target.value)} />
+        <input className="rounded border border-line bg-transparent p-2" placeholder="Jira account ID" value={jiraAccountId} onChange={(e) => setJiraAccountId(e.target.value)} />
+        <input className="rounded border border-line bg-transparent p-2" type="date" value={startedAt} onChange={(e) => setStartedAt(e.target.value)} required />
         <button type="submit" className="rounded bg-accent-600 px-3 py-2 text-white">Add engineer</button>
         {error && <p className="col-span-2 text-sm text-red-500">{error}</p>}
       </form>
 
-      <label className="mb-3 flex items-center gap-2 text-sm text-zen-muted">
+      <label className="mb-3 flex items-center gap-2 text-sm text-ink-soft">
         <input type="checkbox" checked={showAll} onChange={(e) => setShowAll(e.target.checked)} />
         Show deactivated engineers
       </label>
 
-      <ul className="divide-y divide-zen-border">
+      <ul className="divide-y divide-line">
         {engineers.map((engineer) =>
           editingId === engineer.id ? (
             <li key={engineer.id} className="py-3">
-              <form onSubmit={(e) => saveEdit(e, engineer.id)} className="grid grid-cols-2 gap-3 rounded-lg border border-zen-border p-4">
-                <input className="rounded border border-zen-border bg-transparent p-2" placeholder="Name" value={editName} onChange={(e) => setEditName(e.target.value)} required />
-                <input className="rounded border border-zen-border bg-transparent p-2" placeholder="Role" value={editRole} onChange={(e) => setEditRole(e.target.value)} />
-                <input className="rounded border border-zen-border bg-transparent p-2" placeholder="GitHub username" value={editGithubUsername} onChange={(e) => setEditGithubUsername(e.target.value)} />
-                <input className="rounded border border-zen-border bg-transparent p-2" placeholder="Jira account ID" value={editJiraAccountId} onChange={(e) => setEditJiraAccountId(e.target.value)} />
-                <input className="rounded border border-zen-border bg-transparent p-2" type="date" value={editStartedAt} onChange={(e) => setEditStartedAt(e.target.value)} required />
+              <form onSubmit={(e) => saveEdit(e, engineer.id)} className="grid grid-cols-2 gap-3 rounded-lg border border-line p-4">
+                <input className="rounded border border-line bg-transparent p-2" placeholder="Name" value={editName} onChange={(e) => setEditName(e.target.value)} required />
+                <input className="rounded border border-line bg-transparent p-2" placeholder="Role" value={editRole} onChange={(e) => setEditRole(e.target.value)} />
+                <input className="rounded border border-line bg-transparent p-2" placeholder="GitHub username" value={editGithubUsername} onChange={(e) => setEditGithubUsername(e.target.value)} />
+                <input className="rounded border border-line bg-transparent p-2" placeholder="Jira account ID" value={editJiraAccountId} onChange={(e) => setEditJiraAccountId(e.target.value)} />
+                <input className="rounded border border-line bg-transparent p-2" type="date" value={editStartedAt} onChange={(e) => setEditStartedAt(e.target.value)} required />
                 <div className="flex gap-2">
                   <button type="submit" className="rounded bg-accent-600 px-3 py-2 text-white">Save</button>
-                  <button type="button" onClick={cancelEdit} className="rounded border border-zen-border px-3 py-2 text-zen-muted">Cancel</button>
+                  <button type="button" onClick={cancelEdit} className="rounded border border-line px-3 py-2 text-ink-soft">Cancel</button>
                 </div>
                 {editError && <p className="col-span-2 text-sm text-red-500">{editError}</p>}
               </form>
@@ -135,17 +135,17 @@ export default function EngineersPage() {
           ) : (
             <li key={engineer.id} className="flex items-center justify-between py-3">
               <div>
-                <Link href={`/engineers/${engineer.id}`} className="font-medium text-zen-text hover:underline">
+                <Link href={`/engineers/${engineer.id}`} className="font-medium text-ink hover:underline">
                   {engineer.name}
                 </Link>
-                <span className="ml-2 text-sm text-zen-muted">{engineer.role}</span>
+                <span className="ml-2 text-sm text-ink-soft">{engineer.role}</span>
                 {!engineer.is_active && <span className="ml-2 text-xs text-red-500">deactivated</span>}
               </div>
               <div className="flex gap-3">
-                <button onClick={() => startEdit(engineer)} className="text-sm text-zen-muted hover:text-zen-text">
+                <button onClick={() => startEdit(engineer)} className="text-sm text-ink-soft hover:text-ink">
                   Edit
                 </button>
-                <button onClick={() => toggleActive(engineer)} className="text-sm text-zen-muted hover:text-zen-text">
+                <button onClick={() => toggleActive(engineer)} className="text-sm text-ink-soft hover:text-ink">
                   {engineer.is_active ? "Deactivate" : "Reactivate"}
                 </button>
               </div>

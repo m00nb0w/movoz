@@ -29,19 +29,19 @@ export default function ScoutError({ error, reset }: { error: Error & { digest?:
 
   return (
     <main className="mx-auto max-w-2xl p-8">
-      <h1 className="mb-2 text-2xl font-semibold text-zen-text">Something went wrong</h1>
-      <p className="mb-6 text-sm text-zen-muted">
+      <h1 className="mb-2 text-2xl font-semibold text-ink">Something went wrong</h1>
+      <p className="mb-6 text-sm text-ink-soft">
         This page failed to load. If you have been idle for a while your session may have expired — try again, or sign
         in again.
       </p>
       {error.message && (
-        <p className="mb-6 break-words rounded border border-zen-border p-3 text-sm text-zen-muted">{error.message}</p>
+        <p className="mb-6 break-words rounded border border-line p-3 text-sm text-ink-soft">{error.message}</p>
       )}
       <div className="flex gap-3">
         <button onClick={() => reset()} className="rounded bg-accent-600 px-4 py-2 text-white">
           Try again
         </button>
-        <Link href="/login" className="rounded border border-zen-border px-4 py-2 text-sm text-zen-text">
+        <Link href="/login" className="rounded border border-line px-4 py-2 text-sm text-ink">
           Sign in
         </Link>
       </div>

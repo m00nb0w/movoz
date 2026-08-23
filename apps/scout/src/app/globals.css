@@ -11,8 +11,8 @@
 }
 
 body {
-  background-color: var(--zen-bg);
-  color: var(--zen-text);
+  background-color: var(--paper);
+  color: var(--ink);
   font-family: system-ui, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
