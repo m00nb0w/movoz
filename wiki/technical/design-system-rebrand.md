@@ -1,6 +1,6 @@
 # Design System Rebrand — "Movoz" lo-fi annotated-wireframe kit
 
-**Status**: Design approved, not yet implemented.
+**Status**: Implemented — see `tasks/design-system-rebrand-plan.md` for the full task history.
 **Source material**: a full design-kit package (tokens, React component specimens, guideline HTML pages, a sample blog UI kit, and an installable Claude Agent Skill) delivered as `Movoz Design System.zip`, extracted for reference during this design at `/private/tmp/claude-502/-Users-lto-repos-personal-movoz/106e165e-26c9-4e0b-bb04-0fa3045c5a74/scratchpad/movoz-design-system/` (a session-scoped scratch path — the canonical copy this doc refers to going forward is the one installed at `.claude/skills/movoz-design/`, see Section D).
 
 ## Why

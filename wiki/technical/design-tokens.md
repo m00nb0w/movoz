@@ -10,24 +10,29 @@ All tokens are exported as `as const` TypeScript objects with full type inferenc
 
 | Token | Value | Usage |
 |---|---|---|
-| `accent.DEFAULT` | `#d4775c` | Primary accent (warm rust/orange) |
-| `accent.light` | `#e08a70` | Lighter accent variant |
-| `accent.dark` | `#c46448` | Darker accent variant |
+| `accent.DEFAULT` | `#C25A36` | Primary accent (terracotta) |
+| `accent.light` | `#E07A50` | Lighter accent variant |
+| `accent.dark` | `#A1462A` | Darker accent variant |
+| `accent.soft` | `#EFDBD0` | Tinted fill for subtle accent surfaces (e.g. `Badge` subtle variant) — documents the light-mode value; the runtime source is `--terracotta-soft` in `globals.css`, which also has a dark-mode value (`#4A3226`) |
 
 ### Semantic Colors
 
-Theme-dependent colors used via CSS variables (`--zen-*`).
+Theme-dependent colors used via CSS variables (`--paper`, `--ink`, `--terracotta`, etc. — see `packages/theme/src/globals.css`, the runtime source of truth).
 
 | Token | Light | Dark | CSS Variable |
 |---|---|---|---|
-| `bg` | `#fdf6e3` | `#1a1a1a` | `--zen-bg` |
-| `text` | `#3d3520` | `#e8e4dc` | `--zen-text` |
-| `muted` | `#857a5c` | `#a09080` | `--zen-muted` |
-| `subtle` | `#f5edd8` | `#252525` | `--zen-subtle` |
-| `border` | `#e8dfc5` | `#3a3a3a` | `--zen-border` |
-| `paper` | `#fffaed` | `#222222` | `--zen-paper` |
+| `paper` | `#EFE9DC` | `#21201B` | `--paper` |
+| `paperRaised` | `#FAF5EA` | `#2B2A24` | `--paper-raised` |
+| `paperSunken` | `#E6DECE` | `#1A1916` | `--paper-sunken` |
+| `ink` | `#25231E` | `#F2EEE4` | `--ink` |
+| `inkSoft` | `#6B675F` | `#AFA99B` | `--ink-soft` |
+| `line` | `#D4D0C6` | `#3B382F` | `--line` |
+| `pencil` | `#C7C3B9` | `#4B473D` | `--pencil` |
+| `pencilLight` | `#DEDAD0` | `#38362F` | `--pencil-light` |
+| `dock` | `#2A2823` | `#F2EEE4` | `--dock` |
+| `dockLine` | `#45413A` | `#D8D3C6` | `--dock-line` |
 
-Light mode is warm cream/parchment. Dark mode is Kindle-inspired.
+Light mode is a warm paper/parchment lo-fi palette. Dark mode inverts paper/ink while keeping the terracotta accent (brightened for contrast).
 
 ## Typography
 
@@ -35,9 +40,8 @@ Light mode is warm cream/parchment. Dark mode is Kindle-inspired.
 
 | Token | Stack | Usage |
 |---|---|---|
-| `sans` | Rubik, system-ui, sans-serif | Body text, headings |
-| `serif` | Libre Baskerville, Georgia, serif | Display headings |
-| `ui` | Inter, system-ui, sans-serif | UI elements, small text |
+| `marker` | Shantell Sans, Comic Sans MS, cursive | Hand-drawn/marker accents (headings, callouts) |
+| `body` | Space Grotesk, ui-sans-serif, system-ui, sans-serif | Body text, UI elements (also mapped to Tailwind's `sans` default) |
 
 ### Font Sizes
 
@@ -115,24 +119,27 @@ Light mode is warm cream/parchment. Dark mode is Kindle-inspired.
 | Token | Value | px |
 |---|---|---|
 | `none` | 0 | 0 |
-| `sm` | 0.25rem | 4 |
-| `DEFAULT` / `md` | 0.5rem | 8 |
-| `lg` | 0.75rem | 12 |
-| `xl` | 1rem | 16 |
-| `2xl` | 1.5rem | 24 |
+| `sm` | 7px | 7 |
+| `DEFAULT` / `md` | 11px | 11 |
+| `lg` | 16px | 16 |
+| `xl` | 22px | 22 |
+| `2xl` | 30px | 30 |
 | `full` | 9999px | pill |
+| `sketch` | `14px 11px 13px 12px` | hand-drawn asymmetric corners |
 
 ## Shadows
 
 | Token | Value |
 |---|---|
 | `none` | none |
-| `sm` | `0 1px 2px rgba(0,0,0,0.05)` |
-| `DEFAULT` | `0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.04)` |
-| `md` | `0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05)` |
-| `lg` | `0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04)` |
-| `xl` | `0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.04)` |
-| `2xl` | `0 20px 40px -12px rgba(0,0,0,0.15)` |
+| `sm` | `0 1px 2px rgba(37,35,30,0.05)` |
+| `DEFAULT` | `0 1px 3px rgba(37,35,30,0.05), 0 4px 12px rgba(37,35,30,0.04)` |
+| `md` | `0 4px 6px -1px rgba(37,35,30,0.07), 0 2px 4px -2px rgba(37,35,30,0.05)` |
+| `lg` | `0 10px 15px -3px rgba(37,35,30,0.08), 0 4px 6px -4px rgba(37,35,30,0.04)` |
+| `xl` | `0 20px 25px -5px rgba(37,35,30,0.1), 0 8px 10px -6px rgba(37,35,30,0.04)` |
+| `2xl` | `0 20px 40px -12px rgba(37,35,30,0.15)` |
+| `sketch` | `3px 3px 0 var(--ink)` — flat hand-drawn "sticker" shadow |
+| `sketchAccent` | `3px 3px 0 var(--terracotta)` — accent-colored sketch shadow |
 
 Dark mode variants (`darkShadows`): `DEFAULT` and `2xl` with higher opacity.
 

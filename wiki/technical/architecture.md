@@ -88,7 +88,7 @@ Semantic zen colors (`bg`, `text`, `muted`, `subtle`, `border`, `paper`) use CSS
 - Theme state persists in `localStorage` (key: `"theme"`)
 - Three modes: `light`, `dark`, `system`
 - CSS variables on `:root` (light) or `.dark` class (dark) control all colors
-- Components use semantic Tailwind classes (`text-zen-text`, `bg-zen-bg`) — never import from `@movoz/theme` directly
+- Components use semantic Tailwind classes (`text-ink`, `bg-paper`) — never import from `@movoz/theme` directly
 
 ### Component Library Strategy
 

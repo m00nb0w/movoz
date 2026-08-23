@@ -19,7 +19,7 @@ Merges class names with Tailwind conflict resolution.
 
 ```tsx
 import { cn } from "@movoz/ui-web";
-cn("px-4 py-2", isActive && "bg-zen-subtle", className)
+cn("px-4 py-2", isActive && "bg-paper-sunken", className)
 ```
 
 ---
@@ -47,9 +47,9 @@ import { Button } from "@movoz/ui-web";
 | `iconRight` | `ReactNode` | — | Trailing icon |
 
 Variant styles:
-- **primary**: `bg-zen-text text-zen-bg` — solid, high contrast
-- **secondary**: `bg-zen-subtle border border-zen-border` — outlined/subtle
-- **ghost**: transparent background, hover reveals subtle bg
+- **primary**: `bg-ink text-paper-raised border border-ink` with a flat sketch shadow (`shadow-[var(--shadow-sketch)]`) that collapses on press — solid, high contrast
+- **secondary**: `bg-paper-raised text-ink border border-ink` — outlined/subtle
+- **ghost**: transparent background, hover reveals `bg-paper-sunken`
 - **danger**: `bg-red-500 text-white`
 
 ### Text
@@ -168,6 +168,88 @@ import { IconButton } from "@movoz/ui-web";
 | `label` | `string` | **required** | Accessibility label (`aria-label`) |
 | `variant` | `"primary" \| "secondary" \| "ghost" \| "danger"` | `"ghost"` | Visual style |
 | `size` | `"sm" \| "md" \| "lg"` | `"md"` | Size |
+
+### Pill
+
+Toggle-style button styled as a rounded, hand-drawn pill (filter chips, segmented choices).
+
+```tsx
+import { Pill } from "@movoz/ui-web";
+
+<Pill active={selected === "all"} onClick={() => setSelected("all")}>All</Pill>
+<Pill>Unselected</Pill>
+```
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `active` | `boolean` | `false` | Pressed/selected state (sets `aria-pressed`, swaps to a filled `bg-paper-sunken` style) |
+
+Renders a native `<button type="button">`; all other `button` props pass through.
+
+### Skeleton
+
+Loading placeholder rendered as one or more rounded bars.
+
+```tsx
+import { Skeleton } from "@movoz/ui-web";
+
+<Skeleton />                          {/* single 100%-wide bar */}
+<Skeleton lines={3} />                {/* 3 stacked bars, last one narrower */}
+<Skeleton width={200} height={16} />
+```
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `lines` | `number` | `1` | Number of stacked bars; when >1, the last bar renders at 62% width |
+| `width` | `string \| number` | `"100%"` | Bar width (number = px) |
+| `height` | `string \| number` | `12` | Bar height (number = px) |
+
+Bars use `bg-pencil` on a `rounded-full` track.
+
+### Tabs
+
+Tab list with light/dock tone and optional accent-highlighted tab.
+
+```tsx
+import { Tabs } from "@movoz/ui-web";
+
+<Tabs items={["Overview", "Details"]} value={tab} onChange={setTab} />
+<Tabs
+  items={[{ value: "all", label: "All" }, { value: "new", label: "New", accent: true }]}
+  value={tab}
+  onChange={setTab}
+  tone="dock"
+/>
+```
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `items` | `(string \| { value, label, accent? })[]` | **required** | Tab list; strings are used as both value and label |
+| `value` | `string` | **required** | Currently active tab value |
+| `onChange` | `(value: string) => void` | **required** | Selection handler |
+| `tone` | `"light" \| "dock"` | `"light"` | `"dock"` renders on the dark `bg-dock` surface (see design tokens) |
+
+Individual tabs render `role="tab"` inside a `role="tablist"` container; an `item.accent` tab uses `bg-accent`/`text-accent` styling when active/inactive instead of the tone's default.
+
+### PlaceholderBox
+
+Dashed/crossed placeholder for missing media (images, charts) with an optional label.
+
+```tsx
+import { PlaceholderBox } from "@movoz/ui-web";
+
+<PlaceholderBox label="16:9 image" />
+<PlaceholderBox ratio="1 / 1" cross={false} dashed />
+<PlaceholderBox height={240} label="Chart" />
+```
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `label` | `string` | `""` | Text shown centered over the box |
+| `ratio` | `string` | `"16 / 9"` | CSS `aspect-ratio` value (ignored if `height` is set) |
+| `cross` | `boolean` | `true` | Draw a diagonal cross overlay |
+| `dashed` | `boolean` | `false` | Dashed border instead of solid |
+| `height` | `string \| number` | — | Fixed height; overrides `ratio` |
 
 ---
 
