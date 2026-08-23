@@ -6,6 +6,7 @@ const config: Partial<Config> = {
   theme: {
     extend: {
       fontFamily: {
+        sans: [...fontFamilies.body],
         marker: [...fontFamilies.marker],
         body: [...fontFamilies.body],
       },
@@ -15,6 +16,7 @@ const config: Partial<Config> = {
           light: "var(--terracotta-light)",
           dark: "var(--terracotta-ink)",
         },
+        "accent-soft": "var(--terracotta-soft)",
         paper: "var(--paper)",
         "paper-raised": "var(--paper-raised)",
         "paper-sunken": "var(--paper-sunken)",

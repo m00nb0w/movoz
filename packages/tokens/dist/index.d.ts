@@ -3,6 +3,7 @@ declare const palette: {
         readonly DEFAULT: "#C25A36";
         readonly light: "#E07A50";
         readonly dark: "#A1462A";
+        readonly soft: "#EFDBD0";
     };
 };
 declare const semantic: {
@@ -13,6 +14,10 @@ declare const semantic: {
         readonly ink: "#25231E";
         readonly inkSoft: "#6B675F";
         readonly line: "#D4D0C6";
+        readonly pencil: "#C7C3B9";
+        readonly pencilLight: "#DEDAD0";
+        readonly dock: "#2A2823";
+        readonly dockLine: "#45413A";
     };
     readonly dark: {
         readonly paper: "#21201B";
@@ -21,6 +26,10 @@ declare const semantic: {
         readonly ink: "#F2EEE4";
         readonly inkSoft: "#AFA99B";
         readonly line: "#3B382F";
+        readonly pencil: "#4B473D";
+        readonly pencilLight: "#38362F";
+        readonly dock: "#F2EEE4";
+        readonly dockLine: "#D8D3C6";
     };
 };
 type SemanticColorKey = keyof (typeof semantic)["light"];
