@@ -2,7 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rebrand the shared `@movoz/tokens` → `@movoz/tailwind-config` → `@movoz/theme` → `@movoz/ui-web` package chain from the old "zen" warm-cream palette to the new "Movoz" lo-fi annotated-wireframe kit (warm paper surfaces, Shantell Sans marker headings, Space Grotesk body, terracotta accent, felt-tip hairline borders), mechanically propagate the rename into `apps/personal-site` and `apps/oncarinho`, add four new brand components to `@movoz/ui-web`, and install the kit as a Claude skill.
+**Goal:** Rebrand the shared `@movoz/tokens` → `@movoz/tailwind-config` → `@movoz/theme` → `@movoz/ui-web` package chain from the old "zen" warm-cream palette to the new "Movoz" lo-fi annotated-wireframe kit (warm paper surfaces, Shantell Sans marker headings, Space Grotesk body, terracotta accent, felt-tip hairline borders), mechanically propagate the rename into `apps/personal-site`, `apps/oncarinho`, and `apps/scout`, add four new brand components to `@movoz/ui-web`, and install the kit as a Claude skill.
+
+> **Amendment (pre-flight, before Task 1 was dispatched):** the original spec/plan only knew about `apps/personal-site` and `apps/oncarinho` as consumers of the zen-* system. Pre-flight verification discovered a third real consumer, `apps/scout` (an existing, actively-developed app not mentioned in the spec), which also depends on `@movoz/theme`/`@movoz/tailwind-config` and uses `zen-*` classes across 11 files. Leaving it un-renamed would break it outright once Tasks 1–3 land. Task 18 (new) applies the same mechanical rename to it. See Global Constraints for a second pre-flight finding (a pre-existing, unrelated build failure across all three apps).
 
 **Architecture:** No new layers — the existing 4-package pipeline (`tokens` → `tailwind-config` → `theme` → `ui-web`) is rebranded in place, package by package, downstream-first (tokens must rebuild before tailwind-config/ui-web pick up new values). App-level work is a mechanical find/replace against a fixed rename table, not a redesign.
 
@@ -10,12 +12,13 @@
 
 **Spec:** `wiki/technical/design-system-rebrand.md`
 
-**Kit source** (for verifying exact values against the original if anything looks off): `/private/tmp/claude-502/-Users-lto-repos-personal-movoz/106e165e-26c9-4e0b-bb04-0fa3045c5a74/scratchpad/movoz-design-system/` — this is a session-scoped scratch path and may not exist in a fresh session; the zip is also archived at `/Users/lto/Downloads/Movoz Design System.zip` and, after Task 18, permanently at `.claude/skills/movoz-design/`.
+**Kit source** (for verifying exact values against the original if anything looks off): `/private/tmp/claude-502/-Users-lto-repos-personal-movoz/106e165e-26c9-4e0b-bb04-0fa3045c5a74/scratchpad/movoz-design-system/` — this is a session-scoped scratch path and may not exist in a fresh session; the zip is also archived at `/Users/lto/Downloads/Movoz Design System.zip` and, after Task 19, permanently at `.claude/skills/movoz-design/`.
 
 ## Global Constraints
 
 - Replace the "zen" system wholesale in the shared packages — no coexisting second theme (spec Decisions #1).
-- Scope is the shared packages plus the *mechanical* call-site rename in `apps/personal-site`/`apps/oncarinho` — no page-level redesign, no layout changes, no touching `apps/drunken-dolphin` (spec Decisions #2).
+- Scope is the shared packages plus the *mechanical* call-site rename in `apps/personal-site`, `apps/oncarinho`, and `apps/scout` (added by pre-flight amendment — see Goal) — no page-level redesign, no layout changes, no touching `apps/drunken-dolphin` (spec Decisions #2).
+- **Pre-existing, unrelated build failure (pre-flight finding, ruled out of scope):** `next build` currently fails on all three apps (`personal-site`, `oncarinho`, `scout`) with a TypeScript error like `'X' cannot be used as a JSX component ... Type 'ReactNode' is not assignable ...` whenever a `forwardRef`-based `@movoz/ui-web` component (`Button`, `Container`, etc.) is used as JSX, or (for `scout`) whenever `ThemeProvider` renders `<ThemeContext.Provider>`. This is a monorepo-wide React 18/19 peer-dependency mismatch (some apps resolve React 19 via the pnpm catalog, `@movoz/ui-web`/`@movoz/theme` are still typed against React 18, and only one hoisted `@types/react` can win) — it predates this plan, is reproducible on a clean checkout with zero rebrand changes applied, and is explicitly out of scope to fix here (a JSX/React-version typing issue has nothing to do with color/font tokens). **Practical effect: `next build` is not a usable verification signal for `apps/personal-site`, `apps/oncarinho`, or `apps/scout` in this plan** — it fails before and after every task with the same unrelated signature. `next lint` (`pnpm --filter <app> lint`) is unaffected (confirmed clean on personal-site/oncarinho pre-flight) and remains the real verification bar for Tasks 16–18 and Task 20, alongside the grep sweeps. Do not treat a `next build` failure matching this signature as a new regression in any task's review — only a *different* build error (or any `lint` failure) is a real finding.
 - Token names are renamed to match new semantics, not just re-valued (spec Decisions #3). Full rename table:
   - `--zen-bg` / `bg-zen-bg` → `--paper` / `bg-paper`
   - `--zen-paper` / `bg-paper` (old) → `--paper-raised` / `bg-paper-raised`
@@ -1588,7 +1591,7 @@ pnpm --filter personal-site lint
 pnpm --filter personal-site build
 ```
 
-Expected: both clean.
+Expected: `lint` clean — this is the real verification bar (per Global Constraints). `build` is expected to fail with the pre-existing, unrelated `'Container' cannot be used as a JSX component ... Type 'ReactNode' is not assignable ...` error (confirmed present before this task, in `About.tsx`) — that specific failure is not a regression from this task; a *different* build error would be.
 
 - [ ] **Step 4: Commit**
 
@@ -1666,7 +1669,7 @@ pnpm --filter oncarinho lint
 pnpm --filter oncarinho build
 ```
 
-Expected: both clean.
+Expected: `lint` clean — the real verification bar (per Global Constraints). `build` is expected to fail with the pre-existing, unrelated `'Button' cannot be used as a JSX component ... Type 'ReactNode' is not assignable ...` error (confirmed present before this task, in `admin/matchdays/[id]/page.tsx`) — not a regression from this task; a *different* build error would be.
 
 - [ ] **Step 4: Commit**
 
@@ -1677,14 +1680,97 @@ git commit -m "design-system: rename zen-*/font-serif class references in oncari
 
 ---
 
-### Task 18: Install the `movoz-design` Claude skill
+### Task 18: Mechanical rename across `apps/scout`
+
+**Files:**
+- Modify: `apps/scout/src/app/globals.css`
+- Modify: `apps/scout/src/app/page.tsx`
+- Modify: `apps/scout/src/app/error.tsx`
+- Modify: `apps/scout/src/app/cycles/page.tsx`
+- Modify: `apps/scout/src/app/cycles/[id]/page.tsx`
+- Modify: `apps/scout/src/app/cycles/[id]/sub-attributes/[subId]/page.tsx`
+- Modify: `apps/scout/src/app/cycles/[id]/sub-attributes/[subId]/chat/page.tsx`
+- Modify: `apps/scout/src/app/attributes/page.tsx`
+- Modify: `apps/scout/src/app/engineers/page.tsx`
+- Modify: `apps/scout/src/app/engineers/[id]/page.tsx`
+- Modify: `apps/scout/src/app/login/page.tsx`
+
+**Interfaces:**
+- Consumes: same renamed classes/tokens as Tasks 16–17
+- Produces: no new interface. **Unlike personal-site/oncarinho, scout DOES use the old bare `bg-paper` class** (`apps/scout/src/app/login/page.tsx:30`, meaning the old raised-card surface) — this must become `bg-paper-raised` explicitly, *not* be swept up by the `zen-*` substitutions, or it will silently pick up the new (different) meaning of `bg-paper` after Task 2 lands. This is Step 1 below, done before the zen-* rename.
+
+- [ ] **Step 1: Fix the one bare `bg-paper` usage first**
+
+Read `apps/scout/src/app/login/page.tsx`, confirm line 30 reads:
+```tsx
+<form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 rounded-lg border border-zen-border bg-paper p-8">
+```
+Change `bg-paper` to `bg-paper-raised` on that line only (leave `border-zen-border` for Step 2 below):
+```tsx
+<form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 rounded-lg border border-zen-border bg-paper-raised p-8">
+```
+
+- [ ] **Step 2: Apply the mechanical rename**
+
+```bash
+cd /Users/lto/repos/personal/movoz
+perl -pi -e '
+  s/zen-border/line/g;
+  s/zen-subtle/paper-sunken/g;
+  s/zen-paper/paper-raised/g;
+  s/zen-muted/ink-soft/g;
+  s/zen-text/ink/g;
+  s/zen-bg/paper/g;
+  s/font-serif/font-marker/g;
+  s/font="serif"/font="marker"/g;
+' apps/scout/src/app/globals.css \
+  apps/scout/src/app/page.tsx \
+  apps/scout/src/app/error.tsx \
+  apps/scout/src/app/cycles/page.tsx \
+  "apps/scout/src/app/cycles/[id]/page.tsx" \
+  "apps/scout/src/app/cycles/[id]/sub-attributes/[subId]/page.tsx" \
+  "apps/scout/src/app/cycles/[id]/sub-attributes/[subId]/chat/page.tsx" \
+  apps/scout/src/app/attributes/page.tsx \
+  apps/scout/src/app/engineers/page.tsx \
+  "apps/scout/src/app/engineers/[id]/page.tsx" \
+  apps/scout/src/app/login/page.tsx
+```
+
+- [ ] **Step 3: Verify no leftovers**
+
+```bash
+grep -rnE "zen-(bg|text|muted|subtle|border|paper)|font-serif|font=\"serif\"" apps/scout/src
+grep -rnE "\bbg-paper\b" apps/scout/src
+```
+
+Expected: no output from either command (the second confirms Step 1's fix landed and nothing else needs it).
+
+- [ ] **Step 4: Lint and verify**
+
+```bash
+cd /Users/lto/repos/personal/movoz
+pnpm --filter @movoz/scout lint
+```
+
+Expected: exits non-interactively with either a clean pass or only pre-existing warnings unrelated to this change. **Do not accept an interactive ESLint setup prompt** ("How would you like to configure ESLint?") as a pass or a fail — if `next lint` prompts interactively instead of running, scout has no committed ESLint config, which is a pre-existing condition unrelated to this task; note it in the report as `⚠️ Cannot verify via lint` rather than treating it as a task failure, and rely on the Step 3 grep sweep as this task's real verification. Do **not** run `pnpm --filter @movoz/scout build` as a pass/fail gate — it fails on the same pre-existing, unrelated JSX/React-19 error described in Global Constraints regardless of this task's correctness.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add apps/scout/src
+git commit -m "design-system: rename zen-*/font-serif class references in scout"
+```
+
+---
+
+### Task 19: Install the `movoz-design` Claude skill
 
 **Files:**
 - Create: `.claude/skills/movoz-design/` (copy of the extracted kit)
 
 **Interfaces:**
 - Consumes: the extracted kit contents (session-scoped scratch path noted at the top of this plan, or re-extract from `/Users/lto/Downloads/Movoz Design System.zip` if that path no longer exists)
-- Produces: an installed, user-invocable Claude skill named `movoz-design`, independent of the package rebrand — no other task depends on this one, and it doesn't depend on Tasks 1–17 either. It can run at any point in this plan.
+- Produces: an installed, user-invocable Claude skill named `movoz-design`, independent of the package rebrand — no other task depends on this one, and it doesn't depend on Tasks 1–18 either. It can run at any point in this plan.
 
 - [ ] **Step 1: Locate or re-extract the kit**
 
@@ -1724,28 +1810,29 @@ git commit -m "design-system: install the movoz-design kit as a Claude skill"
 
 ---
 
-### Task 19: Final verification pass
+### Task 20: Final verification pass
 
 **Files:** none (verification only)
 
-**Interfaces:** none — this task confirms Tasks 1–18 are consistent as a whole.
+**Interfaces:** none — this task confirms Tasks 1–19 are consistent as a whole.
 
-- [ ] **Step 1: Full workspace build and lint**
+- [ ] **Step 1: Full workspace lint, and per-package builds that are actually meaningful**
 
 ```bash
 cd /Users/lto/repos/personal/movoz
-pnpm build
 pnpm lint
+pnpm --filter @movoz/tokens build
+pnpm --filter @movoz/ui-web build
 ```
 
-Expected: both clean. `turbo build`'s `dependsOn: ["^build"]` means `@movoz/tokens` builds before anything that imports it, so this also re-confirms Task 1's build artifact is current. Packages without a `lint` script (`@movoz/theme`, `@movoz/tokens`, `@movoz/tailwind-config`) are silently skipped by turbo, not an error.
+Expected: all clean. Do **not** run a bare `pnpm build` at the workspace root as a pass/fail gate — per Global Constraints, `apps/personal-site`, `apps/oncarinho`, and `apps/scout` all fail `next build` today on a pre-existing, unrelated React 18/19 JSX typing error, and `turbo build` would report the whole run as failed on that basis alone, telling you nothing new about this plan's correctness. `pnpm lint` covers every package with a `lint` script (including all three apps); packages without one (`@movoz/theme`, `@movoz/tokens`, `@movoz/tailwind-config`) are silently skipped by turbo, not an error. If `pnpm --filter @movoz/scout lint` still can't run non-interactively (Task 18 Step 4's caveat), skip it here too and rely on the Task 18 grep sweep for scout instead.
 
 - [ ] **Step 2: Repo-wide grep sweep for leftover old references**
 
 ```bash
-grep -rnE "zen-(bg|text|muted|subtle|border|paper)" apps/personal-site/src apps/oncarinho/src packages/theme/src packages/ui-web/src
-grep -rnE "\bfont-serif\b|font=\"serif\"|\bfont-ui\b|font=\"ui\"" apps/personal-site/src apps/oncarinho/src packages/ui-web/src
-grep -rnE "\bbg-paper\b" packages/ui-web/src
+grep -rnE "zen-(bg|text|muted|subtle|border|paper)" apps/personal-site/src apps/oncarinho/src apps/scout/src packages/theme/src packages/ui-web/src
+grep -rnE "\bfont-serif\b|font=\"serif\"|\bfont-ui\b|font=\"ui\"" apps/personal-site/src apps/oncarinho/src apps/scout/src packages/ui-web/src
+grep -rnE "\bbg-paper\b" packages/ui-web/src apps/scout/src
 ```
 
 Expected: no output from any of the three commands. (`apps/drunken-dolphin` is intentionally excluded — it never used these tokens.)
@@ -1756,8 +1843,8 @@ Expected: no output from any of the three commands. (`apps/drunken-dolphin` is i
 pnpm dev
 ```
 
-Visit personal-site and oncarinho (check the ports each app's `package.json` dev script binds — personal-site is the default zone, oncarinho runs on port 3100 per its `dev` script). For each app: toggle light/dark mode and confirm the paper/ink palette and terracotta accent render, confirm Shantell Sans renders on headings (`font-marker`/`font="marker"` usages) and Space Grotesk on body text, confirm felt-tip hairline borders are visible on cards/buttons/inputs. Accept whatever the pages look like compositionally — page-level polish is explicitly out of scope (spec Decisions #2); the only failure condition here is a token/class that didn't resolve (e.g. visibly unstyled/default-browser-font text, which would mean a rename was missed).
+Visit personal-site, oncarinho, and scout (check the ports each app's `package.json` dev script binds — personal-site is the default zone, oncarinho runs on port 3100, scout on port 3002 per their `dev` scripts). `next dev` does not run the same strict production type-check as `next build`, so all three should still serve pages despite the pre-existing build issue. For each app: toggle light/dark mode and confirm the paper/ink palette and terracotta accent render, confirm Shantell Sans renders on headings (`font-marker`/`font="marker"` usages) and Space Grotesk on body text, confirm felt-tip hairline borders are visible on cards/buttons/inputs. Accept whatever the pages look like compositionally — page-level polish is explicitly out of scope (spec Decisions #2); the only failure condition here is a token/class that didn't resolve (e.g. visibly unstyled/default-browser-font text, which would mean a rename was missed) or a genuinely new dev-server error unrelated to the pre-existing build issue.
 
 - [ ] **Step 4: Report results**
 
-Summarize: build/lint status for all 4 packages + 2 apps, grep sweep results, and what was visually confirmed in light/dark mode for each app. Flag anything that didn't render as expected — do not silently patch further without noting it, since this is the final gate before the rebrand is considered done.
+Summarize: lint status for all packages/apps, the two meaningful package builds, grep sweep results, and what was visually confirmed in light/dark mode for each of the three apps. Flag anything that didn't render as expected — do not silently patch further without noting it, since this is the final gate before the rebrand is considered done.
