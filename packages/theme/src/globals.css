@@ -1,20 +1,40 @@
 /* Color values sourced from @movoz/tokens — keep in sync */
+@import url('https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,300..800;1,300..700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
 :root {
-  /* Yellow-tinted paper colors */
-  --zen-bg: #fdf6e3;
-  --zen-text: #3d3520;
-  --zen-muted: #857a5c;
-  --zen-subtle: #f5edd8;
-  --zen-border: #e8dfc5;
-  --zen-paper: #fffaed;
+  /* Warm paper/ink/terracotta palette */
+  --paper: #EFE9DC;
+  --paper-raised: #FAF5EA;
+  --paper-sunken: #E6DECE;
+  --ink: #25231E;
+  --ink-soft: #6B675F;
+  --line: #D4D0C6;
+  --pencil: #C7C3B9;
+  --pencil-light: #DEDAD0;
+  --terracotta: #C25A36;
+  --terracotta-ink: #A1462A;
+  --terracotta-light: #E07A50;
+  --dock: #2A2823;
+  --dock-line: #45413A;
+
+  --radius-sm: 7px;
+  --radius-md: 11px;
+  --radius-lg: 16px;
+  --border-width: 1.5px;
+  --shadow-sketch: 3px 3px 0 var(--ink);
 }
 
 .dark {
-  /* Kindle-like dark mode */
-  --zen-bg: #1a1a1a;
-  --zen-text: #e8e4dc;
-  --zen-muted: #a09080;
-  --zen-subtle: #252525;
-  --zen-border: #3a3a3a;
-  --zen-paper: #222222;
+  --paper: #21201B;
+  --paper-raised: #2B2A24;
+  --paper-sunken: #1A1916;
+  --ink: #F2EEE4;
+  --ink-soft: #AFA99B;
+  --line: #3B382F;
+  --pencil: #4B473D;
+  --pencil-light: #38362F;
+  --terracotta: #E07A50;
+  --terracotta-ink: #F2946C;
+  --dock: #F2EEE4;
+  --dock-line: #D8D3C6;
 }
