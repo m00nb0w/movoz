@@ -168,6 +168,9 @@ Workflows in `.github/workflows/`:
 - Spec before code — check `wiki/` for existing context before starting any feature work.
 
 <!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
+Active feature: `001-el-storko` (personal work-item tracker). Plan:
+`wiki/technical/001-el-storko/plan.md`. Read it, plus `research.md`,
+`data-model.md`, `contracts/rest-api.md`, and `quickstart.md` in the same
+directory, for technologies, project structure, and shell commands for this
+feature.
 <!-- SPECKIT END -->
