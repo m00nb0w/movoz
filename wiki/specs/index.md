@@ -19,6 +19,9 @@ Product requirements documents organized by project. Each spec defines what we'r
 ### scout
 - [Scout Spec](./scout.md) — private engineering team tracker: FIFA-style attribute cards, GitHub/Jira metrics sync, AI-assisted biweekly ranking
 
+### el-storko
+- [el-storko Spec](./001-el-storko/spec.md) — personal work-item tracker unifying personal Tasks/Epics with bidirectionally-synced Jira issues; see [Technical Plan](../technical/001-el-storko/plan.md)
+
 ## Templates
 
 - [Product Spec Template](./product-spec-template.md) — for new feature requirements
