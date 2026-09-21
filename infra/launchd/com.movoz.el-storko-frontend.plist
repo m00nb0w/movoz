@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.movoz.el-storko-frontend</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/zsh</string>
+        <string>-l</string>
+        <string>-c</string>
+        <string>cd ~/repos/personal/movoz &amp;&amp; pnpm --filter el-storko start</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/lto/repos/personal/movoz/apps/el-storko</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>EL_STORKO_API_URL</key>
+        <string>http://localhost:8082</string>
+    </dict>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/lto/Library/Logs/el-storko/frontend.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/lto/Library/Logs/el-storko/frontend.error.log</string>
+</dict>
+</plist>
