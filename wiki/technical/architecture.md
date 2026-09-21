@@ -5,7 +5,8 @@
 ```
 movoz/
 ├── apps/                          # Frontend applications (pnpm workspace)
-│   └── personal-site/             # Next.js 14 — default zone at /
+│   ├── personal-site/             # Next.js 14 — default zone at /
+│   └── el-storko/                 # Next.js zone — kanban + list views for el-storko
 │
 ├── packages/                      # Shared packages (pnpm workspace)
 │   ├── tokens/                    # @movoz/tokens — platform-agnostic design tokens
@@ -16,7 +17,9 @@ movoz/
 │
 ├── backend/                       # Backend services (outside pnpm workspace)
 │   ├── drunken-dolphin/           # Rust CLI — personal fitness tracking
-│   └── hustle-turtle/             # Go REST API — Gin + PostgreSQL
+│   ├── hustle-turtle/             # Go REST API — Gin + PostgreSQL
+│   ├── oncarinho/                 # Go REST API — football team stats tracker
+│   └── el-storko/                 # Go REST API + CLI — personal work-item tracker, Jira sync
 │
 ├── infra/                         # Infrastructure (outside pnpm workspace)
 │   ├── terraform/                 # AWS VPC + RDS (workspace-based dev/prod)
@@ -107,6 +110,10 @@ Backend services are intentionally outside the pnpm workspace — they use diffe
 
 - **drunken-dolphin** (Rust): CLI tool, data persisted to local JSON files
 - **hustle-turtle** (Go): REST API with Gin framework, PostgreSQL via golang-migrate
+- **oncarinho** (Go): REST API with Gin framework, PostgreSQL via golang-migrate, session auth
+- **el-storko** (Go): REST API + CLI sharing one Postgres-backed `work_items` table; background
+  goroutine polls Jira REST API v3 for bidirectional sync (see
+  [el-storko technical plan](./001-el-storko/plan.md))
 
 ### Infrastructure
 

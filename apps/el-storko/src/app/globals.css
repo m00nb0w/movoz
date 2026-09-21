@@ -1,0 +1,9 @@
+@import "@movoz/theme/globals.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+}
