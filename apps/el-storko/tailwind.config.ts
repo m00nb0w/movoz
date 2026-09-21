@@ -6,6 +6,7 @@ const config: Config = {
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
     "../../packages/theme/src/**/*.{js,ts,jsx,tsx,mdx}",
+    "../../packages/ui-web/src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   plugins: [],
 };

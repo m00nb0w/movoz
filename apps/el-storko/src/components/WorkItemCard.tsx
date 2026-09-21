@@ -1,8 +1,14 @@
 "use client";
 
+import { Badge, Button, Card, Dropdown, Text } from "@movoz/ui-web";
 import type { WorkItem, WorkItemStatus } from "@/lib/api";
 
-const STATUS_OPTIONS: WorkItemStatus[] = ["todo", "in_progress", "blocked", "done"];
+const STATUS_OPTIONS: { label: string; value: WorkItemStatus }[] = [
+  { label: "To Do", value: "todo" },
+  { label: "In Progress", value: "in_progress" },
+  { label: "Blocked", value: "blocked" },
+  { label: "Done", value: "done" },
+];
 
 export function WorkItemCard({
   item,
@@ -13,44 +19,50 @@ export function WorkItemCard({
   onStatusChange: (id: number, status: WorkItemStatus) => void;
   onDelete: (id: number) => void;
 }) {
+  const currentStatus = STATUS_OPTIONS.find((s) => s.value === item.status);
+
   return (
-    <div className="rounded-[var(--radius-md)] border border-line bg-paper-raised p-3 shadow-sm">
+    <Card variant="outlined" padding="sm">
       <div className="flex items-start justify-between gap-2">
-        <span className="text-sm font-medium text-ink">{item.title}</span>
-        <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs text-accent-dark">
+        <Text as="h3" font="marker" weight="semibold" size="base">
+          {item.title}
+        </Text>
+        <Badge variant="outline" color="default" size="sm">
           {item.type}
-        </span>
+        </Badge>
       </div>
+
       {item.description && (
-        <p className="mt-1 text-xs text-ink-soft">{item.description}</p>
+        <Text size="sm" color="muted" className="mt-1">
+          {item.description}
+        </Text>
       )}
-      <div className="mt-2 flex items-center justify-between gap-2 text-xs text-ink-soft">
-        <span>{item.source}</span>
+
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <Badge variant="subtle" color={item.source === "jira" ? "accent" : "default"} size="sm">
+          {item.source}
+        </Badge>
         {item.jira_url && (
-          <a href={item.jira_url} target="_blank" rel="noreferrer" className="underline">
+          <Text as="a" href={item.jira_url} target="_blank" rel="noreferrer" size="xs" color="accent">
             {item.jira_key}
-          </a>
+          </Text>
         )}
       </div>
-      <div className="mt-2 flex items-center gap-2">
-        <select
-          className="rounded border border-line bg-paper px-1 py-0.5 text-xs text-ink"
-          value={item.status}
-          onChange={(e) => onStatusChange(item.id, e.target.value as WorkItemStatus)}
-        >
-          {STATUS_OPTIONS.map((status) => (
-            <option key={status} value={status}>
-              {status}
-            </option>
-          ))}
-        </select>
-        <button
-          className="text-xs text-ink-soft underline"
-          onClick={() => onDelete(item.id)}
-        >
-          delete
-        </button>
+
+      <div className="mt-3 flex items-center gap-2">
+        <Dropdown
+          trigger={
+            <Badge variant="outline" color="default" size="sm">
+              {currentStatus?.label ?? item.status}
+            </Badge>
+          }
+          items={STATUS_OPTIONS}
+          onSelect={(value) => onStatusChange(item.id, value as WorkItemStatus)}
+        />
+        <Button variant="ghost" size="sm" onClick={() => onDelete(item.id)}>
+          Delete
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 }

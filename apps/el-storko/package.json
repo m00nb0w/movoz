@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@movoz/theme": "workspace:*",
+    "@movoz/ui-web": "workspace:*",
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@movoz/theme";
-import Link from "next/link";
+import { NavTabs } from "@/components/NavTabs";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,13 +15,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased">
         <ThemeProvider>
-          <nav className="flex gap-4 border-b border-line px-4 py-3">
-            <Link href="/" className="text-sm font-semibold text-ink">
-              Board
-            </Link>
-            <Link href="/list" className="text-sm font-semibold text-ink">
-              List
-            </Link>
+          <nav className="border-b border-line px-4 py-3">
+            <NavTabs />
           </nav>
           {children}
         </ThemeProvider>

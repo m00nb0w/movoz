@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Badge, Button, Input, Text } from "@movoz/ui-web";
 import {
   listWorkItems,
   updateWorkItem,
@@ -57,31 +58,39 @@ export function KanbanBoard() {
   return (
     <div>
       <div className="mb-6 flex gap-2">
-        <input
-          className="flex-1 rounded border border-line bg-paper px-3 py-2 text-sm text-ink"
-          placeholder="Quick add a task..."
+        <Input
+          className="flex-1"
+          placeholder="Quick add a task…"
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleAdd()}
         />
-        <button
-          className="rounded bg-accent px-4 py-2 text-sm text-white"
-          onClick={handleAdd}
-        >
+        <Button variant="primary" onClick={handleAdd}>
           Add
-        </button>
+        </Button>
       </div>
 
-      {error && <p className="mb-4 text-sm text-accent-dark">{error}</p>}
+      {error && (
+        <Text size="sm" color="accent" className="mb-4">
+          {error}
+        </Text>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {COLUMNS.map((column) => (
-          <div key={column.status}>
-            <h2 className="mb-2 text-sm font-semibold text-ink-soft">{column.label}</h2>
-            <div className="flex flex-col gap-2">
-              {items
-                .filter((item) => item.status === column.status)
-                .map((item) => (
+        {COLUMNS.map((column) => {
+          const columnItems = items.filter((item) => item.status === column.status);
+          return (
+            <div key={column.status}>
+              <div className="mb-2 flex items-center gap-2">
+                <Text as="h2" font="marker" weight="semibold" size="sm" color="muted">
+                  {column.label}
+                </Text>
+                <Badge variant="outline" color="default" size="sm">
+                  {columnItems.length}
+                </Badge>
+              </div>
+              <div className="flex flex-col gap-2">
+                {columnItems.map((item) => (
                   <WorkItemCard
                     key={item.id}
                     item={item}
@@ -89,9 +98,10 @@ export function KanbanBoard() {
                     onDelete={handleDelete}
                   />
                 ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
