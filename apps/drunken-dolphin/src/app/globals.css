@@ -1,0 +1,40 @@
+@import "@movoz/theme/globals.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+}
+
+/* Expense-bucket colors are a domain concept (budget categories) with no
+   equivalent in the shared brand tokens, so they stay as a local extension. */
+:root {
+  --bucket-essentials: #6b8a55;
+  --bucket-lifestyle: #c2784a;
+  --bucket-irregular: #8a6a9a;
+
+  --essentials-tint: #dde5d2;
+  --lifestyle-tint: #ecd9c8;
+  --irregular-tint: #ddd4e3;
+}
+
+/* JetBrains Mono is kept only for tabular financial figures; the brand kit
+   has no monospace face and body/display type comes from @movoz/theme. */
+.font-mono-tabular {
+  font-family: var(--font-jetbrains), ui-monospace, "SF Mono", Menlo, monospace;
+  font-feature-settings: "tnum" 1, "zero" 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Handwritten margin annotation, sourced from the brand marker font and the
+   terracotta accent instead of the old hand/ink tokens. */
+.movoz-margin-note {
+  font-family: "Shantell Sans", "Comic Sans MS", cursive;
+  color: var(--terracotta);
+  font-size: 22px;
+  line-height: 1.2;
+  transform: rotate(-2deg);
+  display: inline-block;
+}

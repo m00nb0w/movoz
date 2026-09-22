@@ -65,6 +65,15 @@ importers:
 
   apps/drunken-dolphin:
     dependencies:
+      '@movoz/theme':
+        specifier: workspace:*
+        version: link:../../packages/theme
+      '@movoz/ui-web':
+        specifier: workspace:*
+        version: link:../../packages/ui-web
+      lucide-react:
+        specifier: 'catalog:'
+        version: 0.460.0(react@19.2.8)
       next:
         specifier: 'catalog:'
         version: 15.5.23(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
