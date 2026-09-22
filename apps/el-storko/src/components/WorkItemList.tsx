@@ -65,7 +65,7 @@ export function WorkItemList() {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-line text-left">
-            <th className="py-2">
+            <th className="py-2 pl-2">
               <Text as="span" size="sm" color="muted" weight="semibold">
                 Title
               </Text>
@@ -88,30 +88,36 @@ export function WorkItemList() {
           </tr>
         </thead>
         <tbody>
-          {items.map((item) => (
-            <tr key={item.id} className="border-b border-line">
-              <td className="py-2">
-                <Text as="span" size="sm">
-                  {item.title}
-                </Text>
-              </td>
-              <td className="py-2">
-                <Badge variant="outline" color="default" size="sm">
-                  {item.type}
-                </Badge>
-              </td>
-              <td className="py-2">
-                <Text as="span" size="sm" color="muted">
-                  {item.status}
-                </Text>
-              </td>
-              <td className="py-2">
-                <Badge variant="subtle" color={item.source === "jira" ? "accent" : "default"} size="sm">
-                  {item.source}
-                </Badge>
-              </td>
-            </tr>
-          ))}
+          {items.map((item) => {
+            const isJira = item.source === "jira";
+            return (
+              <tr key={item.id} className="border-b border-line">
+                <td
+                  className="py-2 pl-2"
+                  style={isJira ? { borderLeftWidth: 3, borderLeftColor: "var(--terracotta)" } : undefined}
+                >
+                  <Text as="span" size="sm">
+                    {item.title}
+                  </Text>
+                </td>
+                <td className="py-2">
+                  <Badge variant="outline" color="default" size="sm">
+                    {item.type}
+                  </Badge>
+                </td>
+                <td className="py-2">
+                  <Text as="span" size="sm" color="muted">
+                    {item.status}
+                  </Text>
+                </td>
+                <td className="py-2">
+                  <Badge variant="subtle" color={isJira ? "accent" : "default"} size="sm">
+                    {item.source}
+                  </Badge>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

@@ -61,6 +61,7 @@ As the single user, I can add and list tasks from the CLI for quick capture, and
 2. **Given** existing items, **When** I run the CLI list command, **Then** it prints the same items visible in the web UI.
 3. **Given** items in different statuses, **When** I open the kanban board, **Then** items are grouped into columns matching their status.
 4. **Given** items from multiple sources and Epics, **When** I apply a source or Epic filter in the flat list view, **Then** only matching items are shown.
+5. **Given** items from more than one source, **When** I view the kanban board or flat list, **Then** a Jira-sourced item is visually distinguishable by color from a personal (or agent) item at a glance, without needing to read its source label.
 
 ---
 
@@ -89,6 +90,7 @@ As the single user, I can add and list tasks from the CLI for quick capture, and
 - **FR-011**: The system MUST run continuously in the background and resume automatically after a reboot or crash, without the user manually restarting it.
 - **FR-012**: The system MUST NOT expose the Jira API token in logs, in version control, or in any API response.
 - **FR-013**: A failure in Jira connectivity or authentication MUST NOT prevent creating, editing, or viewing personal (non-Jira) work items.
+- **FR-014**: The web UI MUST render Jira-sourced work items with a distinct color treatment from personal/agent items, in both the kanban board and the flat list view.
 
 ### Key Entities
 

@@ -21,8 +21,14 @@ export function WorkItemCard({
 }) {
   const currentStatus = STATUS_OPTIONS.find((s) => s.value === item.status);
 
+  const isJira = item.source === "jira";
+
   return (
-    <Card variant="outlined" padding="sm">
+    <Card
+      variant="outlined"
+      padding="sm"
+      style={isJira ? { borderLeftWidth: 3, borderLeftColor: "var(--terracotta)" } : undefined}
+    >
       <div className="flex items-start justify-between gap-2">
         <Text as="h3" font="marker" weight="semibold" size="base">
           {item.title}
@@ -39,7 +45,7 @@ export function WorkItemCard({
       )}
 
       <div className="mt-2 flex items-center justify-between gap-2">
-        <Badge variant="subtle" color={item.source === "jira" ? "accent" : "default"} size="sm">
+        <Badge variant="subtle" color={isJira ? "accent" : "default"} size="sm">
           {item.source}
         </Badge>
         {item.jira_url && (
