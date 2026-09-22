@@ -101,7 +101,7 @@ export function Projects() {
 
           {/* Right - Media Display */}
           <div className="relative lg:ml-4">
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#8b7b7b] shadow-2xl lg:translate-x-8 xl:translate-x-16">
+            <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-pencil shadow-2xl lg:translate-x-8 xl:translate-x-16">
               {activeProject.media ? (
                 activeProject.mediaType === "video" ? (
                   <video
