@@ -19,7 +19,8 @@ All endpoints return JSON. The Jira API token is never present in any response (
   "jira_key": null,
   "jira_url": null,
   "created_at": "2026-09-21T10:00:00Z",
-  "updated_at": "2026-09-21T10:00:00Z"
+  "updated_at": "2026-09-21T10:00:00Z",
+  "completed_at": null
 }
 ```
 
@@ -67,6 +68,29 @@ Partial update. Body may include any of `title`, `description`, `status`, `paren
 
 Deletes the item. If it is an `epic`, any Task rows with that `parent_id` are unparented
 (`parent_id` set to `null`) rather than deleted (spec edge case). Returns `204 No Content`.
+
+### `GET /api/stats/burn-rate`
+
+Burn-rate stats for the Stats tab (FR-016). Query params: `days` (optional, default `30`) — size
+of the trailing window in days.
+
+```json
+{
+  "days": 30,
+  "points": [
+    { "date": "2026-08-24", "completed": 2, "open": 14 },
+    { "date": "2026-08-25", "completed": 0, "open": 14 },
+    ...
+  ]
+}
+```
+
+- `points` has exactly `days` entries, one per calendar day, oldest first, ending today — days
+  with zero completions are included with `completed: 0` (no gaps).
+- `completed` is the throughput metric: count of items whose `completed_at` fell on that day.
+- `open` is the backlog metric: count of items that existed and weren't `done` as of the end of
+  that day (see `data-model.md`'s Burn-Rate Stats section for the exact computation).
+- Returns `200 OK`. Never fails due to missing data — an empty tracker returns all-zero points.
 
 ## CLI mapping
 

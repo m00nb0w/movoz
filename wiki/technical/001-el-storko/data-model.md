@@ -20,6 +20,7 @@ Key Entities section (Work Item / Epic / Task).
 | `jira_url`    | `TEXT`                      | yes      | Full link to the issue; set only when `source = 'jira'` |
 | `created_at`  | `TIMESTAMPTZ`               | no       | Default `now()` |
 | `updated_at`  | `TIMESTAMPTZ`               | no       | Default `now()`; updated on every write, including by the Jira sync goroutine — this is the field FR-007's last-write-wins comparison reads |
+| `completed_at`| `TIMESTAMPTZ`               | yes      | Set to `now()` exactly when `status` transitions to `done`; cleared (`NULL`) if `status` moves away from `done` (FR-015). Added in migration `0002`. Distinct from `updated_at` on purpose — `updated_at` is overwritten by unrelated edits (e.g. a description tweak after completion), which would otherwise corrupt the burn-rate stats in `wiki/technical/001-el-storko/contracts/rest-api.md`. |
 
 ### Validation Rules (application layer, in `internal/store`/`internal/models`)
 
@@ -41,7 +42,25 @@ Key Entities section (Work Item / Epic / Task).
 
 `status` has no enforced transition graph — any of the four states can move to any other
 directly (spec defines a fixed set, not a workflow graph, matching the "fixed workflow states"
-non-goal of configurable schemes).
+non-goal of configurable schemes). The one side effect any transition can trigger is
+`completed_at`: entering `done` sets it to `now()`, leaving `done` clears it to `NULL`. This
+applies uniformly whether the transition comes from the REST API or the Jira sync goroutine, so
+burn-rate stats are correct regardless of which side made the change.
+
+## Burn-Rate Stats (computed, no new table)
+
+FR-016's Stats tab is served by aggregating existing `work_items` rows on request — no snapshot
+table, matching the same "single source of truth" reasoning as Jira Sync Bookkeeping below.
+
+- **Throughput** (a day's completed count): rows where `completed_at` falls on that calendar day.
+- **Backlog** (a day's open count): rows where `created_at <= end of that day` AND
+  (`completed_at IS NULL` OR `completed_at > end of that day`) — i.e. items that existed and
+  weren't yet done as of that day. This reconstructs a historical backlog curve purely from
+  `created_at`/`completed_at` without ever having stored a daily snapshot.
+- Both are computed by fetching all rows once (`store.List` with no filters — cheap at this
+  project's scale, see `plan.md`'s Scale/Scope) and reducing them in Go over the requested
+  trailing window (default 30 days), in a pure function with no DB dependency of its own — see
+  `internal/stats` in the implementation.
 
 ## Jira Sync Bookkeeping
 

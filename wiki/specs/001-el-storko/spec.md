@@ -65,6 +65,24 @@ As the single user, I can add and list tasks from the CLI for quick capture, and
 
 ---
 
+### User Story 4 - See burn-rate stats (Priority: P3)
+
+As the single user, I have a Stats tab showing how fast I'm completing work (throughput) and how my open backlog is trending over time, so I can tell at a glance whether I'm keeping up or falling behind — with room to add more metrics to the same tab later.
+
+**Why this priority**: This is an insight/reporting layer on top of data User Story 1 already produces. It adds no new capability to create or sync work, so it's valuable but not required for the tracker to be useful day to day.
+
+**Independent Test**: Complete a few items on different days, open the Stats tab, and confirm the throughput trend reflects the actual completion days and the backlog trend reflects the actual count of open items on each of those days.
+
+**Acceptance Scenarios**:
+
+1. **Given** items completed on different days over the past month, **When** I open the Stats tab, **Then** I see a throughput view showing how many items were completed per day/week over that period.
+2. **Given** items created and completed at various points over the past month, **When** I open the Stats tab, **Then** I see a backlog view showing the open (not-done) item count trending over that same period.
+3. **Given** a `done` item is edited (title/description) without changing its status, **When** I view the Stats tab, **Then** its completion date used for both metrics remains the day it was originally marked `done`, not the day of the later edit.
+4. **Given** a `done` item is moved back to a non-`done` status and later completed again, **When** I view the Stats tab, **Then** it counts toward the day of its most recent completion, not a stale earlier one.
+5. **Given** the Stats tab exists today with these two metrics, **When** a future metric is added, **Then** it can be added as another card on the same tab without restructuring the existing ones.
+
+---
+
 ### Edge Cases
 
 - What happens when a Jira issue assigned to the user is later unassigned or closed? It stops appearing as an active sync target on the next poll, but the local copy already created is not silently deleted (the user can still see and act on it).
@@ -91,10 +109,12 @@ As the single user, I can add and list tasks from the CLI for quick capture, and
 - **FR-012**: The system MUST NOT expose the Jira API token in logs, in version control, or in any API response.
 - **FR-013**: A failure in Jira connectivity or authentication MUST NOT prevent creating, editing, or viewing personal (non-Jira) work items.
 - **FR-014**: The web UI MUST render Jira-sourced work items with a distinct color treatment from personal/agent items, in both the kanban board and the flat list view.
+- **FR-015**: The system MUST record the point in time a work item most recently transitioned to `done`, distinct from any later, unrelated edit to that item.
+- **FR-016**: The web UI MUST provide a Stats tab showing, at minimum, a completion-throughput trend and an open-backlog trend over a recent time window, structured so additional metrics can be added to the same tab later without reworking the existing ones.
 
 ### Key Entities
 
-- **Work Item**: A unit of trackable work — either an Epic or a Task. Attributes: title, description, status (one of the four fixed states), source (`personal` / `jira` / `agent`), optional parent (Epic reference, Task only), creation and last-updated timestamps. When sourced from Jira, also carries the Jira issue key and a link to the issue in Jira.
+- **Work Item**: A unit of trackable work — either an Epic or a Task. Attributes: title, description, status (one of the four fixed states), source (`personal` / `jira` / `agent`), optional parent (Epic reference, Task only), creation timestamp, last-updated timestamp, and last-completed timestamp (set when status becomes `done`, cleared if it moves away from `done`). When sourced from Jira, also carries the Jira issue key and a link to the issue in Jira.
 - **Epic**: A Work Item that groups related Tasks; has no parent of its own.
 - **Task**: A Work Item that may belong to at most one Epic.
 
@@ -108,6 +128,7 @@ As the single user, I can add and list tasks from the CLI for quick capture, and
 - **SC-004**: The tracker is available (respondable via CLI or web UI) at any time without the user having manually started it that session, including immediately after a machine reboot.
 - **SC-005**: Zero occurrences of the Jira credential appearing in logs, committed files, or any API response, verified by inspection.
 - **SC-006**: The user can locate "everything I need to do today" — across personal and Jira-sourced items — in a single view, without switching tools.
+- **SC-007**: The user can answer "am I completing work faster or slower than before, and is my backlog growing or shrinking" from the Stats tab alone, without manually tallying items.
 
 ## Assumptions
 
@@ -119,3 +140,5 @@ As the single user, I can add and list tasks from the CLI for quick capture, and
 - The tracker runs locally on the user's own machine(s), bound to localhost or the local network — not deployed publicly.
 - The `agent` source is reserved for a future AI agent team (`backend/peaky-bergers/`) that does not exist yet; no producer of `agent`-sourced items is built in this feature.
 - Last-write-wins by timestamp is an acceptable conflict resolution strategy given this is a single-user tool with infrequent simultaneous edits.
+- Burn-rate stats are computed on demand from existing item timestamps (created/completed) rather than a separate historical snapshot table — accurate enough for a single-user tool with tens to low hundreds of items, and avoids a second source of truth.
+- A default trailing window (e.g. the last 30 days) is an acceptable scope for v1 of the Stats tab; a user-configurable window is not required yet.

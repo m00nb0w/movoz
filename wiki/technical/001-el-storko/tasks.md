@@ -179,6 +179,46 @@ against US1's API (and, if implemented, shows US2's Jira-sourced items too).
 
 ---
 
+## Phase 7: User Story 4 - Burn-rate stats (P3)
+
+**Goal**: A Stats tab showing completion throughput and open-backlog trends over a trailing
+window, built on a `completed_at` timestamp that's accurate under edits and status flip-flops.
+
+**Independent Test**: Complete items on different days (including one edited afterward, and one
+completed/reopened/re-completed), open the Stats tab, and confirm both trends match the actual
+history per `spec.md` User Story 4's acceptance scenarios.
+
+- [X] T032 Write migration `backend/el-storko/migrations/000002_add_completed_at.up.sql` /
+  `.down.sql` adding nullable `completed_at TIMESTAMPTZ` to `work_items`
+- [X] T033 [P] [US4] Add `CompletedAt *time.Time` to `models.WorkItem`
+- [X] T034 [P] [US4] Write store tests in `work_item_store_test.go`: creating with `status=done`
+  sets `completed_at`; updating status to `done` sets it; updating a `done` item's
+  title/description without changing status leaves `completed_at` unchanged; moving a `done` item
+  to any other status clears `completed_at` to `NULL`; re-completing after that sets a new,
+  later `completed_at`
+- [X] T035 [US4] Implement the `completed_at` transition logic in `work_item_store.go`'s
+  `Create`/`Update`/`UpdateFromSync` to make T034 pass
+- [X] T036 [P] [US4] Write a pure-function test for `internal/stats` (no DB): given a slice of
+  `WorkItem`-shaped records with known `created_at`/`completed_at`, assert the computed
+  per-day `completed`/`open` series matches by hand-calculated expected values, including a day
+  with zero completions and a reopened-then-recompleted item
+- [X] T037 [US4] Implement `internal/stats/burnrate.go`'s pure computation function to make T036
+  pass, per `data-model.md`'s Burn-Rate Stats section
+- [X] T038 [P] [US4] Write handler test for `GET /api/stats/burn-rate` (default window, custom
+  `days`, empty-tracker all-zero case) in `internal/handlers/stats_handler_test.go`
+- [X] T039 [US4] Implement `internal/handlers/stats_handler.go` and register
+  `GET /api/stats/burn-rate` in `cmd/server/router.go` to make T038 pass
+- [X] T040 [P] [US4] Add `getBurnRate(days)` to `apps/el-storko/src/lib/api.ts`
+- [X] T041 [US4] Implement `apps/el-storko/src/app/stats/page.tsx` plus a small
+  `StatCard`/trend-line component under `src/components/`, structured so a future metric is
+  another card, not a rework
+- [X] T042 [US4] Add a `/stats` entry to `NavTabs.tsx`'s route list
+- [X] T043 [US4] Verify: `go test ./...` green; `curl localhost:8082/api/stats/burn-rate` sanity
+  check against seeded data; `pnpm --filter el-storko build` succeeds; manual check that editing a
+  done item doesn't shift its stats-day, and that reopen→recomplete moves it to the new day
+
+---
+
 ## Dependencies
 
 - **Setup (T001-T003)** blocks **Foundational (T004-T008)**.

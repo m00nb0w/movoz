@@ -14,6 +14,7 @@ func buildRouter(db *sql.DB) *gin.Engine {
 
 	healthHandler := handlers.NewHealthHandler()
 	workItemHandler := handlers.NewWorkItemHandler(workItemStore)
+	statsHandler := handlers.NewStatsHandler(workItemStore)
 
 	r := gin.Default()
 
@@ -24,6 +25,8 @@ func buildRouter(db *sql.DB) *gin.Engine {
 	r.GET("/api/work-items/:id", workItemHandler.Get)
 	r.PATCH("/api/work-items/:id", workItemHandler.Update)
 	r.DELETE("/api/work-items/:id", workItemHandler.Delete)
+
+	r.GET("/api/stats/burn-rate", statsHandler.BurnRate)
 
 	return r
 }

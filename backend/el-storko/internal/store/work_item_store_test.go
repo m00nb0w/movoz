@@ -229,6 +229,113 @@ func TestWorkItemStoreDeleteTask(t *testing.T) {
 	}
 }
 
+func TestWorkItemStoreCreateWithDoneStatusSetsCompletedAt(t *testing.T) {
+	db := setupTestDB(t)
+	truncateAll(t, db)
+	s := NewWorkItemStore(db)
+
+	created, err := s.Create(models.WorkItem{Type: models.TypeTask, Title: "Buy paint", Status: models.StatusDone})
+	if err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+	if created.CompletedAt == nil {
+		t.Fatal("expected completed_at to be set when created with status=done")
+	}
+}
+
+func TestWorkItemStoreCreateWithoutDoneStatusLeavesCompletedAtNil(t *testing.T) {
+	db := setupTestDB(t)
+	truncateAll(t, db)
+	s := NewWorkItemStore(db)
+
+	created, err := s.Create(models.WorkItem{Type: models.TypeTask, Title: "Buy paint"})
+	if err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+	if created.CompletedAt != nil {
+		t.Fatalf("expected completed_at to be nil, got %v", *created.CompletedAt)
+	}
+}
+
+func TestWorkItemStoreUpdateToDoneSetsCompletedAt(t *testing.T) {
+	db := setupTestDB(t)
+	truncateAll(t, db)
+	s := NewWorkItemStore(db)
+
+	task, _ := s.Create(models.WorkItem{Type: models.TypeTask, Title: "Buy paint"})
+
+	doneStatus := models.StatusDone
+	updated, err := s.Update(task.ID, UpdateFields{Status: &doneStatus})
+	if err != nil {
+		t.Fatalf("Update failed: %v", err)
+	}
+	if updated.CompletedAt == nil {
+		t.Fatal("expected completed_at to be set after moving to done")
+	}
+}
+
+func TestWorkItemStoreEditingDoneItemDoesNotShiftCompletedAt(t *testing.T) {
+	db := setupTestDB(t)
+	truncateAll(t, db)
+	s := NewWorkItemStore(db)
+
+	task, _ := s.Create(models.WorkItem{Type: models.TypeTask, Title: "Buy paint", Status: models.StatusDone})
+	firstCompletedAt := *task.CompletedAt
+
+	newDescription := "actually two coats"
+	updated, err := s.Update(task.ID, UpdateFields{Description: &newDescription})
+	if err != nil {
+		t.Fatalf("Update failed: %v", err)
+	}
+	if updated.CompletedAt == nil || !updated.CompletedAt.Equal(firstCompletedAt) {
+		t.Fatalf("expected completed_at to stay %v, got %v", firstCompletedAt, updated.CompletedAt)
+	}
+}
+
+func TestWorkItemStoreMovingAwayFromDoneClearsCompletedAt(t *testing.T) {
+	db := setupTestDB(t)
+	truncateAll(t, db)
+	s := NewWorkItemStore(db)
+
+	task, _ := s.Create(models.WorkItem{Type: models.TypeTask, Title: "Buy paint", Status: models.StatusDone})
+
+	reopenedStatus := models.StatusInProgress
+	updated, err := s.Update(task.ID, UpdateFields{Status: &reopenedStatus})
+	if err != nil {
+		t.Fatalf("Update failed: %v", err)
+	}
+	if updated.CompletedAt != nil {
+		t.Fatalf("expected completed_at to be cleared, got %v", *updated.CompletedAt)
+	}
+}
+
+func TestWorkItemStoreRecompletingSetsNewCompletedAt(t *testing.T) {
+	db := setupTestDB(t)
+	truncateAll(t, db)
+	s := NewWorkItemStore(db)
+
+	task, _ := s.Create(models.WorkItem{Type: models.TypeTask, Title: "Buy paint", Status: models.StatusDone})
+	firstCompletedAt := *task.CompletedAt
+
+	reopenedStatus := models.StatusInProgress
+	_, err := s.Update(task.ID, UpdateFields{Status: &reopenedStatus})
+	if err != nil {
+		t.Fatalf("Update (reopen) failed: %v", err)
+	}
+
+	doneAgain := models.StatusDone
+	updated, err := s.Update(task.ID, UpdateFields{Status: &doneAgain})
+	if err != nil {
+		t.Fatalf("Update (recomplete) failed: %v", err)
+	}
+	if updated.CompletedAt == nil {
+		t.Fatal("expected completed_at to be set again after recompleting")
+	}
+	if !updated.CompletedAt.After(firstCompletedAt) && !updated.CompletedAt.Equal(firstCompletedAt) {
+		t.Fatalf("expected new completed_at %v to be >= first %v", *updated.CompletedAt, firstCompletedAt)
+	}
+}
+
 func ptr[T any](v T) *T {
 	return &v
 }

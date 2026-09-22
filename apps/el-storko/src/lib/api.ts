@@ -14,6 +14,7 @@ export interface WorkItem {
   jira_url: string | null;
   created_at: string;
   updated_at: string;
+  completed_at: string | null;
 }
 
 export interface ListFilters {
@@ -88,4 +89,20 @@ export async function deleteWorkItem(id: number): Promise<void> {
     const body = await res.text();
     throw new Error(`el-storko API error ${res.status}: ${body}`);
   }
+}
+
+export interface BurnRatePoint {
+  date: string;
+  completed: number;
+  open: number;
+}
+
+export interface BurnRateResponse {
+  days: number;
+  points: BurnRatePoint[];
+}
+
+export async function getBurnRate(days = 30): Promise<BurnRateResponse> {
+  const res = await fetch(`/api/stats/burn-rate?days=${days}`, { cache: "no-store" });
+  return handleResponse<BurnRateResponse>(res);
 }

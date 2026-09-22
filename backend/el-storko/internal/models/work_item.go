@@ -47,15 +47,16 @@ func (s Source) Valid() bool {
 }
 
 type WorkItem struct {
-	ID          int64     `json:"id"`
-	Type        Type      `json:"type"`
-	ParentID    *int64    `json:"parent_id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Status      Status    `json:"status"`
-	Source      Source    `json:"source"`
-	JiraKey     *string   `json:"jira_key"`
-	JiraURL     *string   `json:"jira_url"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID          int64      `json:"id"`
+	Type        Type       `json:"type"`
+	ParentID    *int64     `json:"parent_id"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	Status      Status     `json:"status"`
+	Source      Source     `json:"source"`
+	JiraKey     *string    `json:"jira_key"`
+	JiraURL     *string    `json:"jira_url"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+	CompletedAt *time.Time `json:"completed_at"`
 }
