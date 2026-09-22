@@ -3,7 +3,7 @@ const nextConfig = {
   basePath: "/scout",
   assetPrefix: "/scout",
   output: "standalone",
-  transpilePackages: ["@movoz/theme", "@movoz/tailwind-config"],
+  transpilePackages: ["@movoz/theme", "@movoz/tailwind-config", "@movoz/ui-web"],
   async rewrites() {
     // Dev-only: proxy API calls to the Scout backend so client code can
     // just call same-origin "/api/*" (cookies stay first-party). In

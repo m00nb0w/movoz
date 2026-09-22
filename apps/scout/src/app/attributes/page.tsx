@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import { Badge, Button, Card, Container, Input, Text } from "@movoz/ui-web";
 import { api } from "@/lib/api";
 import type { MainAttribute, SubAttribute } from "@/lib/types";
 
@@ -49,43 +50,78 @@ export default function AttributesPage() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl p-8">
-      <h1 className="mb-6 text-2xl font-semibold text-ink">Attributes</h1>
+    <Container maxWidth="md" className="py-12">
+      <Text as="h1" font="marker" size="2xl" weight="bold" className="mb-6">
+        Attributes
+      </Text>
 
-      <form onSubmit={handleCreateMain} className="mb-8 flex gap-3 rounded-lg border border-line p-4">
-        <input className="flex-1 rounded border border-line bg-transparent p-2" placeholder="key (e.g. delivery_speed)" value={newMainKey} onChange={(e) => setNewMainKey(e.target.value)} required />
-        <input className="flex-1 rounded border border-line bg-transparent p-2" placeholder="Name (e.g. Delivery Speed)" value={newMainName} onChange={(e) => setNewMainName(e.target.value)} required />
-        <button type="submit" className="rounded bg-accent-600 px-3 py-2 text-white">Add main attribute</button>
-      </form>
+      <Card variant="outlined" className="mb-8">
+        <form onSubmit={handleCreateMain} className="flex flex-wrap gap-3">
+          <Input
+            className="flex-1"
+            placeholder="key (e.g. delivery_speed)"
+            value={newMainKey}
+            onChange={(e) => setNewMainKey(e.target.value)}
+            required
+          />
+          <Input
+            className="flex-1"
+            placeholder="Name (e.g. Delivery Speed)"
+            value={newMainName}
+            onChange={(e) => setNewMainName(e.target.value)}
+            required
+          />
+          <Button type="submit">Add main attribute</Button>
+        </form>
+      </Card>
 
-      <div className="space-y-6">
+      <div className="flex flex-col gap-6">
         {mainAttributes.map((main) => (
-          <section key={main.id} className="rounded-lg border border-line p-4">
-            <h2 className="mb-3 text-lg font-medium text-ink">{main.name}</h2>
-            <ul className="mb-3 divide-y divide-line">
-              {(subAttributesByMain[main.id] ?? []).map((sub) => (
-                <li key={sub.id} className="flex items-center justify-between py-2">
-                  <span className={sub.is_active ? "text-ink" : "text-ink-soft line-through"}>{sub.name}</span>
-                  {sub.is_active && (
-                    <button onClick={() => toggleSubActive(sub)} className="text-sm text-ink-soft hover:text-ink">
-                      Deactivate
-                    </button>
+          <Card key={main.id} variant="outlined">
+            <Text as="h2" font="marker" size="lg" weight="semibold" className="mb-3">
+              {main.name}
+            </Text>
+            <div className="mb-3 flex flex-col">
+              {(subAttributesByMain[main.id] ?? []).map((sub, i) => (
+                <div
+                  key={sub.id}
+                  className={`flex items-center justify-between py-2 ${i > 0 ? "border-t border-line" : ""}`}
+                >
+                  {sub.is_active ? (
+                    <Text size="sm">{sub.name}</Text>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Text size="sm" color="muted" className="line-through">
+                        {sub.name}
+                      </Text>
+                      <Badge variant="subtle" color="default" size="sm">
+                        inactive
+                      </Badge>
+                    </div>
                   )}
-                </li>
+                  {sub.is_active && (
+                    <Button variant="ghost" size="sm" onClick={() => toggleSubActive(sub)}>
+                      Deactivate
+                    </Button>
+                  )}
+                </div>
               ))}
-            </ul>
+            </div>
             <form onSubmit={(e) => handleCreateSub(main.id, e)} className="flex gap-2">
-              <input
-                className="flex-1 rounded border border-line bg-transparent p-2 text-sm"
+              <Input
+                className="flex-1"
+                size="sm"
                 placeholder="New sub-attribute name"
                 value={newSubName[main.id] ?? ""}
                 onChange={(e) => setNewSubName((prev) => ({ ...prev, [main.id]: e.target.value }))}
               />
-              <button type="submit" className="rounded bg-accent-600 px-3 py-1 text-sm text-white">Add</button>
+              <Button type="submit" size="sm">
+                Add
+              </Button>
             </form>
-          </section>
+          </Card>
         ))}
       </div>
-    </main>
+    </Container>
   );
 }

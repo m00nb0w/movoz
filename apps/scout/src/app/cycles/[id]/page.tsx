@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { Badge, Card, Container, Text } from "@movoz/ui-web";
 import { api } from "@/lib/api";
 import type { EngineerCycleScore, MainAttribute, SubAttribute } from "@/lib/types";
 
@@ -52,8 +53,10 @@ export default function CycleViewPage() {
   ).sort(([a], [b]) => a - b);
 
   return (
-    <main className="mx-auto max-w-3xl p-8">
-      <h1 className="mb-6 text-2xl font-semibold text-ink">Cycle #{cycleId} — Team Scores</h1>
+    <Container maxWidth="md" className="py-12">
+      <Text as="h1" font="marker" size="2xl" weight="bold" className="mb-6">
+        Cycle #{cycleId} — Team Scores
+      </Text>
 
       <table className="w-full text-left text-sm">
         <thead>
@@ -92,45 +95,63 @@ export default function CycleViewPage() {
         </tbody>
       </table>
 
-      {scores.length === 0 && <p className="text-sm text-ink-soft">No rankings submitted for this cycle yet.</p>}
+      {scores.length === 0 && (
+        <Text size="sm" color="muted" className="mt-4">
+          No rankings submitted for this cycle yet.
+        </Text>
+      )}
 
       <section className="mt-10">
-        <h2 className="mb-1 text-lg font-medium text-ink">Rank sub-attributes</h2>
-        <p className="mb-4 text-sm text-ink-soft">
+        <Text as="h2" font="marker" size="lg" weight="semibold" className="mb-1">
+          Rank sub-attributes
+        </Text>
+        <Text size="sm" color="muted" className="mb-4">
           Pick a sub-attribute to rank every active engineer 1..N for this cycle — manually, or with the AI assistant
           linked from that page.
-        </p>
+        </Text>
 
-        {mainAttributes.length === 0 && <p className="text-sm text-ink-soft">No attributes defined yet.</p>}
+        {mainAttributes.length === 0 && (
+          <Text size="sm" color="muted">
+            No attributes defined yet.
+          </Text>
+        )}
 
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           {mainAttributes.map((main) => {
             const subs = subAttributesByMain[main.id] ?? [];
             return (
-              <div key={main.id} className="rounded-lg border border-line p-4">
-                <h3 className="mb-2 font-medium text-ink">{main.name}</h3>
+              <Card key={main.id} variant="outlined">
+                <Text as="h3" font="marker" weight="semibold" className="mb-2">
+                  {main.name}
+                </Text>
                 {subs.length === 0 ? (
-                  <p className="text-sm text-ink-soft">No sub-attributes yet.</p>
+                  <Text size="sm" color="muted">
+                    No sub-attributes yet.
+                  </Text>
                 ) : (
-                  <ul className="divide-y divide-line">
-                    {subs.map((sub) => (
-                      <li key={sub.id} className="py-2">
+                  <div className="flex flex-col">
+                    {subs.map((sub, i) => (
+                      <div key={sub.id} className={`flex items-center gap-2 py-2 ${i > 0 ? "border-t border-line" : ""}`}>
                         <Link
                           href={`/cycles/${cycleId}/sub-attributes/${sub.id}`}
-                          className={`text-sm hover:underline ${sub.is_active ? "text-accent-600" : "text-ink-soft"}`}
+                          className={`text-sm hover:underline ${sub.is_active ? "text-accent" : "text-ink-soft"}`}
                         >
                           {sub.name}
-                          {!sub.is_active && " (inactive)"}
                         </Link>
-                      </li>
+                        {!sub.is_active && (
+                          <Badge variant="subtle" color="default" size="sm">
+                            inactive
+                          </Badge>
+                        )}
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 )}
-              </div>
+              </Card>
             );
           })}
         </div>
       </section>
-    </main>
+    </Container>
   );
 }

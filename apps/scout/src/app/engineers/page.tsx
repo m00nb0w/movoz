@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { Badge, Button, Card, Container, Input, Text } from "@movoz/ui-web";
 import { api } from "@/lib/api";
 import type { Engineer } from "@/lib/types";
 
@@ -97,62 +98,92 @@ export default function EngineersPage() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl p-8">
-      <h1 className="mb-6 text-2xl font-semibold text-ink">Roster</h1>
+    <Container maxWidth="md" className="py-12">
+      <Text as="h1" font="marker" size="2xl" weight="bold" className="mb-6">
+        Roster
+      </Text>
 
-      <form onSubmit={handleCreate} className="mb-8 grid grid-cols-2 gap-3 rounded-lg border border-line p-4">
-        <input className="rounded border border-line bg-transparent p-2" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
-        <input className="rounded border border-line bg-transparent p-2" placeholder="Role" value={role} onChange={(e) => setRole(e.target.value)} />
-        <input className="rounded border border-line bg-transparent p-2" placeholder="GitHub username" value={githubUsername} onChange={(e) => setGithubUsername(e.target.value)} />
-        <input className="rounded border border-line bg-transparent p-2" placeholder="Jira account ID" value={jiraAccountId} onChange={(e) => setJiraAccountId(e.target.value)} />
-        <input className="rounded border border-line bg-transparent p-2" type="date" value={startedAt} onChange={(e) => setStartedAt(e.target.value)} required />
-        <button type="submit" className="rounded bg-accent-600 px-3 py-2 text-white">Add engineer</button>
-        {error && <p className="col-span-2 text-sm text-red-500">{error}</p>}
-      </form>
+      <Card variant="outlined" className="mb-8">
+        <form onSubmit={handleCreate} className="grid grid-cols-2 gap-3">
+          <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+          <Input placeholder="Role" value={role} onChange={(e) => setRole(e.target.value)} />
+          <Input placeholder="GitHub username" value={githubUsername} onChange={(e) => setGithubUsername(e.target.value)} />
+          <Input placeholder="Jira account ID" value={jiraAccountId} onChange={(e) => setJiraAccountId(e.target.value)} />
+          <Input type="date" value={startedAt} onChange={(e) => setStartedAt(e.target.value)} required />
+          <Button type="submit">Add engineer</Button>
+          {error && (
+            <Text size="sm" color="accent" className="col-span-2">
+              {error}
+            </Text>
+          )}
+        </form>
+      </Card>
 
       <label className="mb-3 flex items-center gap-2 text-sm text-ink-soft">
         <input type="checkbox" checked={showAll} onChange={(e) => setShowAll(e.target.checked)} />
         Show deactivated engineers
       </label>
 
-      <ul className="divide-y divide-line">
-        {engineers.map((engineer) =>
+      <Card variant="outlined" padding="none">
+        {engineers.map((engineer, i) =>
           editingId === engineer.id ? (
-            <li key={engineer.id} className="py-3">
-              <form onSubmit={(e) => saveEdit(e, engineer.id)} className="grid grid-cols-2 gap-3 rounded-lg border border-line p-4">
-                <input className="rounded border border-line bg-transparent p-2" placeholder="Name" value={editName} onChange={(e) => setEditName(e.target.value)} required />
-                <input className="rounded border border-line bg-transparent p-2" placeholder="Role" value={editRole} onChange={(e) => setEditRole(e.target.value)} />
-                <input className="rounded border border-line bg-transparent p-2" placeholder="GitHub username" value={editGithubUsername} onChange={(e) => setEditGithubUsername(e.target.value)} />
-                <input className="rounded border border-line bg-transparent p-2" placeholder="Jira account ID" value={editJiraAccountId} onChange={(e) => setEditJiraAccountId(e.target.value)} />
-                <input className="rounded border border-line bg-transparent p-2" type="date" value={editStartedAt} onChange={(e) => setEditStartedAt(e.target.value)} required />
+            <div key={engineer.id} className={`p-4 ${i > 0 ? "border-t border-line" : ""}`}>
+              <form onSubmit={(e) => saveEdit(e, engineer.id)} className="grid grid-cols-2 gap-3">
+                <Input placeholder="Name" value={editName} onChange={(e) => setEditName(e.target.value)} required />
+                <Input placeholder="Role" value={editRole} onChange={(e) => setEditRole(e.target.value)} />
+                <Input
+                  placeholder="GitHub username"
+                  value={editGithubUsername}
+                  onChange={(e) => setEditGithubUsername(e.target.value)}
+                />
+                <Input
+                  placeholder="Jira account ID"
+                  value={editJiraAccountId}
+                  onChange={(e) => setEditJiraAccountId(e.target.value)}
+                />
+                <Input type="date" value={editStartedAt} onChange={(e) => setEditStartedAt(e.target.value)} required />
                 <div className="flex gap-2">
-                  <button type="submit" className="rounded bg-accent-600 px-3 py-2 text-white">Save</button>
-                  <button type="button" onClick={cancelEdit} className="rounded border border-line px-3 py-2 text-ink-soft">Cancel</button>
+                  <Button type="submit">Save</Button>
+                  <Button type="button" variant="secondary" onClick={cancelEdit}>
+                    Cancel
+                  </Button>
                 </div>
-                {editError && <p className="col-span-2 text-sm text-red-500">{editError}</p>}
+                {editError && (
+                  <Text size="sm" color="accent" className="col-span-2">
+                    {editError}
+                  </Text>
+                )}
               </form>
-            </li>
+            </div>
           ) : (
-            <li key={engineer.id} className="flex items-center justify-between py-3">
-              <div>
+            <div key={engineer.id} className={`flex items-center justify-between p-4 ${i > 0 ? "border-t border-line" : ""}`}>
+              <div className="flex items-center gap-2">
                 <Link href={`/engineers/${engineer.id}`} className="font-medium text-ink hover:underline">
                   {engineer.name}
                 </Link>
-                <span className="ml-2 text-sm text-ink-soft">{engineer.role}</span>
-                {!engineer.is_active && <span className="ml-2 text-xs text-red-500">deactivated</span>}
+                {engineer.role && (
+                  <Text size="sm" color="muted">
+                    {engineer.role}
+                  </Text>
+                )}
+                {!engineer.is_active && (
+                  <Badge variant="subtle" color="danger" size="sm">
+                    deactivated
+                  </Badge>
+                )}
               </div>
               <div className="flex gap-3">
-                <button onClick={() => startEdit(engineer)} className="text-sm text-ink-soft hover:text-ink">
+                <Button variant="ghost" size="sm" onClick={() => startEdit(engineer)}>
                   Edit
-                </button>
-                <button onClick={() => toggleActive(engineer)} className="text-sm text-ink-soft hover:text-ink">
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => toggleActive(engineer)}>
                   {engineer.is_active ? "Deactivate" : "Reactivate"}
-                </button>
+                </Button>
               </div>
-            </li>
+            </div>
           )
         )}
-      </ul>
-    </main>
+      </Card>
+    </Container>
   );
 }

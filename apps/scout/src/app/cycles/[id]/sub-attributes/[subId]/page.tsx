@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { Button, Card, Container, Input, Text } from "@movoz/ui-web";
 import { api } from "@/lib/api";
 import type { Engineer, MainAttribute, SubAttribute, SubAttributeRanking } from "@/lib/types";
 
@@ -82,57 +83,61 @@ export default function RankSubAttributePage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl p-8">
+    <Container maxWidth="sm" className="py-12">
       <Link
         href={`/cycles/${cycleId}/sub-attributes/${subAttributeId}/chat`}
-        className="mb-4 inline-block text-sm text-accent-600 hover:underline"
+        className="mb-4 inline-block text-sm text-accent hover:underline"
       >
         Open AI ranking assistant →
       </Link>
-      <h1 className="mb-2 text-2xl font-semibold text-ink">
+      <Text as="h1" font="marker" size="2xl" weight="bold" className="mb-2">
         Rank: {subAttributeName || `Sub-attribute #${subAttributeId}`}
-      </h1>
-      <p className="mb-6 text-sm text-ink-soft">
+      </Text>
+      <Text size="sm" color="muted" className="mb-6">
         Assign each active engineer a unique rank from 1 (best) to {engineers.length} (last) — no ties. Use the AI
         chat assistant (above) to get a starting proposal, then adjust here before saving.
-      </p>
+      </Text>
 
-      <ul className="mb-6 space-y-2">
+      <div className="mb-6 flex flex-col gap-2">
         {engineers.map((engineer) => (
-          <li key={engineer.id} className="flex items-center justify-between rounded border border-line p-3">
-            <span className="text-ink">{engineer.name}</span>
-            <input
+          <Card key={engineer.id} variant="outlined" padding="sm" className="flex items-center justify-between">
+            <Text>{engineer.name}</Text>
+            <Input
               type="number"
               min={1}
               max={engineers.length}
               value={ranks[engineer.id] ?? ""}
               onChange={(e) => setRank(engineer.id, e.target.value)}
-              className="w-16 rounded border border-line bg-transparent p-1 text-center"
+              className="w-16 text-center"
             />
-          </li>
+          </Card>
         ))}
-      </ul>
+      </div>
 
       {hasDuplicateRank && (
-        <p className="mb-4 text-sm text-red-500">
+        <Text size="sm" color="accent" className="mb-4">
           Two engineers share the same rank — ranks must be unique 1..{engineers.length}.
-        </p>
+        </Text>
       )}
       {hasOutOfRangeRank && !hasDuplicateRank && (
-        <p className="mb-4 text-sm text-red-500">
+        <Text size="sm" color="accent" className="mb-4">
           Ranks must be whole numbers between 1 and {engineers.length}.
-        </p>
+        </Text>
       )}
-      {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
-      {saved && <p className="mb-4 text-sm text-green-600">Ranking saved.</p>}
+      {error && (
+        <Text size="sm" color="accent" className="mb-4">
+          {error}
+        </Text>
+      )}
+      {saved && (
+        <Text size="sm" className="mb-4 text-green-600">
+          Ranking saved.
+        </Text>
+      )}
 
-      <button
-        onClick={handleSubmit}
-        disabled={!allRanked || hasDuplicateRank || hasOutOfRangeRank}
-        className="rounded bg-accent-600 px-4 py-2 text-white disabled:opacity-50"
-      >
+      <Button onClick={handleSubmit} disabled={!allRanked || hasDuplicateRank || hasOutOfRangeRank}>
         Save ranking
-      </button>
-    </main>
+      </Button>
+    </Container>
   );
 }
