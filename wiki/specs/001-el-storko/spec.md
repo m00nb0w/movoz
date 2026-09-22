@@ -91,7 +91,7 @@ As the single user, I open any item's detail drawer to see and edit every field 
 
 **Acceptance Scenarios**:
 
-1. **Given** any item, **When** I open its drawer, **Then** I see its title, description, status, Estimate, Due date, internal reference key (`MOVOZ-#`), and — if Jira-sourced — its Jira key, all visible without the drawer needing to scroll.
+1. **Given** any item, **When** I open its drawer, **Then** I see its title, description, status, Estimate, Due date, internal reference key (`EPIC-#` for an Epic, `TASK-#` for a Task), and — if Jira-sourced — its Jira key, all visible without the drawer needing to scroll.
 2. **Given** a Due date in the past, **When** I view the item (on its card or in the drawer), **Then** the Due date is shown in red.
 3. **Given** a Due date within the next 3 days, **When** I view the item, **Then** the Due date is shown in yellow.
 4. **Given** a Due date more than 3 days away, or no Due date at all, **When** I view the item, **Then** no red/yellow color-coding is applied.
@@ -168,7 +168,7 @@ As the single user, I flip one global Mine/Agent switch at the top of the app (d
 - **FR-015**: The web UI MUST render Jira-sourced items with a distinct tint (background/border) directly on their card, and MUST show the item's real Jira key (e.g. `AUTH-142`) as its badge instead of a generic "Jira" label.
 - **FR-016**: The system MUST record the point in time a work item most recently transitioned to `Done`, distinct from any later, unrelated edit to that item.
 - **FR-017**: The web UI's Stats tab MUST show, at minimum: current open-item count, items completed in the trailing 7 days, an overall completion rate, total tracked items, and a status-breakdown bar chart — structured so additional metrics can be added later without reworking the existing ones.
-- **FR-018**: Every work item MUST display an internal reference key in the form `MOVOZ-#` on its Board/Backlog card and in its detail drawer, shown alongside the Jira key when the item is Jira-sourced. This key MUST be unique across every work item regardless of type — an Epic and a Task MUST NEVER share the same number — and MUST be assigned from a single persistent global sequence, not derived from any other per-row identifier.
+- **FR-018**: Every work item MUST display an internal reference key on its Board/Backlog card and in its detail drawer, shown alongside the Jira key when the item is Jira-sourced. Epics and Tasks are two separate, independently-numbered sequences: an Epic's key is `EPIC-#`, a Task's key is `TASK-#` — each drawn from its own persistent counter, not derived from any other per-row identifier.
 - **FR-019**: The web UI MUST provide an item detail drawer exposing every field — title, description, status, Estimate (hours), Due date, internal reference key, and Jira key when present — sized so all fields are visible without the drawer itself needing to scroll.
 - **FR-020**: A Due date MUST be color-coded red when overdue and yellow when due within the next 3 days; otherwise it MUST render with no special color.
 - **FR-021**: Clicking the app logo MUST navigate to the Board view.
@@ -178,9 +178,9 @@ As the single user, I flip one global Mine/Agent switch at the top of the app (d
 
 ### Key Entities
 
-- **Work Item**: A unit of trackable work — either an Epic or a Task. Attributes: title, description, status (one of the five fixed states), source (`personal` / `jira` / `agent`, grouped for view purposes into `Mine` = personal+jira, or `Agent` = agent), optional parent (Epic reference, Task only), Estimate (hours, optional), Due date (optional), a globally unique reference number (`MOVOZ-#`, drawn from one shared sequence across every Epic and Task), creation timestamp, last-updated timestamp, and last-completed timestamp (set when status becomes `Done`, cleared if it moves away from `Done`). When sourced from Jira, also carries the Jira issue key and a link to the issue in Jira.
-- **Epic**: A Work Item that groups related Tasks; has no parent of its own. Retained in the data model for future use, though no dedicated Epic-progress view exists now that the Epics tab is removed (see Assumptions).
-- **Task**: A Work Item that may belong to at most one Epic.
+- **Work Item**: A unit of trackable work — either an Epic or a Task. Attributes: title, description, status (one of the five fixed states), source (`personal` / `jira` / `agent`, grouped for view purposes into `Mine` = personal+jira, or `Agent` = agent), optional parent (Epic reference, Task only), Estimate (hours, optional), Due date (optional), creation timestamp, last-updated timestamp, and last-completed timestamp (set when status becomes `Done`, cleared if it moves away from `Done`). When sourced from Jira, also carries the Jira issue key and a link to the issue in Jira.
+- **Epic**: A Work Item that groups related Tasks; has no parent of its own. Retained in the data model for future use, though no dedicated Epic-progress view exists now that the Epics tab is removed (see Assumptions). Its reference key is `EPIC-#`, from a sequence counting only Epics.
+- **Task**: A Work Item that may belong to at most one Epic. Its reference key is `TASK-#`, from a separate sequence counting only Tasks — an Epic and a Task can share the same number (e.g. `EPIC-3` and `TASK-3` both existing) since the two sequences are independent.
 
 ## Success Criteria *(mandatory)*
 
@@ -196,7 +196,7 @@ As the single user, I flip one global Mine/Agent switch at the top of the app (d
 - **SC-008**: An overdue or soon-due item is noticeable at a glance from its Due-date color, without opening its drawer.
 - **SC-009**: The user can find any item's full details — Estimate, Due date, reference key — without leaving the Board, via its drawer.
 - **SC-010**: The user can switch between their own work and agent-produced work with one global toggle, without leaving the Board or Stats view.
-- **SC-011**: No two work items — Epic or Task — ever display the same `MOVOZ-#`, even as the tracker grows.
+- **SC-011**: No two Epics ever display the same `EPIC-#`, and no two Tasks ever display the same `TASK-#`, even as the tracker grows — Epics and Tasks number independently, so an `EPIC-#` and a `TASK-#` sharing a number is expected, not a collision.
 
 ## Assumptions
 
@@ -213,7 +213,7 @@ As the single user, I flip one global Mine/Agent switch at the top of the app (d
 - "Done this week" means completed in the trailing 7 days, not the calendar week, for consistency with the existing trend-window approach.
 - Overall completion rate is the share of all tracked items (all-time) whose status is `Done` — a lifetime percentage, distinct from the weekly "done this week" raw count.
 - "Picked for today" has no enforced item-count limit; the "roughly three items" guideline is a personal practice, not a system constraint.
-- The internal reference key (`MOVOZ-#`) is assigned from its own persistent global sequence at creation time, not derived from the item's row id — deliberately decoupled so it stays stable and collision-free across Epics and Tasks regardless of how the underlying storage evolves.
+- Epics and Tasks are two independently-numbered sequences (`EPIC-#`, `TASK-#`), not one shared sequence — an `EPIC-#` and a `TASK-#` with the same number is expected and not a collision, since they're never displayed or compared as if from the same namespace. Each number is assigned at creation time from its own persistent counter, not derived from the item's row id.
 - A task-labels feature was explored and explicitly rejected — not part of this feature.
 - A separate "Today" view was explored and rejected in favor of the Board (active statuses only) plus the Backlog list beneath it doing that job instead.
 - The Mine/Agent scope split is a view-level filter over the existing `personal`/`jira`/`agent` source values, not a new data field — `Mine` means `source != agent`, `Agent` means `source = agent`.
