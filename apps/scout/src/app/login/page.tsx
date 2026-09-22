@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { Button, Card, Input, Text } from "@movoz/ui-web";
 import { api, APIError } from "@/lib/api";
 
 export default function LoginPage() {
@@ -27,26 +28,27 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-paper">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 rounded-lg border border-line bg-paper-raised p-8">
-        <h1 className="text-xl font-semibold text-ink">Scout</h1>
-        <p className="text-sm text-ink-soft">Enter the shared password to continue.</p>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded border border-line bg-transparent px-3 py-2 text-ink"
-          placeholder="Password"
-          autoFocus
-        />
-        {error && <p className="text-sm text-red-500">{error}</p>}
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded bg-accent-600 px-3 py-2 text-white disabled:opacity-50"
-        >
-          {submitting ? "Signing in..." : "Sign in"}
-        </button>
-      </form>
+      <Card className="w-full max-w-sm">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <Text as="h1" font="marker" size="xl" weight="bold">
+            Scout
+          </Text>
+          <Text size="sm" color="muted">
+            Enter the shared password to continue.
+          </Text>
+          <Input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            error={error ?? undefined}
+            autoFocus
+          />
+          <Button type="submit" loading={submitting} className="w-full">
+            Sign in
+          </Button>
+        </form>
+      </Card>
     </main>
   );
 }

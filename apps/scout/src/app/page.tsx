@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Card, Container, Stack, Text } from "@movoz/ui-web";
 import { api } from "@/lib/api";
 import type { RosterEntry } from "@/lib/types";
 
@@ -13,37 +14,50 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <main className="mx-auto max-w-3xl p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-ink">Dashboard</h1>
-        <nav className="flex gap-4 text-sm text-accent-600">
-          <Link href="/engineers" className="hover:underline">
+    <Container maxWidth="md" className="py-12">
+      <Stack direction="horizontal" justify="between" align="center" className="mb-6">
+        <Text as="h1" font="marker" size="2xl" weight="bold">
+          Dashboard
+        </Text>
+        <Stack direction="horizontal" gap={4}>
+          <Link href="/engineers" className="text-sm text-accent hover:underline">
             Roster
           </Link>
-          <Link href="/attributes" className="hover:underline">
+          <Link href="/attributes" className="text-sm text-accent hover:underline">
             Attributes
           </Link>
-          <Link href="/cycles" className="hover:underline">
+          <Link href="/cycles" className="text-sm text-accent hover:underline">
             Cycles
           </Link>
-        </nav>
-      </div>
+        </Stack>
+      </Stack>
 
-      <ul className="divide-y divide-line">
-        {roster.map((entry) => (
-          <li key={entry.engineer.id} className="flex items-center justify-between py-3">
-            <Link href={`/engineers/${entry.engineer.id}`} className="font-medium text-ink hover:underline">
-              {entry.engineer.name}
-            </Link>
-            <div className="text-right text-sm">
-              <div className="text-ink">{entry.latest_overall != null ? entry.latest_overall.toFixed(1) : "—"}</div>
-              <div className="text-ink-soft">{entry.last_cycle_date?.slice(0, 10) ?? "no cycles yet"}</div>
+      {roster.length === 0 ? (
+        <Card variant="outlined">
+          <Text size="sm" color="muted">
+            No active engineers yet.
+          </Text>
+        </Card>
+      ) : (
+        <Card variant="outlined" padding="none">
+          {roster.map((entry, i) => (
+            <div
+              key={entry.engineer.id}
+              className={`flex items-center justify-between p-4 ${i > 0 ? "border-t border-line" : ""}`}
+            >
+              <Link href={`/engineers/${entry.engineer.id}`} className="font-medium text-ink hover:underline">
+                {entry.engineer.name}
+              </Link>
+              <div className="text-right">
+                <Text size="sm">{entry.latest_overall != null ? entry.latest_overall.toFixed(1) : "—"}</Text>
+                <Text size="sm" color="muted">
+                  {entry.last_cycle_date?.slice(0, 10) ?? "no cycles yet"}
+                </Text>
+              </div>
             </div>
-          </li>
-        ))}
-      </ul>
-
-      {roster.length === 0 && <p className="text-sm text-ink-soft">No active engineers yet.</p>}
-    </main>
+          ))}
+        </Card>
+      )}
+    </Container>
   );
 }

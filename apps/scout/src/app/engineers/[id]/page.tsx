@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useParams } from "next/navigation";
+import { Badge, Button, Card, Container, Dropdown, Input, Text } from "@movoz/ui-web";
 import { api } from "@/lib/api";
 import type {
   Engineer,
@@ -103,60 +104,80 @@ export default function EngineerCardPage() {
     })
     .join(" ");
 
+  const selectedCycle = cycles.find((c) => c.id === selectedCycleId);
+  const kindOptions = [
+    { label: "Highlight", value: "highlight" },
+    { label: "Lowlight", value: "lowlight" },
+  ];
+
   return (
-    <main className="mx-auto max-w-3xl p-8">
-      <h1 className="mb-1 text-2xl font-semibold text-ink">{engineer.name}</h1>
-      <p className="mb-6 text-sm text-ink-soft">{engineer.role}</p>
+    <Container maxWidth="md" className="py-12">
+      <Text as="h1" font="marker" size="2xl" weight="bold" className="mb-1">
+        {engineer.name}
+      </Text>
+      <Text size="sm" color="muted" className="mb-6">
+        {engineer.role}
+      </Text>
 
       <div className="mb-6 flex items-center gap-3">
-        <label className="text-sm text-ink-soft">Cycle:</label>
-        <select
-          value={selectedCycleId ?? ""}
-          onChange={(e) => setSelectedCycleId(Number(e.target.value))}
-          className="rounded border border-line bg-transparent p-2"
-        >
-          {cycles.map((c) => (
-            <option key={c.id} value={c.id}>
-              {/* period_start/period_end are DATE columns serialised as RFC3339
-                  timestamps; slice to YYYY-MM-DD like cycles/page.tsx,
-                  engineers/page.tsx and page.tsx already do. */}
-              {c.period_start.slice(0, 10)} — {c.period_end.slice(0, 10)}
-            </option>
-          ))}
-        </select>
+        <Text size="sm" color="muted">
+          Cycle:
+        </Text>
+        <Dropdown
+          trigger={
+            <Button variant="secondary" size="sm">
+              {selectedCycle ? `${selectedCycle.period_start.slice(0, 10)} — ${selectedCycle.period_end.slice(0, 10)}` : "Select cycle"}
+            </Button>
+          }
+          items={cycles.map((c) => ({
+            label: `${c.period_start.slice(0, 10)} — ${c.period_end.slice(0, 10)}`,
+            value: String(c.id),
+          }))}
+          onSelect={(value) => setSelectedCycleId(Number(value))}
+        />
       </div>
 
       {card && (
-        <section className="mb-8 rounded-lg border border-line p-4">
-          <p className="mb-3 text-lg text-ink">
+        <Card variant="outlined" className="mb-8">
+          <Text size="lg" className="mb-3">
             Overall: <strong>{card.overall != null ? card.overall.toFixed(1) : "—"}</strong>
-          </p>
-          <ul className="space-y-1">
+          </Text>
+          <div className="flex flex-col gap-1">
             {card.main_attributes.map((m) => (
-              <li key={m.main_attribute_id} className="flex justify-between text-sm">
-                <span className="text-ink">{m.name}</span>
-                <span className="text-ink-soft">{m.score.toFixed(1)}</span>
-              </li>
+              <div key={m.main_attribute_id} className="flex justify-between">
+                <Text size="sm">{m.name}</Text>
+                <Text size="sm" color="muted">
+                  {m.score.toFixed(1)}
+                </Text>
+              </div>
             ))}
-          </ul>
-        </section>
+          </div>
+        </Card>
       )}
 
-      <section className="rounded-lg border border-line p-4">
-        <h2 className="mb-3 font-medium text-ink">Overall trend</h2>
+      <Card variant="outlined">
+        <Text as="h2" font="marker" weight="semibold" className="mb-3">
+          Overall trend
+        </Text>
         {points ? (
           <svg viewBox="0 0 300 100" className="h-32 w-full">
-            <polyline points={points} fill="none" stroke="currentColor" strokeWidth={2} className="text-accent-600" />
+            <polyline points={points} fill="none" stroke="currentColor" strokeWidth={2} className="text-accent" />
           </svg>
         ) : (
-          <p className="text-sm text-ink-soft">No scored cycles yet.</p>
+          <Text size="sm" color="muted">
+            No scored cycles yet.
+          </Text>
         )}
-      </section>
+      </Card>
 
-      <section className="mt-8 rounded-lg border border-line p-4">
-        <h2 className="mb-3 font-medium text-ink">Synced metrics</h2>
+      <Card variant="outlined" className="mt-8">
+        <Text as="h2" font="marker" weight="semibold" className="mb-3">
+          Synced metrics
+        </Text>
         {metrics.length === 0 ? (
-          <p className="text-sm text-ink-soft">No synced metrics yet.</p>
+          <Text size="sm" color="muted">
+            No synced metrics yet.
+          </Text>
         ) : (
           <table className="w-full text-left text-sm">
             <thead>
@@ -183,53 +204,57 @@ export default function EngineerCardPage() {
             </tbody>
           </table>
         )}
-      </section>
+      </Card>
 
-      <section className="mt-8 rounded-lg border border-line p-4">
-        <h2 className="mb-3 font-medium text-ink">Highlights &amp; lowlights</h2>
+      <Card variant="outlined" className="mt-8">
+        <Text as="h2" font="marker" weight="semibold" className="mb-3">
+          Highlights &amp; lowlights
+        </Text>
 
-        <form onSubmit={handleAddEntry} className="mb-4 space-y-2">
+        <form onSubmit={handleAddEntry} className="mb-4 flex flex-col gap-2">
           <div className="flex gap-2">
-            <select
-              value={newKind}
-              onChange={(e) => setNewKind(e.target.value as "highlight" | "lowlight")}
-              className="rounded border border-line bg-transparent p-2 text-sm"
-            >
-              <option value="highlight">Highlight</option>
-              <option value="lowlight">Lowlight</option>
-            </select>
-            <input
-              className="flex-1 rounded border border-line bg-transparent p-2 text-sm"
+            <Dropdown
+              trigger={<Button variant="secondary" size="sm">{newKind === "highlight" ? "Highlight" : "Lowlight"}</Button>}
+              items={kindOptions}
+              onSelect={(value) => setNewKind(value as "highlight" | "lowlight")}
+            />
+            <Input
+              className="flex-1"
+              size="sm"
               placeholder="What happened?"
               value={newBody}
               onChange={(e) => setNewBody(e.target.value)}
             />
-            <button type="submit" disabled={checkingDuplicate} className="rounded bg-accent-600 px-3 py-2 text-sm text-white disabled:opacity-50">
+            <Button type="submit" size="sm" disabled={checkingDuplicate}>
               {checkingDuplicate ? "Checking..." : "Add"}
-            </button>
+            </Button>
           </div>
           {duplicateWarning && (
-            <div className="rounded border border-yellow-500 p-2 text-sm text-yellow-700">
-              <p>{duplicateWarning}</p>
-              <button type="button" onClick={saveEntry} className="mt-1 underline">
+            <Card variant="outlined" padding="sm" className="border-amber-500">
+              <Text size="sm" className="text-amber-700 dark:text-amber-400">
+                {duplicateWarning}
+              </Text>
+              <button type="button" onClick={saveEntry} className="mt-1 text-sm text-ink underline">
                 Save anyway
               </button>
-            </div>
+            </Card>
           )}
         </form>
 
-        <ul className="space-y-2">
+        <div className="flex flex-col gap-2">
           {highlights.map((h) => (
-            <li key={h.id} className="text-sm">
-              <span className={h.kind === "highlight" ? "text-green-600" : "text-red-500"}>
-                {h.kind === "highlight" ? "★" : "▼"}
-              </span>{" "}
-              <span className="text-ink-soft">{h.created_at.slice(0, 10)}</span>{" "}
-              <span className="text-ink">{h.body}</span>
-            </li>
+            <div key={h.id} className="flex items-center gap-2">
+              <Badge variant="subtle" color={h.kind === "highlight" ? "success" : "danger"} size="sm">
+                {h.kind}
+              </Badge>
+              <Text size="sm" color="muted">
+                {h.created_at.slice(0, 10)}
+              </Text>
+              <Text size="sm">{h.body}</Text>
+            </div>
           ))}
-        </ul>
-      </section>
-    </main>
+        </div>
+      </Card>
+    </Container>
   );
 }

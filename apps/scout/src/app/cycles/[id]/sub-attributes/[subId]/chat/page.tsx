@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { Button, Card, Container, Input, Text } from "@movoz/ui-web";
 import { api } from "@/lib/api";
 
 interface ChatTurn {
@@ -144,82 +145,84 @@ export default function AIRankingChatPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl p-8">
-      <h1 className="mb-6 text-2xl font-semibold text-ink">AI Ranking Assistant</h1>
+    <Container maxWidth="sm" className="py-12">
+      <Text as="h1" font="marker" size="2xl" weight="bold" className="mb-6">
+        AI Ranking Assistant
+      </Text>
 
-      <div className="mb-4 max-h-96 space-y-3 overflow-y-auto rounded-lg border border-line p-4">
-        {turns.length === 0 && (
-          <p className="text-sm text-ink-soft">
-            Describe what you observed this cycle — who stood out, who struggled — and the assistant will propose a
-            ranking with rationale.
-          </p>
-        )}
-        {turns.map((turn, i) => (
-          <p key={i} className={turn.role === "user" ? "text-ink" : "text-ink-soft"}>
-            <strong>{turn.role === "user" ? "You" : "Assistant"}:</strong> {turn.content}
-          </p>
-        ))}
-      </div>
+      <Card variant="outlined" className="mb-4 max-h-96 overflow-y-auto">
+        <div className="flex flex-col gap-3">
+          {turns.length === 0 && (
+            <Text size="sm" color="muted">
+              Describe what you observed this cycle — who stood out, who struggled — and the assistant will propose a
+              ranking with rationale.
+            </Text>
+          )}
+          {turns.map((turn, i) => (
+            <Text key={i} size="sm" color={turn.role === "user" ? "default" : "muted"}>
+              <strong>{turn.role === "user" ? "You" : "Assistant"}:</strong> {turn.content}
+            </Text>
+          ))}
+        </div>
+      </Card>
 
       {proposedRanking && (
-        <div className="mb-4 rounded-lg border border-accent-600 p-4">
-          <h2 className="mb-2 font-medium text-ink">Proposed ranking (edit before accepting)</h2>
-          <ul className="space-y-2">
+        <Card variant="outlined" className="mb-4 border-accent">
+          <Text as="h2" font="marker" weight="semibold" className="mb-2">
+            Proposed ranking (edit before accepting)
+          </Text>
+          <div className="flex flex-col gap-2">
             {proposedRanking.map((entry) => (
-              <li key={entry.engineer_id} className="flex items-center justify-between">
-                <span className="text-ink">Engineer #{entry.engineer_id}</span>
-                <input
+              <div key={entry.engineer_id} className="flex items-center justify-between">
+                <Text>Engineer #{entry.engineer_id}</Text>
+                <Input
                   type="number"
                   min={1}
                   max={proposedRanking.length}
                   value={entry.rank}
                   onChange={(e) => updateProposedRank(entry.engineer_id, Number(e.target.value))}
-                  className="w-16 rounded border border-line bg-transparent p-1 text-center"
+                  className="w-16 text-center"
                 />
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
           {hasDuplicateRank && (
-            <p className="mt-3 text-sm text-red-500">
+            <Text size="sm" color="accent" className="mt-3">
               Two engineers share the same rank — ranks must be unique 1..{proposedRanking.length}.
-            </p>
+            </Text>
           )}
           {hasOutOfRangeRank && !hasDuplicateRank && (
-            <p className="mt-3 text-sm text-red-500">
+            <Text size="sm" color="accent" className="mt-3">
               Ranks must be whole numbers between 1 and {proposedRanking.length}.
-            </p>
+            </Text>
           )}
           {/* NF3: the ranking is only persisted when the admin explicitly clicks
               this button — nothing here is auto-applied from the chat. */}
-          <button
-            onClick={acceptRanking}
-            disabled={accepting || proposedRankingInvalid}
-            className="mt-3 rounded bg-accent-600 px-4 py-2 text-white disabled:opacity-50"
-          >
+          <Button onClick={acceptRanking} disabled={accepting || proposedRankingInvalid} className="mt-3">
             {accepting ? "Saving..." : "Accept & save ranking"}
-          </button>
-        </div>
+          </Button>
+        </Card>
       )}
 
-      {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
+      {error && (
+        <Text size="sm" color="accent" className="mb-4">
+          {error}
+        </Text>
+      )}
 
       <div className="flex gap-2">
-        <input
-          className="flex-1 rounded border border-line bg-transparent p-2"
+        <Input
+          className="flex-1"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           placeholder="Describe this cycle's observations..."
           disabled={streaming}
         />
-        <button
-          onClick={sendMessage}
-          disabled={streaming}
-          className="rounded bg-accent-600 px-4 py-2 text-white disabled:opacity-50"
-        >
+        <Button onClick={sendMessage} disabled={streaming}>
           {streaming ? "..." : "Send"}
-        </button>
+        </Button>
       </div>
-    </main>
+    </Container>
   );
 }
