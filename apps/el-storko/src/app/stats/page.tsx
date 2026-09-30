@@ -6,23 +6,25 @@ import { getBurnRate, getStatsSummary, type BurnRatePoint, type StatsSummaryResp
 import { StatCard } from "@/components/StatCard";
 import { TrendLine } from "@/components/TrendLine";
 import { StatusBreakdownChart } from "@/components/StatusBreakdownChart";
+import { useScope } from "@/lib/scope";
 
 const WINDOW_DAYS = 30;
 
 export default function StatsPage() {
+  const { scope } = useScope();
   const [points, setPoints] = useState<BurnRatePoint[]>([]);
   const [summary, setSummary] = useState<StatsSummaryResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getBurnRate(WINDOW_DAYS)
+    getBurnRate(WINDOW_DAYS, scope)
       .then((res) => setPoints(res.points))
       .catch((err) => setError(err instanceof Error ? err.message : "failed to load stats"));
 
-    getStatsSummary()
+    getStatsSummary(scope)
       .then((res) => setSummary(res))
       .catch((err) => setError(err instanceof Error ? err.message : "failed to load stats"));
-  }, []);
+  }, [scope]);
 
   const totalCompleted = points.reduce((sum, p) => sum + p.completed, 0);
   const latestOpen = points.length > 0 ? points[points.length - 1].open : 0;

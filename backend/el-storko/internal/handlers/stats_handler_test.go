@@ -172,6 +172,41 @@ func TestStatsHandlerSummaryEmptyTrackerIsAllZero(t *testing.T) {
 	}
 }
 
+func TestStatsHandlerSummaryDefaultsToMineScope(t *testing.T) {
+	router, s, _ := setupStatsTestRouter(t)
+
+	if _, err := s.Create(models.WorkItem{Type: models.TypeTask, Title: "Personal"}); err != nil {
+		t.Fatalf("failed to seed personal item: %v", err)
+	}
+	if _, err := s.Create(models.WorkItem{Type: models.TypeTask, Title: "Agent", Source: models.SourceAgent}); err != nil {
+		t.Fatalf("failed to seed agent item: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/api/stats/summary", nil)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+
+	var resp summaryResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
+	}
+	if resp.TotalTracked != 1 {
+		t.Fatalf("expected default scope=mine to exclude the agent item, got total_tracked=%d", resp.TotalTracked)
+	}
+
+	agentReq := httptest.NewRequest(http.MethodGet, "/api/stats/summary?scope=agent", nil)
+	agentRec := httptest.NewRecorder()
+	router.ServeHTTP(agentRec, agentReq)
+
+	var agentResp summaryResponse
+	if err := json.Unmarshal(agentRec.Body.Bytes(), &agentResp); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
+	}
+	if agentResp.TotalTracked != 1 {
+		t.Fatalf("expected scope=agent to include only the agent item, got total_tracked=%d", agentResp.TotalTracked)
+	}
+}
+
 func TestStatsHandlerSummaryReflectsKnownComposition(t *testing.T) {
 	router, s, db := setupStatsTestRouter(t)
 

@@ -170,6 +170,41 @@ func TestWorkItemHandlerList(t *testing.T) {
 	}
 }
 
+func TestWorkItemHandlerListScope(t *testing.T) {
+	r, s := setupTestRouter(t)
+
+	doRequest(r, http.MethodPost, "/api/work-items", map[string]any{"type": "task", "title": "Personal task"})
+	if _, err := s.CreateFromJira("Jira issue", "", models.StatusBacklog, "TCAT-1", "https://example.atlassian.net/browse/TCAT-1"); err != nil {
+		t.Fatalf("failed to seed jira item: %v", err)
+	}
+	if _, err := s.Create(models.WorkItem{Type: models.TypeTask, Title: "Agent task", Source: models.SourceAgent}); err != nil {
+		t.Fatalf("failed to seed agent item: %v", err)
+	}
+
+	mine := doRequest(r, http.MethodGet, "/api/work-items?scope=mine", nil)
+	var mineResp struct {
+		Items []models.WorkItem `json:"items"`
+	}
+	json.Unmarshal(mine.Body.Bytes(), &mineResp)
+	if len(mineResp.Items) != 2 {
+		t.Fatalf("expected 2 items in mine scope, got %d: %+v", len(mineResp.Items), mineResp.Items)
+	}
+	for _, item := range mineResp.Items {
+		if item.Source == models.SourceAgent {
+			t.Fatalf("expected no agent items in mine scope, got %+v", item)
+		}
+	}
+
+	agentScope := doRequest(r, http.MethodGet, "/api/work-items?scope=agent", nil)
+	var agentResp struct {
+		Items []models.WorkItem `json:"items"`
+	}
+	json.Unmarshal(agentScope.Body.Bytes(), &agentResp)
+	if len(agentResp.Items) != 1 || agentResp.Items[0].Source != models.SourceAgent {
+		t.Fatalf("expected 1 agent item, got %+v", agentResp.Items)
+	}
+}
+
 func TestWorkItemHandlerUpdate(t *testing.T) {
 	r, _ := setupTestRouter(t)
 

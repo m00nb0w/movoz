@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"el-storko/internal/models"
+
+	"github.com/lib/pq"
 )
 
 var (
@@ -26,6 +28,7 @@ func NewWorkItemStore(db *sql.DB) *WorkItemStore {
 
 type ListFilters struct {
 	Source   *models.Source
+	Sources  []models.Source
 	ParentID *int64
 	Type     *models.Type
 	Status   *models.Status
@@ -163,6 +166,15 @@ func (s *WorkItemStore) List(filters ListFilters) ([]models.WorkItem, error) {
 	if filters.Source != nil {
 		query += fmt.Sprintf(" AND source = $%d", argN)
 		args = append(args, *filters.Source)
+		argN++
+	}
+	if len(filters.Sources) > 0 {
+		sources := make([]string, len(filters.Sources))
+		for i, s := range filters.Sources {
+			sources[i] = string(s)
+		}
+		query += fmt.Sprintf(" AND source = ANY($%d)", argN)
+		args = append(args, pq.Array(sources))
 		argN++
 	}
 	if filters.ParentID != nil {

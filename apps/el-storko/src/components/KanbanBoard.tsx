@@ -13,6 +13,7 @@ import {
 import { WorkItemCard } from "./WorkItemCard";
 import { BacklogList } from "./BacklogList";
 import { ItemDrawer } from "./ItemDrawer";
+import { useScope } from "@/lib/scope";
 
 const COLUMNS: { status: WorkItemStatus; label: string }[] = [
   { status: "picked_for_today", label: "Picked for today" },
@@ -22,6 +23,7 @@ const COLUMNS: { status: WorkItemStatus; label: string }[] = [
 ];
 
 export function KanbanBoard() {
+  const { scope } = useScope();
   const [items, setItems] = useState<WorkItem[]>([]);
   const [newTitle, setNewTitle] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +32,7 @@ export function KanbanBoard() {
 
   async function refresh() {
     try {
-      const data = await listWorkItems();
+      const data = await listWorkItems({ scope });
       setItems(data);
       setError(null);
     } catch (err) {
@@ -40,7 +42,7 @@ export function KanbanBoard() {
 
   useEffect(() => {
     refresh();
-  }, []);
+  }, [scope]);
 
   async function handleAdd() {
     if (!newTitle.trim()) return;

@@ -365,15 +365,15 @@ User Story 6's Independent Test.
 shows the first two and Agent scope shows only the third, on both Board and Stats — matching
 `spec.md` User Story 7's Independent Test.
 
-- [ ] T074 [P] [US7] Write handler tests for `scope=mine`/`scope=agent` on the existing
+- [X] T074 [P] [US7] Write handler tests for `scope=mine`/`scope=agent` on the existing
   `GET /api/work-items` List handler
-- [ ] T075 [US7] Implement `scope` query-param handling in `work_item_handler.go`'s `List`
+- [X] T075 [US7] Implement `scope` query-param handling in `work_item_handler.go`'s `List`
   (translate to a multi-source filter in `store.ListFilters`) to make T074 pass
-- [ ] T076 [P] [US7] Extend `/api/stats/burn-rate` and `/api/stats/summary` (handlers + tests) to
+- [X] T076 [P] [US7] Extend `/api/stats/burn-rate` and `/api/stats/summary` (handlers + tests) to
   accept and honor `scope`, defaulting to `mine`
-- [ ] T077 [US7] Implement `ScopeToggle.tsx` (Mine/Agent switch, default Mine), wired to shared
+- [X] T077 [US7] Implement `ScopeToggle.tsx` (Mine/Agent switch, default Mine), wired to shared
   scope state consumed by both the Board and Stats pages' data fetches
-- [ ] T078 [US7] Verify: seed a personal, a Jira, and an agent-sourced row; confirm Mine shows the
+- [X] T078 [US7] Verify: seed a personal, a Jira, and an agent-sourced row; confirm Mine shows the
   first two and Agent shows only the third, on both Board and Stats
 
 ---

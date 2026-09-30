@@ -6,6 +6,7 @@ export type WorkItemStatus =
   | "blocked"
   | "done";
 export type WorkItemSource = "personal" | "jira" | "agent";
+export type Scope = "mine" | "agent";
 
 export interface WorkItem {
   id: number;
@@ -26,6 +27,7 @@ export interface WorkItem {
 }
 
 export interface ListFilters {
+  scope?: Scope;
   source?: WorkItemSource;
   parent_id?: number;
   type?: WorkItemType;
@@ -61,6 +63,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
 
 export async function listWorkItems(filters: ListFilters = {}): Promise<WorkItem[]> {
   const params = new URLSearchParams();
+  if (filters.scope) params.set("scope", filters.scope);
   if (filters.source) params.set("source", filters.source);
   if (filters.parent_id !== undefined) params.set("parent_id", String(filters.parent_id));
   if (filters.type) params.set("type", filters.type);
@@ -114,8 +117,8 @@ export interface BurnRateResponse {
   points: BurnRatePoint[];
 }
 
-export async function getBurnRate(days = 30): Promise<BurnRateResponse> {
-  const res = await fetch(`/api/stats/burn-rate?days=${days}`, { cache: "no-store" });
+export async function getBurnRate(days = 30, scope: Scope = "mine"): Promise<BurnRateResponse> {
+  const res = await fetch(`/api/stats/burn-rate?days=${days}&scope=${scope}`, { cache: "no-store" });
   return handleResponse<BurnRateResponse>(res);
 }
 
@@ -127,7 +130,7 @@ export interface StatsSummaryResponse {
   status_breakdown: Record<string, number>;
 }
 
-export async function getStatsSummary(): Promise<StatsSummaryResponse> {
-  const res = await fetch("/api/stats/summary", { cache: "no-store" });
+export async function getStatsSummary(scope: Scope = "mine"): Promise<StatsSummaryResponse> {
+  const res = await fetch(`/api/stats/summary?scope=${scope}`, { cache: "no-store" });
   return handleResponse<StatsSummaryResponse>(res);
 }

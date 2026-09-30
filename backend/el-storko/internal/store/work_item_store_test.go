@@ -131,6 +131,35 @@ func TestWorkItemStoreListFilters(t *testing.T) {
 	}
 }
 
+func TestWorkItemStoreListFiltersBySources(t *testing.T) {
+	db := setupTestDB(t)
+	truncateAll(t, db)
+	s := NewWorkItemStore(db)
+
+	personal, _ := s.Create(models.WorkItem{Type: models.TypeTask, Title: "Personal task"})
+	jira, _ := s.CreateFromJira("Jira issue", "", models.StatusBacklog, "TCAT-1", "https://example.atlassian.net/browse/TCAT-1")
+
+	mine, err := s.List(ListFilters{Sources: []models.Source{models.SourcePersonal, models.SourceJira}})
+	if err != nil {
+		t.Fatalf("List by sources failed: %v", err)
+	}
+	if len(mine) != 2 {
+		t.Fatalf("expected 2 items in mine scope (personal+jira), got %d: %+v", len(mine), mine)
+	}
+	gotIDs := map[int64]bool{mine[0].ID: true, mine[1].ID: true}
+	if !gotIDs[personal.ID] || !gotIDs[jira.ID] {
+		t.Fatalf("expected personal (%d) and jira (%d) items, got %+v", personal.ID, jira.ID, mine)
+	}
+
+	agentScope, err := s.List(ListFilters{Sources: []models.Source{models.SourceAgent}})
+	if err != nil {
+		t.Fatalf("List by sources failed: %v", err)
+	}
+	if len(agentScope) != 0 {
+		t.Fatalf("expected 0 items in agent scope, got %d: %+v", len(agentScope), agentScope)
+	}
+}
+
 func TestWorkItemStoreUpdate(t *testing.T) {
 	db := setupTestDB(t)
 	truncateAll(t, db)

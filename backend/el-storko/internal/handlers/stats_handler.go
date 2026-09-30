@@ -19,6 +19,21 @@ func NewStatsHandler(s *store.WorkItemStore) *StatsHandler {
 	return &StatsHandler{store: s}
 }
 
+// statsScopeFilters defaults to "mine" (FR-022) and rejects an unrecognized
+// scope value, mirroring work_item_handler.go's List endpoint.
+func statsScopeFilters(c *gin.Context) (store.ListFilters, bool) {
+	scope := c.Query("scope")
+	if scope == "" {
+		scope = "mine"
+	}
+	sources, ok := scopeSources(scope)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid scope"})
+		return store.ListFilters{}, false
+	}
+	return store.ListFilters{Sources: sources}, true
+}
+
 func (h *StatsHandler) BurnRate(c *gin.Context) {
 	days := 30
 	if v := c.Query("days"); v != "" {
@@ -30,7 +45,11 @@ func (h *StatsHandler) BurnRate(c *gin.Context) {
 		days = parsed
 	}
 
-	items, err := h.store.List(store.ListFilters{})
+	filters, ok := statsScopeFilters(c)
+	if !ok {
+		return
+	}
+	items, err := h.store.List(filters)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
@@ -41,7 +60,11 @@ func (h *StatsHandler) BurnRate(c *gin.Context) {
 }
 
 func (h *StatsHandler) Summary(c *gin.Context) {
-	items, err := h.store.List(store.ListFilters{})
+	filters, ok := statsScopeFilters(c)
+	if !ok {
+		return
+	}
+	items, err := h.store.List(filters)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return

@@ -127,8 +127,29 @@ func (h *WorkItemHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
+// scopeSources translates the FR-022 Mine/Agent scope switch into the
+// underlying source values: Mine covers personal+jira, Agent covers agent.
+func scopeSources(scope string) ([]models.Source, bool) {
+	switch scope {
+	case "mine":
+		return []models.Source{models.SourcePersonal, models.SourceJira}, true
+	case "agent":
+		return []models.Source{models.SourceAgent}, true
+	default:
+		return nil, false
+	}
+}
+
 func (h *WorkItemHandler) List(c *gin.Context) {
 	filters := store.ListFilters{}
+	if v := c.Query("scope"); v != "" {
+		sources, ok := scopeSources(v)
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid scope"})
+			return
+		}
+		filters.Sources = sources
+	}
 	if v := c.Query("source"); v != "" {
 		s := models.Source(v)
 		filters.Source = &s
