@@ -219,6 +219,173 @@ history per `spec.md` User Story 4's acceptance scenarios.
 
 ---
 
+## Phase 8: Redesign Foundational — five-state workflow, Estimate/Due date, reference sequences
+
+**Purpose**: Blocking prerequisite for the whole 2026-09-30 redesign (spec User Stories 2, 3
+revision, 5, 6, 7) — the schema/model changes every later redesign phase depends on.
+
+- [ ] T044 Write migration `backend/el-storko/migrations/000003_workflow_states_backlog_and_picked_for_today.up.sql`
+  / `.down.sql`: drop and recreate the `status` CHECK constraint for
+  `backlog`/`picked_for_today`/`in_progress`/`blocked`/`done`, backfill existing `todo` rows to
+  `backlog`, change the column default to `backlog`. `.down.sql` backfills `backlog`/
+  `picked_for_today` rows back to `todo` before restoring the old four-value constraint.
+- [ ] T045 [P] Write migration `000004_add_estimate_and_due_date.up.sql` / `.down.sql`: add nullable
+  `estimate_hours NUMERIC(6,2)` and nullable `due_date DATE` to `work_items`.
+- [ ] T046 Write migration `000005_add_reference_sequences.up.sql` / `.down.sql`: create
+  `epic_reference_seq`/`task_reference_seq`, add nullable `reference_number INTEGER`, backfill
+  existing rows per-type via a `row_number() OVER (PARTITION BY type ORDER BY id)` window query,
+  advance both sequences past the backfilled max, then set the column `NOT NULL`. `.down.sql`
+  drops the column and both sequences.
+- [ ] T047 [P] Update `models.WorkItem`/`models.Status` in `internal/models/work_item.go`: rename
+  `StatusTodo` → `StatusBacklog` (`"backlog"`), add `StatusPickedForToday` (`"picked_for_today"`);
+  add `EstimateHours *float64`, `DueDate *string`, `ReferenceNumber int` fields
+- [ ] T048 [P] Write store tests in `work_item_store_test.go`: an Epic and a Task created in
+  sequence get independent `reference_number`s from their own counters (interleave epic/task
+  creates and assert no shared counter); `estimate_hours`/`due_date` round-trip through
+  Create/Update; a negative `estimate_hours` is rejected
+- [ ] T049 Implement per-type `reference_number` assignment (`nextval` on the matching sequence)
+  and `estimate_hours`/`due_date` persistence in `work_item_store.go` to make T048 pass; add a
+  `ReferenceKey()` helper (`EPIC-<n>`/`TASK-<n>`) used by the handler's JSON response, not stored
+- [ ] T050 [P] [US3] Update `jiraStatusToLocal`/`localStatusToJiraTransitionName` in
+  `internal/jirasync/client.go` for the five-state model (unrecognized Jira statuses, including
+  "To Do", fall back to `backlog`; a local `picked_for_today` item pushes as Jira's "In Progress"
+  transition) — update `sync_test.go`/`client.go` tests first to assert the new mapping, confirm
+  red, then implement
+- [ ] T051 Verify: fresh-DB `-auto-migrate` runs `000001`→`000005` cleanly; `go test ./...` green;
+  curl-create an Epic and a Task and confirm their `reference_key`s are independent
+  (`EPIC-1`/`TASK-1` on a fresh DB, not sharing a counter)
+
+---
+
+## Phase 9: User Story 2 (spec) - Plan today's work
+
+**Goal**: Board shows only the four active-status columns with the full Backlog listed beneath
+it; "Pick for today" works via button or drag; the logo returns to Board.
+
+**Independent Test**: Put items in Backlog, use "Pick for today" on some and drag others onto the
+Board, confirm the Board's four columns show exactly those items and the Backlog list below still
+shows the rest — matching `spec.md` User Story 2's Independent Test.
+
+- [ ] T052 [US2] Update `KanbanBoard.tsx`: columns limited to Picked for today/In progress/
+  Blocked/Done (remove Backlog as a column)
+- [ ] T053 [US2] Add a `BacklogList` section below the board rendering `status=backlog` items,
+  each with a "Pick for today" button (`PATCH` status → `picked_for_today` via the existing
+  `updateWorkItem` client call)
+- [ ] T054 [US2] Implement drag-from-Backlog-onto-Board using the native HTML5 Drag and Drop API
+  (per `research.md`) with the same status-transition effect as the button
+- [ ] T055 [P] [US2] Wire the app logo/wordmark to navigate to `/` (Board) — FR-021
+- [ ] T056 [US2] Verify: manual pass confirming exactly 4 Board columns, the Backlog list beneath
+  it, both the button and drag paths moving an item to Picked for today, and logo-click landing
+  on Board
+
+---
+
+## Phase 10: User Story 3 (spec, revised) - Jira card shows its real key
+
+**Goal**: A Jira-sourced card's badge shows the real Jira key (e.g. `AUTH-142`), not a generic
+"Jira" label — the tint from the original FR-014 stays as-is.
+
+- [ ] T057 [US3] Update `WorkItemCard.tsx`: the source badge on a Jira-sourced item shows
+  `item.jira_key` instead of the literal `source` string; keep the existing left-border tint
+- [ ] T058 [US3] Verify: seed a `source=jira` row with a `jira_key`, confirm its card badge shows
+  the key, not "jira"
+
+---
+
+## Phase 11: User Story 4 (spec) - CLI stays correct under the new status set
+
+- [ ] T059 [P] [US4] Audit `cmd/cli`/`internal/clicmd` for any hardcoded status strings from the
+  old four-value set and update to the five-value set if found
+- [ ] T060 [US4] Verify: `el-storko-cli list --status picked_for_today` round-trips correctly
+
+---
+
+## Phase 12: User Story 5 (spec) - Item detail drawer, Estimate/Due date, searchable Epic picker
+
+**Goal**: Every field — including the new Estimate/Due date and the reference key — is visible in
+one drawer without internal scrolling; assigning an Epic is a type-to-filter search, not a fixed
+list.
+
+**Independent Test**: Open an item's drawer, set an Estimate and Due date, close and reopen it,
+confirm both persisted and every field was visible without scrolling — matching `spec.md` User
+Story 5's Independent Test.
+
+- [ ] T061 [US5] Implement `ItemDrawer.tsx` using `@movoz/ui-web`'s `Modal` (per `research.md`):
+  title, description, status, Estimate, Due date, reference key, and Jira key when present, sized
+  so nothing scrolls internally at realistic field counts
+- [ ] T062 [P] [US5] Implement `EpicPicker.tsx`: client-side type-to-filter search over the
+  already-fetched Epic list (no new endpoint — per `research.md`), with a "Clear" action (FR-024)
+- [ ] T063 [US5] Wire Estimate (number input, hours) and Due date (date input) fields in the
+  drawer to `PATCH /api/work-items/:id`
+- [ ] T064 [P] [US5] Implement a shared Due-date color-coding helper (red if overdue, yellow if
+  due within 3 days, else unstyled — FR-020) used by both `WorkItemCard.tsx` and `ItemDrawer.tsx`
+- [ ] T065 [US5] Wire drawer open/close from clicking a card on the Board or Backlog list
+- [ ] T066 [US5] Verify: set Estimate + Due date, close/reopen the drawer, confirm persistence and
+  no internal scrolling; confirm overdue/soon-due color coding on both card and drawer
+
+---
+
+## Phase 13: User Story 6 (spec) - Workload & burn-rate stats expansion
+
+**Goal**: The Stats tab adds open-item count, completed-this-week, completion rate, total
+tracked, and a status-breakdown bar chart, alongside the existing throughput/backlog trend.
+
+**Independent Test**: Seed items across all five statuses with a mix of completion dates, open
+the Stats tab, confirm every number and the bar chart match a hand count — matching `spec.md`
+User Story 6's Independent Test.
+
+- [ ] T067 [P] [US6] Write a pure-function test for `internal/stats`'s new summary reducer (open
+  count, completed-this-week count, completion rate, total tracked, status breakdown across all
+  five statuses including zero-count ones) against hand-calculated values, including an
+  empty-tracker all-zero case
+- [ ] T068 [US6] Implement the summary reducer in `internal/stats` to make T067 pass, per
+  `data-model.md`'s Workload & Burn-Rate Stats section
+- [ ] T069 [P] [US6] Write handler tests for `GET /api/stats/summary` (empty tracker, a tracker
+  with a known status/completion composition)
+- [ ] T070 [US6] Implement `StatsHandler.Summary` and register `GET /api/stats/summary` in
+  `router.go` to make T069 pass
+- [ ] T071 [P] [US6] Add `getStatsSummary(scope)` to `apps/el-storko/src/lib/api.ts`
+- [ ] T072 [US6] Add `StatusBreakdownChart.tsx` (custom SVG bar chart, per `research.md`) and new
+  `StatCard`s (open items, completed this week, completion rate, total tracked) to
+  `apps/el-storko/src/app/stats/page.tsx`
+- [ ] T073 [US6] Verify: seed items across all five statuses with known completion dates, confirm
+  every summary number and the bar chart against a hand count
+
+---
+
+## Phase 14: User Story 7 (spec) - Mine/Agent scope toggle
+
+**Goal**: One global switch (default Mine) scopes both Board and Stats to `personal`+`jira` or
+`agent` sourced items, with both scopes sharing identical UI for now.
+
+**Independent Test**: Seed a personal, a Jira, and an agent-sourced item; confirm Mine scope
+shows the first two and Agent scope shows only the third, on both Board and Stats — matching
+`spec.md` User Story 7's Independent Test.
+
+- [ ] T074 [P] [US7] Write handler tests for `scope=mine`/`scope=agent` on the existing
+  `GET /api/work-items` List handler
+- [ ] T075 [US7] Implement `scope` query-param handling in `work_item_handler.go`'s `List`
+  (translate to a multi-source filter in `store.ListFilters`) to make T074 pass
+- [ ] T076 [P] [US7] Extend `/api/stats/burn-rate` and `/api/stats/summary` (handlers + tests) to
+  accept and honor `scope`, defaulting to `mine`
+- [ ] T077 [US7] Implement `ScopeToggle.tsx` (Mine/Agent switch, default Mine), wired to shared
+  scope state consumed by both the Board and Stats pages' data fetches
+- [ ] T078 [US7] Verify: seed a personal, a Jira, and an agent-sourced row; confirm Mine shows the
+  first two and Agent shows only the third, on both Board and Stats
+
+---
+
+## Phase 15: Redesign Polish
+
+- [ ] T079 [P] Update `wiki/technical/architecture.md`'s el-storko summary line if it still
+  describes the pre-redesign workflow
+- [ ] T080 Final full verification pass: `go build ./... && go test ./...`; fresh-DB migrate
+  `000001` → `000005`; full CRUD across the five-state status set; Jira status-mapping check
+  (mocked); CLI round-trip under the new statuses; `pnpm --filter el-storko build`; manual UI
+  pass covering every acceptance scenario across all seven user stories in `spec.md`
+
+---
+
 ## Dependencies
 
 - **Setup (T001-T003)** blocks **Foundational (T004-T008)**.
@@ -229,6 +396,14 @@ history per `spec.md` User Story 4's acceptance scenarios.
   `cmd/cli/` + `apps/el-storko/`) and can proceed in parallel once US1 is done.
 - **Polish (T028-T031)** depends on US1 at minimum; T030/T031 depend on US2 and US3 also being
   done for a complete verification pass.
+- **Redesign Foundational (T044-T051)** blocks every redesign phase (T052-T078) — all of them
+  read or write the new status values, fields, or reference sequences.
+- **Board redesign (T052-T056)**, **Jira card key (T057-T058)**, **CLI audit (T059-T060)**,
+  **Item drawer (T061-T066)**, and **Stats expansion (T067-T073)** touch disjoint files and can
+  proceed in parallel once Redesign Foundational is done.
+- **Scope toggle (T074-T078)** touches the same Board/Stats page files as T052-T056 and T067-T073,
+  so it should land after those two phases rather than run fully in parallel with them.
+- **Redesign Polish (T079-T080)** depends on all of T044-T078.
 
 ## Parallel Execution Examples
 
@@ -237,11 +412,19 @@ history per `spec.md` User Story 4's acceptance scenarios.
   be assigned to two different subagents running in parallel.
 - Within US3: T021, T022, T023 can run in parallel (CLI vs. frontend API client are independent
   files); T024/T025/T026 depend on T023 existing.
+- After Redesign Foundational (T044-T051): Board redesign (T052-T056), Jira card key (T057-T058),
+  CLI audit (T059-T060), Item drawer (T061-T066), and Stats expansion (T067-T073) can be assigned
+  to up to five different subagents running in parallel; bring Scope toggle (T074-T078) in only
+  after Board redesign and Stats expansion land.
 
 ## Implementation Strategy
 
 **MVP first**: Phase 1 → 2 → 3 (US1) alone is a working, demoable personal tracker — this is the
 suggested MVP checkpoint before investing in Jira sync or the CLI/web layer.
+
+**Redesign MVP**: Phase 8 (Redesign Foundational) → Phase 9 (Board redesign) alone gets the core
+daily-planning workflow working; Phases 10-14 layer on refinements (Jira key display, drawer,
+expanded stats, scope toggle) that are each independently valuable and independently deployable.
 
 **Incremental delivery after MVP**: US2 and US3 can each be added independently and in parallel
 once US1 lands; Polish (launchd + docs) is the final step before calling the feature done.

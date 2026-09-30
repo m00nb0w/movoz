@@ -23,7 +23,7 @@ go run ./cmd/server -version
 cd backend/el-storko
 go build -o bin/el-storko-cli ./cmd/cli
 ./bin/el-storko-cli add "Buy birthday gift"
-./bin/el-storko-cli list --status todo
+./bin/el-storko-cli list --status backlog
 ```
 
 ## Frontend

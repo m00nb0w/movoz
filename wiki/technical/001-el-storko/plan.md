@@ -12,6 +12,14 @@ field ready for a future AI-agent producer. Delivered as a Go+Postgres backend
 (`backend/el-storko/`), a Next.js zone (`apps/el-storko/`), and a thin Go CLI, all against
 one REST API and one database, matching this repo's existing `oncarinho` conventions.
 
+**Revised 2026-09-30** around a daily-planning workflow: a five-state status model
+(`Backlog → Picked for today → In progress → Blocked → Done`) built around a "Pick for
+today" ritual, a simplified Board+Stats-only navigation (Board = active-status columns
+plus a Backlog list beneath it; List/Epics/Jira-settings views removed), a global
+Mine/Agent scope toggle, an item detail drawer (Estimate, Due date, searchable Epic
+picker), per-card Jira tinting with the real Jira key as the badge, and two independent
+`EPIC-#`/`TASK-#` reference-key sequences.
+
 ## Technical Context
 
 **Language/Version**: Go 1.22 (backend + CLI), TypeScript/Next.js 14 (frontend)
@@ -89,11 +97,13 @@ backend/el-storko/
 
 apps/el-storko/
 ├── src/
-│   ├── app/                     # App Router pages: board view, list view
-│   ├── components/              # KanbanBoard, WorkItemList, WorkItemCard, Filters
-│   └── lib/                     # API client hitting /api/work-items (proxied to backend/el-storko)
+│   ├── app/                     # App Router pages: board (/), stats (/stats) — list/epics removed
+│   ├── components/              # KanbanBoard (+ Backlog list), WorkItemCard, ItemDrawer,
+│   │                            # EpicPicker (searchable), ScopeToggle (Mine/Agent), StatCard,
+│   │                            # TrendLine, StatusBreakdownChart, NavTabs (Board/Stats + logo→Board)
+│   └── lib/                     # API client hitting /api/work-items + /api/stats/* (proxied to backend/el-storko)
 ├── next.config.mjs              # basePath/assetPrefix, /api/:path* rewrite, transpilePackages
-├── package.json                 # workspace:* deps on @movoz/theme, @movoz/tailwind-config, @movoz/tsconfig
+├── package.json                 # workspace:* deps on @movoz/theme, @movoz/ui-web, @movoz/tailwind-config, @movoz/tsconfig
 └── tsconfig.json
 
 infra/launchd/
