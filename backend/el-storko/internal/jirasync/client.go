@@ -130,9 +130,12 @@ func adfFromText(text string) map[string]any {
 	}
 }
 
-// jiraStatusToLocal maps a Jira status category/name to el-storko's fixed
-// four-value status set. Anything unrecognized defaults to "todo" rather
-// than failing the whole sync cycle over an unmapped Jira workflow name.
+// jiraStatusToLocal maps a Jira status category/name to el-storko's
+// five-value status set. Anything unrecognized (including Jira's own
+// "To Do") falls back to "backlog" rather than failing the whole sync cycle
+// over an unmapped Jira workflow name. This never produces
+// "picked_for_today" — that's a personal daily-triage state Jira has no
+// concept of (FR-005).
 func jiraStatusToLocal(name string) models.Status {
 	switch name {
 	case "Done", "Closed", "Resolved":
@@ -142,15 +145,19 @@ func jiraStatusToLocal(name string) models.Status {
 	case "Blocked":
 		return models.StatusBlocked
 	default:
-		return models.StatusTodo
+		return models.StatusBacklog
 	}
 }
 
+// localStatusToJiraTransitionName maps a local status to the Jira
+// transition to push. "picked_for_today" pushes as "In Progress" — the
+// closest real-world equivalent, since Jira has no state for "picked for
+// today" (see research.md).
 func localStatusToJiraTransitionName(status models.Status) string {
 	switch status {
 	case models.StatusDone:
 		return "Done"
-	case models.StatusInProgress:
+	case models.StatusInProgress, models.StatusPickedForToday:
 		return "In Progress"
 	case models.StatusBlocked:
 		return "Blocked"

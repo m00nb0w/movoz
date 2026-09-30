@@ -30,4 +30,13 @@ func truncateAll(t *testing.T, db *sql.DB) {
 	if _, err := db.Exec("TRUNCATE work_items RESTART IDENTITY CASCADE"); err != nil {
 		t.Fatalf("failed to truncate tables: %v", err)
 	}
+	// RESTART IDENTITY only resets the table's own serial column, not the
+	// standalone epic/task reference sequences — reset those too so each
+	// test starts both counters at a known value.
+	if _, err := db.Exec("ALTER SEQUENCE epic_reference_seq RESTART WITH 1"); err != nil {
+		t.Fatalf("failed to reset epic_reference_seq: %v", err)
+	}
+	if _, err := db.Exec("ALTER SEQUENCE task_reference_seq RESTART WITH 1"); err != nil {
+		t.Fatalf("failed to reset task_reference_seq: %v", err)
+	}
 }

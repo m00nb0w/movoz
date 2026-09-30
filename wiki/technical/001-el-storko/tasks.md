@@ -224,34 +224,34 @@ history per `spec.md` User Story 4's acceptance scenarios.
 **Purpose**: Blocking prerequisite for the whole 2026-09-30 redesign (spec User Stories 2, 3
 revision, 5, 6, 7) — the schema/model changes every later redesign phase depends on.
 
-- [ ] T044 Write migration `backend/el-storko/migrations/000003_workflow_states_backlog_and_picked_for_today.up.sql`
+- [X] T044 Write migration `backend/el-storko/migrations/000003_workflow_states_backlog_and_picked_for_today.up.sql`
   / `.down.sql`: drop and recreate the `status` CHECK constraint for
   `backlog`/`picked_for_today`/`in_progress`/`blocked`/`done`, backfill existing `todo` rows to
   `backlog`, change the column default to `backlog`. `.down.sql` backfills `backlog`/
   `picked_for_today` rows back to `todo` before restoring the old four-value constraint.
-- [ ] T045 [P] Write migration `000004_add_estimate_and_due_date.up.sql` / `.down.sql`: add nullable
+- [X] T045 [P] Write migration `000004_add_estimate_and_due_date.up.sql` / `.down.sql`: add nullable
   `estimate_hours NUMERIC(6,2)` and nullable `due_date DATE` to `work_items`.
-- [ ] T046 Write migration `000005_add_reference_sequences.up.sql` / `.down.sql`: create
+- [X] T046 Write migration `000005_add_reference_sequences.up.sql` / `.down.sql`: create
   `epic_reference_seq`/`task_reference_seq`, add nullable `reference_number INTEGER`, backfill
   existing rows per-type via a `row_number() OVER (PARTITION BY type ORDER BY id)` window query,
   advance both sequences past the backfilled max, then set the column `NOT NULL`. `.down.sql`
   drops the column and both sequences.
-- [ ] T047 [P] Update `models.WorkItem`/`models.Status` in `internal/models/work_item.go`: rename
+- [X] T047 [P] Update `models.WorkItem`/`models.Status` in `internal/models/work_item.go`: rename
   `StatusTodo` → `StatusBacklog` (`"backlog"`), add `StatusPickedForToday` (`"picked_for_today"`);
   add `EstimateHours *float64`, `DueDate *string`, `ReferenceNumber int` fields
-- [ ] T048 [P] Write store tests in `work_item_store_test.go`: an Epic and a Task created in
+- [X] T048 [P] Write store tests in `work_item_store_test.go`: an Epic and a Task created in
   sequence get independent `reference_number`s from their own counters (interleave epic/task
   creates and assert no shared counter); `estimate_hours`/`due_date` round-trip through
   Create/Update; a negative `estimate_hours` is rejected
-- [ ] T049 Implement per-type `reference_number` assignment (`nextval` on the matching sequence)
+- [X] T049 Implement per-type `reference_number` assignment (`nextval` on the matching sequence)
   and `estimate_hours`/`due_date` persistence in `work_item_store.go` to make T048 pass; add a
   `ReferenceKey()` helper (`EPIC-<n>`/`TASK-<n>`) used by the handler's JSON response, not stored
-- [ ] T050 [P] [US3] Update `jiraStatusToLocal`/`localStatusToJiraTransitionName` in
+- [X] T050 [P] [US3] Update `jiraStatusToLocal`/`localStatusToJiraTransitionName` in
   `internal/jirasync/client.go` for the five-state model (unrecognized Jira statuses, including
   "To Do", fall back to `backlog`; a local `picked_for_today` item pushes as Jira's "In Progress"
   transition) — update `sync_test.go`/`client.go` tests first to assert the new mapping, confirm
   red, then implement
-- [ ] T051 Verify: fresh-DB `-auto-migrate` runs `000001`→`000005` cleanly; `go test ./...` green;
+- [X] T051 Verify: fresh-DB `-auto-migrate` runs `000001`→`000005` cleanly; `go test ./...` green;
   curl-create an Epic and a Task and confirm their `reference_key`s are independent
   (`EPIC-1`/`TASK-1` on a fresh DB, not sharing a counter)
 

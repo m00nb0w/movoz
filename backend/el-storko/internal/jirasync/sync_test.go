@@ -101,7 +101,7 @@ func TestRunSyncCycleOverwritesOlderLocalWithNewerJiraData(t *testing.T) {
 	db := setupTestDB(t)
 	s := store.NewWorkItemStore(db)
 
-	local, err := s.CreateFromJira("Old title", "old description", models.StatusTodo, "TCAT-2", "https://example.atlassian.net/browse/TCAT-2")
+	local, err := s.CreateFromJira("Old title", "old description", models.StatusBacklog, "TCAT-2", "https://example.atlassian.net/browse/TCAT-2")
 	if err != nil {
 		t.Fatalf("CreateFromJira failed: %v", err)
 	}
@@ -136,7 +136,7 @@ func TestRunSyncCyclePushesNewerLocalChangeToJira(t *testing.T) {
 	db := setupTestDB(t)
 	s := store.NewWorkItemStore(db)
 
-	local, err := s.CreateFromJira("Original", "orig desc", models.StatusTodo, "TCAT-3", "https://example.atlassian.net/browse/TCAT-3")
+	local, err := s.CreateFromJira("Original", "orig desc", models.StatusBacklog, "TCAT-3", "https://example.atlassian.net/browse/TCAT-3")
 	if err != nil {
 		t.Fatalf("CreateFromJira failed: %v", err)
 	}
@@ -153,7 +153,7 @@ func TestRunSyncCyclePushesNewerLocalChangeToJira(t *testing.T) {
 				Key:         "TCAT-3",
 				Title:       "Original",
 				Description: "orig desc",
-				Status:      models.StatusTodo,
+				Status:      models.StatusBacklog,
 				URL:         "https://example.atlassian.net/browse/TCAT-3",
 				UpdatedAt:   updated.UpdatedAt.Add(-1 * time.Hour),
 			},
@@ -177,7 +177,7 @@ func TestRunSyncCycleDoesNotPushWhenJiraIsNewer(t *testing.T) {
 	db := setupTestDB(t)
 	s := store.NewWorkItemStore(db)
 
-	local, err := s.CreateFromJira("Original", "orig desc", models.StatusTodo, "TCAT-4", "https://example.atlassian.net/browse/TCAT-4")
+	local, err := s.CreateFromJira("Original", "orig desc", models.StatusBacklog, "TCAT-4", "https://example.atlassian.net/browse/TCAT-4")
 	if err != nil {
 		t.Fatalf("CreateFromJira failed: %v", err)
 	}
@@ -188,7 +188,7 @@ func TestRunSyncCycleDoesNotPushWhenJiraIsNewer(t *testing.T) {
 				Key:         "TCAT-4",
 				Title:       "Original",
 				Description: "orig desc",
-				Status:      models.StatusTodo,
+				Status:      models.StatusBacklog,
 				URL:         "https://example.atlassian.net/browse/TCAT-4",
 				UpdatedAt:   local.UpdatedAt.Add(1 * time.Hour),
 			},

@@ -2,6 +2,7 @@ package store
 
 import (
 	"testing"
+	"time"
 
 	"el-storko/internal/models"
 )
@@ -21,8 +22,8 @@ func TestWorkItemStoreCreateEpic(t *testing.T) {
 	if created.ID == 0 {
 		t.Fatal("expected non-zero ID")
 	}
-	if created.Status != models.StatusTodo {
-		t.Fatalf("expected default status todo, got %s", created.Status)
+	if created.Status != models.StatusBacklog {
+		t.Fatalf("expected default status backlog, got %s", created.Status)
 	}
 	if created.Source != models.SourcePersonal {
 		t.Fatalf("expected default source personal, got %s", created.Source)
@@ -121,12 +122,12 @@ func TestWorkItemStoreListFilters(t *testing.T) {
 		t.Fatalf("expected all 3 items to be personal source, got %d", len(bySource))
 	}
 
-	byStatus, err := s.List(ListFilters{Status: ptr(models.StatusTodo)})
+	byStatus, err := s.List(ListFilters{Status: ptr(models.StatusBacklog)})
 	if err != nil {
 		t.Fatalf("List by status failed: %v", err)
 	}
 	if len(byStatus) != 3 {
-		t.Fatalf("expected all 3 items to default to todo, got %d", len(byStatus))
+		t.Fatalf("expected all 3 items to default to backlog, got %d", len(byStatus))
 	}
 }
 
@@ -333,6 +334,78 @@ func TestWorkItemStoreRecompletingSetsNewCompletedAt(t *testing.T) {
 	}
 	if !updated.CompletedAt.After(firstCompletedAt) && !updated.CompletedAt.Equal(firstCompletedAt) {
 		t.Fatalf("expected new completed_at %v to be >= first %v", *updated.CompletedAt, firstCompletedAt)
+	}
+}
+
+func TestWorkItemStoreEpicAndTaskReferenceNumbersAreIndependent(t *testing.T) {
+	db := setupTestDB(t)
+	truncateAll(t, db)
+	s := NewWorkItemStore(db)
+
+	epic1, _ := s.Create(models.WorkItem{Type: models.TypeEpic, Title: "Epic one"})
+	task1, _ := s.Create(models.WorkItem{Type: models.TypeTask, Title: "Task one"})
+	epic2, _ := s.Create(models.WorkItem{Type: models.TypeEpic, Title: "Epic two"})
+	task2, _ := s.Create(models.WorkItem{Type: models.TypeTask, Title: "Task two"})
+
+	if epic1.ReferenceKey() != "EPIC-1" {
+		t.Errorf("expected epic1 EPIC-1, got %s", epic1.ReferenceKey())
+	}
+	if epic2.ReferenceKey() != "EPIC-2" {
+		t.Errorf("expected epic2 EPIC-2, got %s", epic2.ReferenceKey())
+	}
+	if task1.ReferenceKey() != "TASK-1" {
+		t.Errorf("expected task1 TASK-1, got %s", task1.ReferenceKey())
+	}
+	if task2.ReferenceKey() != "TASK-2" {
+		t.Errorf("expected task2 TASK-2, got %s", task2.ReferenceKey())
+	}
+}
+
+func TestWorkItemStoreEstimateAndDueDateRoundTrip(t *testing.T) {
+	db := setupTestDB(t)
+	truncateAll(t, db)
+	s := NewWorkItemStore(db)
+
+	estimate := 2.5
+	dueDate := time.Date(2026, 10, 3, 0, 0, 0, 0, time.UTC)
+	created, err := s.Create(models.WorkItem{
+		Type:          models.TypeTask,
+		Title:         "Buy paint",
+		EstimateHours: &estimate,
+		DueDate:       &dueDate,
+	})
+	if err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+	if created.EstimateHours == nil || *created.EstimateHours != 2.5 {
+		t.Fatalf("expected estimate_hours 2.5, got %+v", created.EstimateHours)
+	}
+	if created.DueDate == nil || created.DueDate.Format("2006-01-02") != "2026-10-03" {
+		t.Fatalf("expected due_date 2026-10-03, got %+v", created.DueDate)
+	}
+
+	newEstimate := 4.0
+	updated, err := s.Update(created.ID, UpdateFields{EstimateHours: &newEstimate})
+	if err != nil {
+		t.Fatalf("Update failed: %v", err)
+	}
+	if updated.EstimateHours == nil || *updated.EstimateHours != 4.0 {
+		t.Fatalf("expected updated estimate_hours 4.0, got %+v", updated.EstimateHours)
+	}
+	if updated.DueDate == nil || updated.DueDate.Format("2006-01-02") != "2026-10-03" {
+		t.Fatalf("expected due_date to remain 2026-10-03 after unrelated update, got %+v", updated.DueDate)
+	}
+}
+
+func TestWorkItemStoreCreateRejectsNegativeEstimate(t *testing.T) {
+	db := setupTestDB(t)
+	truncateAll(t, db)
+	s := NewWorkItemStore(db)
+
+	negative := -1.0
+	_, err := s.Create(models.WorkItem{Type: models.TypeTask, Title: "Bad estimate", EstimateHours: &negative})
+	if err == nil {
+		t.Fatal("expected error creating a task with a negative estimate_hours")
 	}
 }
 

@@ -54,20 +54,20 @@ func TestListReturnsItemsWithFilters(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]any{
 			"items": []models.WorkItem{
-				{ID: 1, Type: models.TypeTask, Title: "Buy paint", Status: models.StatusTodo},
+				{ID: 1, Type: models.TypeTask, Title: "Buy paint", Status: models.StatusBacklog},
 			},
 		})
 	}))
 	defer server.Close()
 
-	items, err := List(server.URL, ListOptions{Status: "todo"})
+	items, err := List(server.URL, ListOptions{Status: "backlog"})
 	if err != nil {
 		t.Fatalf("List failed: %v", err)
 	}
 	if len(items) != 1 || items[0].Title != "Buy paint" {
 		t.Fatalf("unexpected items: %+v", items)
 	}
-	if receivedQuery != "status=todo" {
+	if receivedQuery != "status=backlog" {
 		t.Fatalf("expected status filter in query, got %q", receivedQuery)
 	}
 }

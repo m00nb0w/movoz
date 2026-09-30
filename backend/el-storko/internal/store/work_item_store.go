@@ -13,6 +13,7 @@ var (
 	ErrEpicCannotHaveParent = errors.New("an epic cannot have a parent")
 	ErrParentMustBeEpic     = errors.New("parent_id must reference an epic")
 	ErrParentNotFound       = errors.New("parent_id does not reference an existing item")
+	ErrInvalidEstimate      = errors.New("estimate_hours must be positive")
 )
 
 type WorkItemStore struct {
@@ -31,18 +32,20 @@ type ListFilters struct {
 }
 
 type UpdateFields struct {
-	Title       *string
-	Description *string
-	Status      *models.Status
-	ParentID    *int64
-	ClearParent bool
+	Title         *string
+	Description   *string
+	Status        *models.Status
+	ParentID      *int64
+	ClearParent   bool
+	EstimateHours *float64
+	DueDate       *time.Time
 }
 
-const workItemColumns = `id, type, parent_id, title, description, status, source, jira_key, jira_url, created_at, updated_at, completed_at`
+const workItemColumns = `id, type, parent_id, title, description, status, source, estimate_hours, due_date, reference_number, jira_key, jira_url, created_at, updated_at, completed_at`
 
 func scanWorkItem(row *sql.Row) (*models.WorkItem, error) {
 	var w models.WorkItem
-	err := row.Scan(&w.ID, &w.Type, &w.ParentID, &w.Title, &w.Description, &w.Status, &w.Source, &w.JiraKey, &w.JiraURL, &w.CreatedAt, &w.UpdatedAt, &w.CompletedAt)
+	err := row.Scan(&w.ID, &w.Type, &w.ParentID, &w.Title, &w.Description, &w.Status, &w.Source, &w.EstimateHours, &w.DueDate, &w.ReferenceNumber, &w.JiraKey, &w.JiraURL, &w.CreatedAt, &w.UpdatedAt, &w.CompletedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -54,7 +57,7 @@ func scanWorkItem(row *sql.Row) (*models.WorkItem, error) {
 
 // completedAtFor computes the correct completed_at value for a status
 // transition: entering done sets it to now, leaving done clears it, anything
-// else leaves it unchanged (FR-015 — distinct from updated_at, which every
+// else leaves it unchanged (FR-016 — distinct from updated_at, which every
 // edit touches).
 func completedAtFor(previousStatus, newStatus models.Status, previous *time.Time) *time.Time {
 	if newStatus == models.StatusDone && previousStatus != models.StatusDone {
@@ -65,6 +68,28 @@ func completedAtFor(previousStatus, newStatus models.Status, previous *time.Time
 		return nil
 	}
 	return previous
+}
+
+// validateEstimate enforces the "positive if set" rule from data-model.md.
+func validateEstimate(estimate *float64) error {
+	if estimate != nil && *estimate <= 0 {
+		return ErrInvalidEstimate
+	}
+	return nil
+}
+
+// nextReferenceNumber draws from the sequence matching the item's type,
+// keeping Epic and Task numbering fully independent (FR-018).
+func (s *WorkItemStore) nextReferenceNumber(itemType models.Type) (int, error) {
+	seq := "task_reference_seq"
+	if itemType == models.TypeEpic {
+		seq = "epic_reference_seq"
+	}
+	var n int
+	if err := s.db.QueryRow(fmt.Sprintf("SELECT nextval('%s')", seq)).Scan(&n); err != nil {
+		return 0, err
+	}
+	return n, nil
 }
 
 // validateParent enforces FR-002: an epic has no parent, a task's parent (if
@@ -94,10 +119,13 @@ func (s *WorkItemStore) Create(item models.WorkItem) (*models.WorkItem, error) {
 	if err := s.validateParent(item.Type, item.ParentID); err != nil {
 		return nil, err
 	}
+	if err := validateEstimate(item.EstimateHours); err != nil {
+		return nil, err
+	}
 
 	status := item.Status
 	if status == "" {
-		status = models.StatusTodo
+		status = models.StatusBacklog
 	}
 	source := item.Source
 	if source == "" {
@@ -105,11 +133,16 @@ func (s *WorkItemStore) Create(item models.WorkItem) (*models.WorkItem, error) {
 	}
 	completedAt := completedAtFor(models.Status(""), status, nil)
 
+	referenceNumber, err := s.nextReferenceNumber(item.Type)
+	if err != nil {
+		return nil, err
+	}
+
 	row := s.db.QueryRow(
-		fmt.Sprintf(`INSERT INTO work_items (type, parent_id, title, description, status, source, jira_key, jira_url, completed_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		fmt.Sprintf(`INSERT INTO work_items (type, parent_id, title, description, status, source, estimate_hours, due_date, reference_number, jira_key, jira_url, completed_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 		 RETURNING %s`, workItemColumns),
-		item.Type, item.ParentID, item.Title, item.Description, status, source, item.JiraKey, item.JiraURL, completedAt,
+		item.Type, item.ParentID, item.Title, item.Description, status, source, item.EstimateHours, item.DueDate, referenceNumber, item.JiraKey, item.JiraURL, completedAt,
 	)
 	return scanWorkItem(row)
 }
@@ -158,7 +191,7 @@ func (s *WorkItemStore) List(filters ListFilters) ([]models.WorkItem, error) {
 	items := []models.WorkItem{}
 	for rows.Next() {
 		var w models.WorkItem
-		if err := rows.Scan(&w.ID, &w.Type, &w.ParentID, &w.Title, &w.Description, &w.Status, &w.Source, &w.JiraKey, &w.JiraURL, &w.CreatedAt, &w.UpdatedAt, &w.CompletedAt); err != nil {
+		if err := rows.Scan(&w.ID, &w.Type, &w.ParentID, &w.Title, &w.Description, &w.Status, &w.Source, &w.EstimateHours, &w.DueDate, &w.ReferenceNumber, &w.JiraKey, &w.JiraURL, &w.CreatedAt, &w.UpdatedAt, &w.CompletedAt); err != nil {
 			return nil, err
 		}
 		items = append(items, w)
@@ -184,6 +217,11 @@ func (s *WorkItemStore) Update(id int64, fields UpdateFields) (*models.WorkItem,
 			return nil, err
 		}
 	}
+	if fields.EstimateHours != nil {
+		if err := validateEstimate(fields.EstimateHours); err != nil {
+			return nil, err
+		}
+	}
 
 	title := existing.Title
 	if fields.Title != nil {
@@ -203,12 +241,20 @@ func (s *WorkItemStore) Update(id int64, fields UpdateFields) (*models.WorkItem,
 	} else if fields.ParentID != nil {
 		parentID = fields.ParentID
 	}
+	estimateHours := existing.EstimateHours
+	if fields.EstimateHours != nil {
+		estimateHours = fields.EstimateHours
+	}
+	dueDate := existing.DueDate
+	if fields.DueDate != nil {
+		dueDate = fields.DueDate
+	}
 	completedAt := completedAtFor(existing.Status, status, existing.CompletedAt)
 
 	row := s.db.QueryRow(
-		fmt.Sprintf(`UPDATE work_items SET title = $1, description = $2, status = $3, parent_id = $4, completed_at = $5, updated_at = now()
-		 WHERE id = $6 RETURNING %s`, workItemColumns),
-		title, description, status, parentID, completedAt, id,
+		fmt.Sprintf(`UPDATE work_items SET title = $1, description = $2, status = $3, parent_id = $4, estimate_hours = $5, due_date = $6, completed_at = $7, updated_at = now()
+		 WHERE id = $8 RETURNING %s`, workItemColumns),
+		title, description, status, parentID, estimateHours, dueDate, completedAt, id,
 	)
 	return scanWorkItem(row)
 }
@@ -244,11 +290,15 @@ func (s *WorkItemStore) GetByJiraKey(jiraKey string) (*models.WorkItem, error) {
 
 func (s *WorkItemStore) CreateFromJira(title, description string, status models.Status, jiraKey, jiraURL string) (*models.WorkItem, error) {
 	completedAt := completedAtFor(models.Status(""), status, nil)
+	referenceNumber, err := s.nextReferenceNumber(models.TypeTask)
+	if err != nil {
+		return nil, err
+	}
 	row := s.db.QueryRow(
-		fmt.Sprintf(`INSERT INTO work_items (type, title, description, status, source, jira_key, jira_url, completed_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		fmt.Sprintf(`INSERT INTO work_items (type, title, description, status, source, reference_number, jira_key, jira_url, completed_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		 RETURNING %s`, workItemColumns),
-		models.TypeTask, title, description, status, models.SourceJira, jiraKey, jiraURL, completedAt,
+		models.TypeTask, title, description, status, models.SourceJira, referenceNumber, jiraKey, jiraURL, completedAt,
 	)
 	return scanWorkItem(row)
 }
