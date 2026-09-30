@@ -27,6 +27,7 @@ func buildRouter(db *sql.DB) *gin.Engine {
 	r.DELETE("/api/work-items/:id", workItemHandler.Delete)
 
 	r.GET("/api/stats/burn-rate", statsHandler.BurnRate)
+	r.GET("/api/stats/summary", statsHandler.Summary)
 
 	return r
 }
