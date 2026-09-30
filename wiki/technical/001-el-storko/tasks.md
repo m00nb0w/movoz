@@ -268,12 +268,15 @@ shows the rest — matching `spec.md` User Story 2's Independent Test.
 
 - [ ] T052 [US2] Update `KanbanBoard.tsx`: columns limited to Picked for today/In progress/
   Blocked/Done (remove Backlog as a column)
+- [ ] T052a [P] [US2] Remove `apps/el-storko/src/app/list/page.tsx` and the "List" entry from
+  `NavTabs.tsx`'s route list — FR-009 now allows exactly Board + Stats, no List view
 - [ ] T053 [US2] Add a `BacklogList` section below the board rendering `status=backlog` items,
   each with a "Pick for today" button (`PATCH` status → `picked_for_today` via the existing
   `updateWorkItem` client call)
 - [ ] T054 [US2] Implement drag-from-Backlog-onto-Board using the native HTML5 Drag and Drop API
   (per `research.md`) with the same status-transition effect as the button
-- [ ] T055 [P] [US2] Wire the app logo/wordmark to navigate to `/` (Board) — FR-021
+- [ ] T055 [P] [US2] Add a small clickable "el-storko" wordmark/logo to `layout.tsx`'s nav bar
+  (none exists yet — `NavTabs` alone is currently there) linking to `/` (Board) — FR-021
 - [ ] T056 [US2] Verify: manual pass confirming exactly 4 Board columns, the Backlog list beneath
   it, both the button and drag paths moving an item to Picked for today, and logo-click landing
   on Board
@@ -294,9 +297,9 @@ shows the rest — matching `spec.md` User Story 2's Independent Test.
 
 ## Phase 11: User Story 4 (spec) - CLI stays correct under the new status set
 
-- [ ] T059 [P] [US4] Audit `cmd/cli`/`internal/clicmd` for any hardcoded status strings from the
+- [X] T059 [P] [US4] Audit `cmd/cli`/`internal/clicmd` for any hardcoded status strings from the
   old four-value set and update to the five-value set if found
-- [ ] T060 [US4] Verify: `el-storko-cli list --status picked_for_today` round-trips correctly
+- [X] T060 [US4] Verify: `el-storko-cli list --status picked_for_today` round-trips correctly
 
 ---
 
