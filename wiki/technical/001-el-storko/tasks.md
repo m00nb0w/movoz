@@ -380,9 +380,9 @@ shows the first two and Agent scope shows only the third, on both Board and Stat
 
 ## Phase 15: Redesign Polish
 
-- [ ] T079 [P] Update `wiki/technical/architecture.md`'s el-storko summary line if it still
+- [X] T079 [P] Update `wiki/technical/architecture.md`'s el-storko summary line if it still
   describes the pre-redesign workflow
-- [ ] T080 Final full verification pass: `go build ./... && go test ./...`; fresh-DB migrate
+- [X] T080 Final full verification pass: `go build ./... && go test ./...`; fresh-DB migrate
   `000001` → `000005`; full CRUD across the five-state status set; Jira status-mapping check
   (mocked); CLI round-trip under the new statuses; `pnpm --filter el-storko build`; manual UI
   pass covering every acceptance scenario across all seven user stories in `spec.md`

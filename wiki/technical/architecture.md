@@ -6,7 +6,7 @@
 movoz/
 ├── apps/                          # Frontend applications (pnpm workspace)
 │   ├── personal-site/             # Next.js 14 — default zone at /
-│   └── el-storko/                 # Next.js zone — kanban + list views for el-storko
+│   └── el-storko/                 # Next.js zone — Board + Stats views for el-storko
 │
 ├── packages/                      # Shared packages (pnpm workspace)
 │   ├── tokens/                    # @movoz/tokens — platform-agnostic design tokens
