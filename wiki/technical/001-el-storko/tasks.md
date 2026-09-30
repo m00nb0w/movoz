@@ -337,21 +337,21 @@ tracked, and a status-breakdown bar chart, alongside the existing throughput/bac
 the Stats tab, confirm every number and the bar chart match a hand count — matching `spec.md`
 User Story 6's Independent Test.
 
-- [ ] T067 [P] [US6] Write a pure-function test for `internal/stats`'s new summary reducer (open
+- [X] T067 [P] [US6] Write a pure-function test for `internal/stats`'s new summary reducer (open
   count, completed-this-week count, completion rate, total tracked, status breakdown across all
   five statuses including zero-count ones) against hand-calculated values, including an
   empty-tracker all-zero case
-- [ ] T068 [US6] Implement the summary reducer in `internal/stats` to make T067 pass, per
+- [X] T068 [US6] Implement the summary reducer in `internal/stats` to make T067 pass, per
   `data-model.md`'s Workload & Burn-Rate Stats section
-- [ ] T069 [P] [US6] Write handler tests for `GET /api/stats/summary` (empty tracker, a tracker
+- [X] T069 [P] [US6] Write handler tests for `GET /api/stats/summary` (empty tracker, a tracker
   with a known status/completion composition)
-- [ ] T070 [US6] Implement `StatsHandler.Summary` and register `GET /api/stats/summary` in
+- [X] T070 [US6] Implement `StatsHandler.Summary` and register `GET /api/stats/summary` in
   `router.go` to make T069 pass
-- [ ] T071 [P] [US6] Add `getStatsSummary(scope)` to `apps/el-storko/src/lib/api.ts`
-- [ ] T072 [US6] Add `StatusBreakdownChart.tsx` (custom SVG bar chart, per `research.md`) and new
+- [X] T071 [P] [US6] Add `getStatsSummary(scope)` to `apps/el-storko/src/lib/api.ts`
+- [X] T072 [US6] Add `StatusBreakdownChart.tsx` (custom SVG bar chart, per `research.md`) and new
   `StatCard`s (open items, completed this week, completion rate, total tracked) to
   `apps/el-storko/src/app/stats/page.tsx`
-- [ ] T073 [US6] Verify: seed items across all five statuses with known completion dates, confirm
+- [X] T073 [US6] Verify: seed items across all five statuses with known completion dates, confirm
   every summary number and the bar chart against a hand count
 
 ---

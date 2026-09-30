@@ -39,3 +39,20 @@ func (h *StatsHandler) BurnRate(c *gin.Context) {
 	points := stats.ComputeBurnRate(items, days, time.Now())
 	c.JSON(http.StatusOK, gin.H{"days": days, "points": points})
 }
+
+func (h *StatsHandler) Summary(c *gin.Context) {
+	items, err := h.store.List(store.ListFilters{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	summary := stats.ComputeSummary(items, time.Now())
+	c.JSON(http.StatusOK, gin.H{
+		"open_items":          summary.OpenItems,
+		"completed_this_week": summary.CompletedThisWeek,
+		"completion_rate":     summary.CompletionRate,
+		"total_tracked":       summary.TotalTracked,
+		"status_breakdown":    summary.StatusBreakdown,
+	})
+}

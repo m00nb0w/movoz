@@ -106,3 +106,16 @@ export async function getBurnRate(days = 30): Promise<BurnRateResponse> {
   const res = await fetch(`/api/stats/burn-rate?days=${days}`, { cache: "no-store" });
   return handleResponse<BurnRateResponse>(res);
 }
+
+export interface StatsSummaryResponse {
+  open_items: number;
+  completed_this_week: number;
+  completion_rate: number;
+  total_tracked: number;
+  status_breakdown: Record<string, number>;
+}
+
+export async function getStatsSummary(): Promise<StatsSummaryResponse> {
+  const res = await fetch("/api/stats/summary", { cache: "no-store" });
+  return handleResponse<StatsSummaryResponse>(res);
+}
