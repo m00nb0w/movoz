@@ -266,18 +266,18 @@ it; "Pick for today" works via button or drag; the logo returns to Board.
 Board, confirm the Board's four columns show exactly those items and the Backlog list below still
 shows the rest — matching `spec.md` User Story 2's Independent Test.
 
-- [ ] T052 [US2] Update `KanbanBoard.tsx`: columns limited to Picked for today/In progress/
+- [X] T052 [US2] Update `KanbanBoard.tsx`: columns limited to Picked for today/In progress/
   Blocked/Done (remove Backlog as a column)
-- [ ] T052a [P] [US2] Remove `apps/el-storko/src/app/list/page.tsx` and the "List" entry from
-  `NavTabs.tsx`'s route list — FR-009 now allows exactly Board + Stats, no List view
-- [ ] T053 [US2] Add a `BacklogList` section below the board rendering `status=backlog` items,
+- [X] T052a [P] [US2] Delete `app/list/page.tsx` and the now-unused `WorkItemList.tsx`; remove
+  the List entry from `NavTabs.tsx`'s `ROUTES` array
+- [X] T053 [US2] Add a `BacklogList` section below the board rendering `status=backlog` items,
   each with a "Pick for today" button (`PATCH` status → `picked_for_today` via the existing
   `updateWorkItem` client call)
-- [ ] T054 [US2] Implement drag-from-Backlog-onto-Board using the native HTML5 Drag and Drop API
+- [X] T054 [US2] Implement drag-from-Backlog-onto-Board using the native HTML5 Drag and Drop API
   (per `research.md`) with the same status-transition effect as the button
-- [ ] T055 [P] [US2] Add a small clickable "el-storko" wordmark/logo to `layout.tsx`'s nav bar
-  (none exists yet — `NavTabs` alone is currently there) linking to `/` (Board) — FR-021
-- [ ] T056 [US2] Verify: manual pass confirming exactly 4 Board columns, the Backlog list beneath
+- [X] T055 [P] [US2] Add a small clickable "el-storko" wordmark to `layout.tsx`'s nav bar linking
+  to `/` (Board) — FR-021
+- [X] T056 [US2] Verify: manual pass confirming exactly 4 Board columns, the Backlog list beneath
   it, both the button and drag paths moving an item to Picked for today, and logo-click landing
   on Board
 
@@ -288,9 +288,9 @@ shows the rest — matching `spec.md` User Story 2's Independent Test.
 **Goal**: A Jira-sourced card's badge shows the real Jira key (e.g. `AUTH-142`), not a generic
 "Jira" label — the tint from the original FR-014 stays as-is.
 
-- [ ] T057 [US3] Update `WorkItemCard.tsx`: the source badge on a Jira-sourced item shows
+- [X] T057 [US3] Update `WorkItemCard.tsx`: the source badge on a Jira-sourced item shows
   `item.jira_key` instead of the literal `source` string; keep the existing left-border tint
-- [ ] T058 [US3] Verify: seed a `source=jira` row with a `jira_key`, confirm its card badge shows
+- [X] T058 [US3] Verify: seed a `source=jira` row with a `jira_key`, confirm its card badge shows
   the key, not "jira"
 
 ---
@@ -313,17 +313,17 @@ list.
 confirm both persisted and every field was visible without scrolling — matching `spec.md` User
 Story 5's Independent Test.
 
-- [ ] T061 [US5] Implement `ItemDrawer.tsx` using `@movoz/ui-web`'s `Modal` (per `research.md`):
+- [X] T061 [US5] Implement `ItemDrawer.tsx` using `@movoz/ui-web`'s `Modal` (per `research.md`):
   title, description, status, Estimate, Due date, reference key, and Jira key when present, sized
   so nothing scrolls internally at realistic field counts
-- [ ] T062 [P] [US5] Implement `EpicPicker.tsx`: client-side type-to-filter search over the
+- [X] T062 [P] [US5] Implement `EpicPicker.tsx`: client-side type-to-filter search over the
   already-fetched Epic list (no new endpoint — per `research.md`), with a "Clear" action (FR-024)
-- [ ] T063 [US5] Wire Estimate (number input, hours) and Due date (date input) fields in the
+- [X] T063 [US5] Wire Estimate (number input, hours) and Due date (date input) fields in the
   drawer to `PATCH /api/work-items/:id`
-- [ ] T064 [P] [US5] Implement a shared Due-date color-coding helper (red if overdue, yellow if
+- [X] T064 [P] [US5] Implement a shared Due-date color-coding helper (red if overdue, yellow if
   due within 3 days, else unstyled — FR-020) used by both `WorkItemCard.tsx` and `ItemDrawer.tsx`
-- [ ] T065 [US5] Wire drawer open/close from clicking a card on the Board or Backlog list
-- [ ] T066 [US5] Verify: set Estimate + Due date, close/reopen the drawer, confirm persistence and
+- [X] T065 [US5] Wire drawer open/close from clicking a card on the Board or Backlog list
+- [X] T066 [US5] Verify: set Estimate + Due date, close/reopen the drawer, confirm persistence and
   no internal scrolling; confirm overdue/soon-due color coding on both card and drawer
 
 ---

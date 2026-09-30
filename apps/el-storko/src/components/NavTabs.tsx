@@ -5,7 +5,6 @@ import { Tabs } from "@movoz/ui-web";
 
 const ROUTES = [
   { value: "/", label: "Board" },
-  { value: "/list", label: "List" },
   { value: "/stats", label: "Stats" },
 ];
 

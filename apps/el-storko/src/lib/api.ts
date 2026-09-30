@@ -1,15 +1,23 @@
 export type WorkItemType = "epic" | "task";
-export type WorkItemStatus = "todo" | "in_progress" | "blocked" | "done";
+export type WorkItemStatus =
+  | "backlog"
+  | "picked_for_today"
+  | "in_progress"
+  | "blocked"
+  | "done";
 export type WorkItemSource = "personal" | "jira" | "agent";
 
 export interface WorkItem {
   id: number;
   type: WorkItemType;
+  reference_key: string;
   parent_id: number | null;
   title: string;
   description: string;
   status: WorkItemStatus;
   source: WorkItemSource;
+  estimate_hours: number | null;
+  due_date: string | null;
   jira_key: string | null;
   jira_url: string | null;
   created_at: string;
@@ -30,6 +38,8 @@ export interface CreateWorkItemInput {
   description?: string;
   parent_id?: number;
   status?: WorkItemStatus;
+  estimate_hours?: number | null;
+  due_date?: string | null;
 }
 
 export interface UpdateWorkItemInput {
@@ -37,6 +47,8 @@ export interface UpdateWorkItemInput {
   description?: string;
   status?: WorkItemStatus;
   parent_id?: number | null;
+  estimate_hours?: number | null;
+  due_date?: string | null;
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {

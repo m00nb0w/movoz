@@ -1,9 +1,12 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"strconv"
+	"time"
 
 	"el-storko/internal/models"
 	"el-storko/internal/store"
@@ -20,18 +23,38 @@ func NewWorkItemHandler(s *store.WorkItemStore) *WorkItemHandler {
 }
 
 type workItemCreateRequest struct {
-	Type        models.Type   `json:"type" binding:"required"`
-	Title       string        `json:"title" binding:"required"`
-	Description string        `json:"description"`
-	Status      models.Status `json:"status"`
-	ParentID    *int64        `json:"parent_id"`
+	Type          models.Type   `json:"type" binding:"required"`
+	Title         string        `json:"title" binding:"required"`
+	Description   string        `json:"description"`
+	Status        models.Status `json:"status"`
+	ParentID      *int64        `json:"parent_id"`
+	EstimateHours *float64      `json:"estimate_hours"`
+	DueDate       *string       `json:"due_date"`
 }
 
 type workItemUpdateRequest struct {
-	Title       *string        `json:"title"`
-	Description *string        `json:"description"`
-	Status      *models.Status `json:"status"`
-	ParentID    *int64         `json:"parent_id"`
+	Title         *string        `json:"title"`
+	Description   *string        `json:"description"`
+	Status        *models.Status `json:"status"`
+	ParentID      *int64         `json:"parent_id"`
+	EstimateHours *float64       `json:"estimate_hours"`
+	DueDate       *string        `json:"due_date"`
+}
+
+// parseDueDate parses the wire date-only format (models.DateOnlyLayout) into a
+// *time.Time, returning a 400-worthy error on an invalid date string.
+func parseDueDate(raw *string) (*time.Time, error) {
+	if raw == nil {
+		return nil, nil
+	}
+	if *raw == "" {
+		return nil, nil
+	}
+	t, err := time.Parse(models.DateOnlyLayout, *raw)
+	if err != nil {
+		return nil, err
+	}
+	return &t, nil
 }
 
 func parseStoreErr(c *gin.Context, err error) bool {
@@ -41,7 +64,8 @@ func parseStoreErr(c *gin.Context, err error) bool {
 	switch {
 	case errors.Is(err, store.ErrEpicCannotHaveParent),
 		errors.Is(err, store.ErrParentMustBeEpic),
-		errors.Is(err, store.ErrParentNotFound):
+		errors.Is(err, store.ErrParentNotFound),
+		errors.Is(err, store.ErrInvalidEstimate):
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	default:
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
@@ -63,14 +87,21 @@ func (h *WorkItemHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid status"})
 		return
 	}
+	dueDate, err := parseDueDate(req.DueDate)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid due_date"})
+		return
+	}
 
 	item, err := h.store.Create(models.WorkItem{
-		Type:        req.Type,
-		Title:       req.Title,
-		Description: req.Description,
-		Status:      req.Status,
-		ParentID:    req.ParentID,
-		Source:      models.SourcePersonal,
+		Type:          req.Type,
+		Title:         req.Title,
+		Description:   req.Description,
+		Status:        req.Status,
+		ParentID:      req.ParentID,
+		EstimateHours: req.EstimateHours,
+		DueDate:       dueDate,
+		Source:        models.SourcePersonal,
 	})
 	if parseStoreErr(c, err) {
 		return
@@ -127,6 +158,21 @@ func (h *WorkItemHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"items": items})
 }
 
+// isExplicitNull reports whether key is present in the request body with a
+// literal JSON null value — distinct from the key being absent entirely.
+// Plain Go pointer fields can't tell these apart (both unmarshal to nil), but
+// UpdateFields.ClearParent needs exactly this distinction: "omit parent_id"
+// means "don't touch it", while "parent_id: null" means "unassign the Epic"
+// (FR-024's Clear action).
+func isExplicitNull(body []byte, key string) bool {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(body, &raw); err != nil {
+		return false
+	}
+	value, present := raw[key]
+	return present && string(value) == "null"
+}
+
 func (h *WorkItemHandler) Update(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -134,8 +180,13 @@ func (h *WorkItemHandler) Update(c *gin.Context) {
 		return
 	}
 
+	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid work item data"})
+		return
+	}
 	var req workItemUpdateRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := json.Unmarshal(body, &req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid work item data"})
 		return
 	}
@@ -143,12 +194,20 @@ func (h *WorkItemHandler) Update(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid status"})
 		return
 	}
+	dueDate, err := parseDueDate(req.DueDate)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid due_date"})
+		return
+	}
 
 	item, err := h.store.Update(id, store.UpdateFields{
-		Title:       req.Title,
-		Description: req.Description,
-		Status:      req.Status,
-		ParentID:    req.ParentID,
+		Title:         req.Title,
+		Description:   req.Description,
+		Status:        req.Status,
+		ParentID:      req.ParentID,
+		ClearParent:   isExplicitNull(body, "parent_id"),
+		EstimateHours: req.EstimateHours,
+		DueDate:       dueDate,
 	})
 	if parseStoreErr(c, err) {
 		return
