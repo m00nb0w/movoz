@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strconv"
 	"testing"
 
 	"el-storko/internal/models"
@@ -184,6 +185,105 @@ func TestWorkItemHandlerUpdate(t *testing.T) {
 	json.Unmarshal(w2.Body.Bytes(), &updated)
 	if updated.Status != models.StatusDone {
 		t.Fatalf("expected status done, got %s", updated.Status)
+	}
+}
+
+func TestWorkItemHandlerCreateWithEstimateAndDueDate(t *testing.T) {
+	r, _ := setupTestRouter(t)
+
+	w := doRequest(r, http.MethodPost, "/api/work-items", map[string]any{
+		"type":           "task",
+		"title":          "Task with estimate",
+		"estimate_hours": 2.5,
+		"due_date":       "2026-10-03",
+	})
+	if w.Code != http.StatusCreated {
+		t.Fatalf("expected 201, got %d: %s", w.Code, w.Body.String())
+	}
+
+	var created models.WorkItem
+	if err := json.Unmarshal(w.Body.Bytes(), &created); err != nil {
+		t.Fatalf("failed to unmarshal: %v", err)
+	}
+	if created.EstimateHours == nil || *created.EstimateHours != 2.5 {
+		t.Fatalf("expected estimate_hours 2.5, got %+v", created.EstimateHours)
+	}
+
+	var respMap map[string]any
+	json.Unmarshal(w.Body.Bytes(), &respMap)
+	if respMap["due_date"] != "2026-10-03" {
+		t.Fatalf("expected due_date 2026-10-03, got %+v", respMap["due_date"])
+	}
+}
+
+func TestWorkItemHandlerUpdateEstimateAndDueDateRoundTrip(t *testing.T) {
+	r, _ := setupTestRouter(t)
+
+	w := doRequest(r, http.MethodPost, "/api/work-items", map[string]any{"type": "task", "title": "Task A"})
+	var task models.WorkItem
+	json.Unmarshal(w.Body.Bytes(), &task)
+
+	w2 := doRequest(r, http.MethodPatch, "/api/work-items/1", map[string]any{
+		"estimate_hours": 4.0,
+		"due_date":       "2026-11-01",
+	})
+	if w2.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w2.Code, w2.Body.String())
+	}
+
+	var updated models.WorkItem
+	json.Unmarshal(w2.Body.Bytes(), &updated)
+	if updated.EstimateHours == nil || *updated.EstimateHours != 4.0 {
+		t.Fatalf("expected estimate_hours 4.0, got %+v", updated.EstimateHours)
+	}
+
+	var respMap map[string]any
+	json.Unmarshal(w2.Body.Bytes(), &respMap)
+	if respMap["due_date"] != "2026-11-01" {
+		t.Fatalf("expected due_date 2026-11-01, got %+v", respMap["due_date"])
+	}
+
+	w3 := doRequest(r, http.MethodGet, "/api/work-items/1", nil)
+	var refetched models.WorkItem
+	json.Unmarshal(w3.Body.Bytes(), &refetched)
+	if refetched.EstimateHours == nil || *refetched.EstimateHours != 4.0 {
+		t.Fatalf("expected persisted estimate_hours 4.0, got %+v", refetched.EstimateHours)
+	}
+}
+
+func TestWorkItemHandlerUpdateExplicitNullParentIDClearsEpic(t *testing.T) {
+	r, _ := setupTestRouter(t)
+
+	epicResp := doRequest(r, http.MethodPost, "/api/work-items", map[string]any{"type": "epic", "title": "Epic"})
+	var epic models.WorkItem
+	json.Unmarshal(epicResp.Body.Bytes(), &epic)
+
+	taskResp := doRequest(r, http.MethodPost, "/api/work-items", map[string]any{
+		"type": "task", "title": "Task", "parent_id": epic.ID,
+	})
+	var task models.WorkItem
+	json.Unmarshal(taskResp.Body.Bytes(), &task)
+	if task.ParentID == nil {
+		t.Fatalf("expected task to be created with a parent, got %+v", task)
+	}
+
+	w := doRequest(r, http.MethodPatch, "/api/work-items/"+strconv.FormatInt(task.ID, 10), map[string]any{
+		"parent_id": nil,
+	})
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
+	}
+	var updated models.WorkItem
+	json.Unmarshal(w.Body.Bytes(), &updated)
+	if updated.ParentID != nil {
+		t.Fatalf("expected parent_id cleared by explicit null, got %+v", updated.ParentID)
+	}
+
+	w2 := doRequest(r, http.MethodGet, "/api/work-items/"+strconv.FormatInt(task.ID, 10), nil)
+	var refetched models.WorkItem
+	json.Unmarshal(w2.Body.Bytes(), &refetched)
+	if refetched.ParentID != nil {
+		t.Fatalf("expected cleared parent_id to persist, got %+v", refetched.ParentID)
 	}
 }
 
