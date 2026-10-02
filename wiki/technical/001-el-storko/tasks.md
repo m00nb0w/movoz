@@ -170,9 +170,11 @@ against US1's API (and, if implemented, shows US2's Jira-sourced items too).
   the repo) per `quickstart.md`
 - [X] T029 [P] Update `wiki/technical/architecture.md` and `wiki/specs/index.md` to reference
   el-storko, per Constitution Principle V (docs updated in the same unit of work)
-- [ ] T030 Verify launchd survival: `launchctl load` both plists, `kill -9` the backend process
-  and confirm it restarts within seconds, then reboot the machine and confirm both services come
-  up without manual intervention
+- [X] T030a Both plists installed to `~/Library/LaunchAgents/` and loaded; `kill -9` on both the
+  backend and frontend processes confirmed launchd respawns each within seconds (new PID,
+  `/health` and `/` both back to 200) — done 2026-10-02
+- [ ] T030b Reboot the machine and confirm both services come up without manual intervention —
+  still needs an actual reboot, which no agent can trigger on its own
 - [X] T031 Final verification pass per `plan.md`'s Verification section: `go build ./... && go
   test ./...`, fresh-DB `-auto-migrate`, full CRUD + Jira sync + CLI/UI parity check, confirm
   `.env` is git-ignored and the token never appears in logs/commits/API responses
