@@ -20,6 +20,53 @@ Mine/Agent scope toggle, an item detail drawer (Estimate, Due date, searchable E
 picker), per-card Jira tinting with the real Jira key as the badge, and two independent
 `EPIC-#`/`TASK-#` reference-key sequences.
 
+## Architecture Diagram
+
+```mermaid
+flowchart TB
+    subgraph Legend[" "]
+        direction LR
+        L1(["Person"]):::user
+        L2["Process"]:::app
+        L3[("Datastore")]:::store
+        L4[("External service")]:::external
+    end
+
+    User(["You"]):::user
+    User -->|opens in browser| Frontend
+    User -->|runs commands| CLI
+
+    Frontend["Next.js zone — apps/el-storko : 3101
+    Board · Stats · Item drawer · Scope toggle"]:::app
+    CLI["el-storko CLI — cmd/cli
+    add · list"]:::app
+    API["Go REST API — backend/el-storko cmd/server : 8082
+    Gin handlers: work-items · stats"]:::app
+    Sync["Jira sync goroutine (same process)
+    ticker every 5m · pull + push · last-write-wins"]:::app
+
+    Frontend -->|"/api/* rewrite proxy"| API
+    CLI -->|HTTP REST| API
+    API -->|read/write SQL| DB
+    Sync -->|read/write SQL| DB
+    Sync -->|"HTTPS · Basic auth · REST API v3"| Jira
+
+    DB[("Postgres — el_storko
+    work_items table")]:::store
+    Jira[("Jira Cloud
+    assigned issues")]:::external
+
+    classDef user fill:#efe7d6,stroke:#a39474,color:#2b2418
+    classDef app fill:#dde5d2,stroke:#6b8a55,color:#2b2418
+    classDef store fill:#ddd4e3,stroke:#8a6a9a,color:#2b2418
+    classDef external fill:#ecd9c8,stroke:#c2784a,color:#2b2418
+```
+
+The frontend and CLI are two independent clients of the same REST API (FR-010: no divergent
+storage). The Jira sync goroutine runs inside the same Go binary as the API, not a separate
+service — it shares the API's DB connection pool and reads/writes the same `work_items` rows the
+API serves, which is why Jira sync failures never take down personal-item CRUD (FR-013).
+
 ## Technical Context
 
 **Language/Version**: Go 1.22 (backend + CLI), TypeScript/Next.js 14 (frontend)
