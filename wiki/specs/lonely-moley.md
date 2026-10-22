@@ -3,9 +3,11 @@
 > **Status**: Draft
 > **Author**: To Ngoc Long
 > **Date**: 2026-03-13
+> **Last updated**: 2026-10-22
 > **Project**: lonely-moley
 > **Location**: `infra/lonely-moley/`
 > **Stack**: Kubernetes, Terraform, Ansible, Linux
+> **Technical design (v1)**: [wiki/technical/lonely-moley-design.md](../technical/lonely-moley-design.md)
 
 ## Overview
 
@@ -44,9 +46,9 @@ Public cloud is expensive for personal projects and limits learning. Running you
 
 | # | Requirement | Priority |
 |---|-------------|----------|
-| B1 | Self-hosted CI/CD runner (Gitea Actions, Drone, or Jenkins) | Must have |
+| B1 | Self-hosted CI/CD runner (Gitea Actions, Drone, or Jenkins). Must not run code from public pull requests. | Nice to have |
 | B2 | Build and push container images | Must have |
-| B3 | Automated deploy to K8s on push | Should have |
+| B3 | Automated deploy on push (Docker Compose in v1, K8s later) | Should have |
 | B4 | Build caching for faster pipelines | Nice to have |
 
 ### Data — Databases & Storage
@@ -63,8 +65,9 @@ Public cloud is expensive for personal projects and limits learning. Running you
 |---|-------------|----------|
 | N1 | Reverse proxy with TLS (Traefik or Nginx) | Must have |
 | N2 | DNS management for homelab domain | Must have |
-| N3 | VPN/tunnel for remote access (Tailscale or WireGuard) | Should have |
-| N4 | Firewall and network segmentation | Should have |
+| N3 | VPN/tunnel for remote access (Tailscale or WireGuard) | Must have |
+| N4 | Firewall and network segmentation | Must have |
+| N5 | Public access with no open router ports and the home IP hidden | Must have |
 
 ### Platform Services
 
@@ -76,27 +79,27 @@ Public cloud is expensive for personal projects and limits learning. Running you
 
 ## Hardware
 
-<!-- Fill in your homelab hardware specs -->
-
 | Component | Spec | Notes |
 |-----------|------|-------|
-| Server(s) | | |
-| Storage | | |
-| Network | | |
+| Server(s) | Lenovo ThinkCentre (one box) | Ubuntu Server LTS. Single point of failure, accepted. |
+| Storage | Internal disk, LUKS encrypted | Offsite encrypted backups to B2 or S3 |
+| Network | Home router, box on its own VLAN | No port forwards. Small UPS for power cuts. |
 
 ## Migration Plan
 
 The existing `infra/` directory has Terraform for AWS (VPC + RDS) and Docker Compose + Nginx. Over time, Lonely Moley can absorb or replace these:
 
-1. **Phase 1**: Set up K8s cluster, deploy backend services locally
-2. **Phase 2**: Self-hosted CI/CD, stop relying on GitHub Actions
-3. **Phase 3**: Migrate database from AWS RDS to self-hosted PostgreSQL
-4. **Phase 4**: Full self-hosted stack — compute, storage, CI/CD, monitoring
+1. **Phase 1 (v1)**: Harden the ThinkCentre. Run services and PostgreSQL with Docker Compose. Serve public apps through Cloudflare Tunnel. Deploy from GitHub Actions over Tailscale. See the [v1 technical design](../technical/lonely-moley-design.md).
+2. **Phase 2**: Move from Docker Compose to k3s.
+3. **Phase 3**: Replace Cloudflare Tunnel with a VPS + WireGuard tunnel.
+4. **Phase 4**: Self-hosted CI/CD, if it can run safely with a public repo.
+5. **Phase 5**: Full self-hosted stack — compute, storage, CI/CD, monitoring.
 
 ## Open Questions
 
-- [ ] What hardware to start with? (old laptop, Raspberry Pi cluster, mini PC?)
+- [x] What hardware to start with? → One Lenovo ThinkCentre.
+- [x] How to handle dynamic DNS / public access for the homelab? → Cloudflare Tunnel in v1. No open ports, so no dynamic DNS is needed. VPS tunnel later.
+- [x] Compose or K8s first? → Docker Compose in v1. k3s in Phase 2.
 - [ ] k3s vs kubeadm vs Talos Linux?
-- [ ] Which CI/CD system? (Gitea Actions, Drone, Tekton?)
+- [ ] Which CI/CD system? (Gitea Actions, Drone, Tekton?) The movoz repo is public, so a runner must not run code from public pull requests.
 - [ ] Keep AWS as disaster recovery / failover, or go fully self-hosted?
-- [ ] How to handle dynamic DNS / public access for the homelab?

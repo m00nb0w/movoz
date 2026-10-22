@@ -22,6 +22,9 @@ Product requirements documents organized by project. Each spec defines what we'r
 ### el-storko
 - [el-storko Spec](./001-el-storko/spec.md) — personal work-item tracker unifying personal Tasks/Epics with bidirectionally-synced Jira issues; see [Technical Plan](../technical/001-el-storko/plan.md)
 
+### lonely-moley
+- [Lonely Moley Spec](./lonely-moley.md) — personal homelab on a ThinkCentre; see [v1 Technical Design](../technical/lonely-moley-design.md)
+
 ## Templates
 
 - [Product Spec Template](./product-spec-template.md) — for new feature requirements
