@@ -89,7 +89,7 @@ flowchart LR
 | Item | Choice | Reason |
 |---|---|---|
 | OS | Ubuntu Server LTS, minimal, no desktop | Long support, small attack surface |
-| Disk | LUKS full-disk encryption, TPM2 auto-unlock (`systemd-cryptenroll`) | Protects data if the box is stolen. Boots without a person. |
+| Disk | LUKS full-disk encryption, TPM2 auto-unlock with Clevis (`clevis-tpm2` + `clevis-initramfs`) | Protects data if the box is stolen. Boots without a person. |
 | BIOS | Admin password, no USB boot, power on after AC loss | Stops boot tampering. Recovers after a power cut. |
 | Patching | `unattended-upgrades` with an automatic reboot window | Security fixes arrive without manual work |
 | Users | One admin user with `sudo`. One `deploy` user for CI. No root login. | Least privilege |
